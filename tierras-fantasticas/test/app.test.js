@@ -2179,7 +2179,7 @@ test('comprar un producto con cupón: se cobra el total descontado, el cupón qu
   await checkout({ productId: 'crate-oni', username: 'Usos_B', coupon: 'DOSUSOS' });
   const full = await post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: 'Usos_C', coupon: 'DOSUSOS' });
   assert.strictEqual(full.status, 400);
-  assert.match((await full.json()).error, /todas las veces/);
+  assert.match((await full.json()).error, /lo está usando otra persona/, 'los dos usos están apartados por pagos empezados');
 });
 
 test('carrito: varios productos en UN solo pago de Stripe con cupón; cada uno se entrega, se ve y se reembolsa', async () => {
@@ -2590,4 +2590,89 @@ test('rangos en el carrito: cada uno se cobra según QUIEN LO RECIBE (lo mío co
   assert.ok(received.includes('lp user Ami_SinRango parent set magico'));
   assert.strictEqual((await (await get('/api/player/Yo_SinRango')).json()).rank.id, 'rango-mortal');
   assert.strictEqual((await (await get('/api/player/Ami_SinRango')).json()).rank.id, 'rango-magico');
+});
+
+test('cupón de UN SOLO USO: en cuanto se usa queda gastado (aunque se filtre), dos pagos a la vez no lo usan los dos, y el panel dice quién lo usó', async () => {
+  await seen('Uso_Ana', 'Uso_Beto', 'Uso_Caro', 'Uso_Dani', 'Uso_Eva', 'Uso_Fer');
+  assert.strictEqual((await newCoupon({ code: 'UNICO-1', kind: 'percent', value: 50, maxUses: 1 })).status, 200);
+  const buy = (username, extra = {}) =>
+    post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username, coupon: 'UNICO-1', ...extra });
+  // Ana empieza a pagar: el uso queda apartado para ella; Beto, mientras, no puede
+  const a1 = await buy('Uso_Ana');
+  assert.strictEqual(a1.status, 200);
+  const first = (await a1.json()).id;
+  const beto = await buy('Uso_Beto');
+  assert.strictEqual(beto.status, 400);
+  assert.match((await beto.json()).error, /lo está usando otra persona/);
+  // Ana cancela y vuelve a intentarlo: a ella no le bloquea su propio intento
+  const a2 = await buy('Uso_Ana');
+  assert.strictEqual(a2.status, 200);
+  const second = (await a2.json()).id;
+  // Ana paga: el cupón queda gastado
+  assert.strictEqual((await pay(second)).status, 'queued');
+  for (const who of ['Uso_Beto', 'Uso_Caro']) {
+    const r = await buy(who);
+    assert.strictEqual(r.status, 400);
+    assert.match((await r.json()).error, /ya se usó: era de un solo uso/);
+  }
+  const q = await quoteCart({ items: [{ productId: 'crate-oni' }], username: 'Uso_Caro', coupon: 'UNICO-1' });
+  assert.match(q.data.couponError, /ya se usó/);
+  assert.strictEqual(q.data.discount, 0);
+  // El intento viejo de Ana (la página de pago que dejó abierta) ya no aparta nada
+  assert.ok(first !== second);
+  // En el panel: 1 de 1, agotado, y quién lo usó con qué
+  const list = (await (await staffCall('/api/staff/coupons')).json()).coupons;
+  const c = list.find((x) => x.code === 'UNICO-1');
+  assert.deepStrictEqual([c.used, c.reserved, c.maxUses, c.exhausted], [1, 0, 1, true]);
+  const uses = await (await staffCall('/api/staff/coupons/UNICO-1/uses')).json();
+  assert.strictEqual(uses.uses.length, 1);
+  assert.deepStrictEqual([uses.uses[0].id, uses.uses[0].state, uses.uses[0].payer], [second, 'used', 'Uso_Ana']);
+  assert.deepStrictEqual(uses.uses[0].products, ['Crate Oni']);
+  assert.strictEqual(uses.uses[0].amount, priceOf('crate-oni') - Math.round(priceOf('crate-oni') / 2));
+  assert.strictEqual((await staffCall('/api/staff/coupons/NOEXISTE/uses')).status, 404);
+  assert.strictEqual((await staffCall('/api/staff/coupons/UNICO-1/uses', { key: null })).status, 401);
+
+  // Dos pagos A LA VEZ con un cupón de un solo uso: solo uno se lleva el descuento
+  assert.strictEqual((await newCoupon({ code: 'CARRERA', kind: 'amount', value: 1, maxUses: 1 })).status, 200);
+  const both = await Promise.all(['Uso_Dani', 'Uso_Eva'].map((u) => post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: u, coupon: 'CARRERA' })));
+  assert.deepStrictEqual(both.map((r) => r.status).sort(), [200, 409]);
+  const loser = both.find((r) => r.status === 409);
+  assert.strictEqual((await loser.json()).code, 'coupon');
+
+  // Si el pago caduca sin pagarse, el uso vuelve a quedar libre
+  assert.strictEqual((await newCoupon({ code: 'CADUCA1', kind: 'amount', value: 1, maxUses: 1 })).status, 200);
+  const exp = await (await post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: 'Uso_Fer', coupon: 'CADUCA1' })).json();
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: 'Uso_Dani', coupon: 'CADUCA1' })).status, 400);
+  const s = sessionOf(exp.id);
+  s.status = 'expired';
+  await signedEvent({ type: 'checkout.session.expired', data: { object: s } });
+  assert.strictEqual((await post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: 'Uso_Dani', coupon: 'CADUCA1' })).status, 200);
+
+  // En el carrito igual: un solo uso para todo el carrito
+  assert.strictEqual((await newCoupon({ code: 'CARRO1', kind: 'percent', value: 10, maxUses: 1 })).status, 200);
+  const cart = await cartCheckout({ items: [{ productId: 'crate-oni' }, { productId: 'crate-valentine' }], username: 'Uso_Caro', coupon: 'CARRO1' });
+  assert.strictEqual(cart.status, 200, cart.data.error);
+  await pay(cart.data.id);
+  const again = await cartCheckout({ items: [{ productId: 'crate-oni' }], username: 'Uso_Beto', coupon: 'CARRO1' });
+  assert.strictEqual(again.status, 400);
+  assert.match(again.data.error, /ya se usó/);
+  const cartUses = await (await staffCall('/api/staff/coupons/CARRO1/uses')).json();
+  assert.deepStrictEqual(cartUses.uses.map((u) => [u.id, u.state, u.products.length]), [[cart.data.id, 'used', 2]]);
+});
+
+test('cupón con Mercado Pago: la página de pago caduca a la hora (un uso apartado no se paga días después)', async () => {
+  await seen('Uso_Mp');
+  assert.strictEqual((await newCoupon({ code: 'MPUNO', kind: 'amount', value: 1, maxUses: 1 })).status, 200);
+  const r = await post('/api/checkout', { acceptTerms: true, method: 'mercadopago', productId: 'crate-oni', username: 'Uso_Mp', coupon: 'MPUNO' });
+  assert.strictEqual(r.status, 200);
+  const { id } = await r.json();
+  const pref = [...mpPrefs.values()].find((p) => p.external_reference === id);
+  assert.strictEqual(pref.expires, true);
+  const to = Date.parse(pref.expiration_date_to);
+  assert.ok(to > Date.now() + 55 * 60000 && to < Date.now() + 65 * 60000, pref.expiration_date_to);
+  assert.match(pref.expiration_date_to, /\+00:00$/);
+  // Sin cupón, como siempre (sin caducidad)
+  const plain = await post('/api/checkout', { acceptTerms: true, method: 'mercadopago', productId: 'crate-oni', username: 'Uso_Mp' });
+  assert.strictEqual(plain.status, 200);
+  assert.strictEqual([...mpPrefs.values()].at(-1).expires, undefined);
 });

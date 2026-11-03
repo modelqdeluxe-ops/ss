@@ -69,6 +69,13 @@
     .coupon .state.on { border-color: var(--green); color: #7fd18a; }
     .coupon .state.off { border-color: var(--red); color: #f08a8d; }
     .coupon.is-off { opacity: .75; }
+    .coupon .uses { flex: 1 1 100%; display: grid; gap: 6px; margin-top: 4px; padding: 8px 10px; border-radius: 8px; background: #0b0d13; border: 1px solid var(--line); }
+    .coupon .use { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 13.5px; }
+    .coupon .use b { color: var(--text); }
+    .coupon .use .st { font-size: 12px; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--line); }
+    .coupon .use .st.used { border-color: var(--green); color: #7fd18a; }
+    .coupon .use .st.wait { border-color: var(--gold); color: var(--gold); }
+    .coupon .use .st.back { border-color: var(--red); color: #f08a8d; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -112,8 +119,15 @@
           </label>
         </div>
         <div class="grid">
-          <label class="f"><span>Usos máximos <i>(vacío = ilimitados)</i></span>
-            <input id="cMax" type="text" inputmode="numeric" autocomplete="off" placeholder="Ilimitados">
+          <label class="f"><span>¿Cuántas veces se puede usar?</span>
+            <select id="cUses">
+              <option value="one" selected>1 sola vez (se desactiva al usarse)</option>
+              <option value="many">Varias veces…</option>
+              <option value="all">Sin límite</option>
+            </select>
+          </label>
+          <label class="f" id="cMaxWrap" hidden><span>¿Cuántas veces? <i>(entre todos)</i></span>
+            <input id="cMax" type="text" inputmode="numeric" autocomplete="off" placeholder="10">
           </label>
           <label class="f"><span>Compra mínima en USD <i>(opcional)</i></span>
             <input id="cMin" type="text" inputmode="decimal" autocomplete="off" placeholder="Sin mínimo">
@@ -126,7 +140,8 @@
           <input id="cNote" type="text" maxlength="80" autocomplete="off" placeholder="Sorteo de Discord, streamer…">
         </label>
         <div class="actions">
-          <label class="check"><input type="checkbox" id="cPer"> Un solo uso por jugador</label>
+          <label class="check" id="cPerWrap" hidden><input type="checkbox" id="cPer"> Un solo uso por jugador</label>
+          <span class="dim" id="cUsesHint">Un solo uso: en cuanto alguien paga con él, queda gastado y ya no vale para nadie (aunque se filtre).</span>
           <span class="grow"></span>
           <button class="main" type="submit">Crear cupón</button>
         </div>
@@ -272,9 +287,12 @@
   const fmtDay = (iso) => new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City' });
   function couponRow(c) {
     const off = !c.active || c.expired || c.exhausted;
-    const state = c.expired ? 'Caducado' : c.exhausted ? 'Agotado' : c.active ? 'Activo' : 'Pausado';
+    const single = c.maxUses === 1;
+    const state = c.exhausted ? (single ? 'Usado' : 'Agotado') : c.expired ? 'Caducado' : c.active ? 'Activo' : 'Pausado';
     const facts = [
-      `${c.used} ${c.used === 1 ? 'uso' : 'usos'}${c.maxUses ? ` de ${c.maxUses}` : ''}${c.reserved ? ` (+${c.reserved} pagando ahora)` : ''}`,
+      single
+        ? c.used ? 'un solo uso: ya se usó' : c.reserved ? 'un solo uso: alguien está pagando con él ahora' : 'un solo uso: sin usar'
+        : `${c.used} ${c.used === 1 ? 'uso' : 'usos'}${c.maxUses ? ` de ${c.maxUses}` : ' (sin límite)'}${c.reserved ? ` (+${c.reserved} pagando ahora)` : ''}`,
       c.perPlayer ? 'uno por jugador' : '',
       c.minTotal ? `compra mínima ${money(c.minTotal, 'usd')}` : '',
       c.expiresAt ? `${c.expired ? 'caducó' : 'caduca'} el ${fmtDay(c.expiresAt)}` : 'no caduca',
@@ -286,9 +304,37 @@
       <span class="state ${off ? 'off' : 'on'}">${esc(state)}</span>
       <span class="grow dim">${esc(facts)}</span>
       <button type="button" data-copy="${esc(c.code)}" title="Copiar el código">Copiar</button>
-      ${c.expired ? '' : `<button type="button" data-toggle="${esc(c.code)}" data-active="${c.active ? '1' : ''}">${c.active ? 'Pausar' : 'Activar'}</button>`}
+      <button type="button" data-uses="${esc(c.code)}" aria-expanded="false" title="Quién lo usó, cuándo y en qué">Usos (${c.used + c.reserved})</button>
+      ${c.expired || c.exhausted ? '' : `<button type="button" data-toggle="${esc(c.code)}" data-active="${c.active ? '1' : ''}">${c.active ? 'Pausar' : 'Activar'}</button>`}
       <button type="button" class="refund" data-delete="${esc(c.code)}">Borrar</button>
+      <div class="uses" data-uses-of="${esc(c.code)}" hidden></div>
     </div>`;
+  }
+  // Quién usó el cupón: cada pago con quien pagó, cuándo, qué compró, cuánto y en qué quedó
+  const USE_STATE = { used: ['Pagado', 'used'], waiting: ['Esperando el cobro', 'wait'], held: ['Pagando ahora', 'wait'] };
+  const fmtWhen = (iso) => new Date(iso).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/Mexico_City' });
+  async function showUses(code, box) {
+    box.hidden = false;
+    box.innerHTML = '<span class="dim">Cargando…</span>';
+    try {
+      const { uses } = await api(`/api/staff/coupons/${encodeURIComponent(code)}/uses`);
+      box.innerHTML = uses.length
+        ? uses.map((u) => {
+            const [label, cls] = USE_STATE[u.state] || [u.state, ''];
+            return `<div class="use">
+              <b>${esc(u.payer || '—')}</b>
+              <span class="dim">${esc(fmtWhen(u.at))}</span>
+              <span>${esc(u.products.join(', ') || '—')}</span>
+              ${u.amount != null ? `<span>${esc(money(u.amount, u.currency))}${u.discount ? ` <span class="dim">(−${esc(money(u.discount, 'usd'))})</span>` : ''}</span>` : ''}
+              <span class="st ${cls}">${esc(label)}</span>
+              ${u.refunded ? `<span class="st back">${esc(u.refunded)}</span>` : ''}
+              <span class="dim">${esc(u.id)}${u.method ? ` · ${esc(u.method)}` : ''}</span>
+            </div>`;
+          }).join('')
+        : '<span class="dim">Nadie lo ha usado todavía.</span>';
+    } catch (err) {
+      box.innerHTML = `<span class="dim">${esc(err.message)}</span>`;
+    }
   }
   async function loadCoupons() {
     try {
@@ -305,13 +351,25 @@
     $('cValue').placeholder = pct ? '10' : '5.00';
   }
   $('cKind').addEventListener('change', setKind);
+  function setUses() {
+    const mode = $('cUses').value;
+    $('cMaxWrap').hidden = mode !== 'many';
+    $('cPerWrap').hidden = mode === 'one';
+    $('cUsesHint').textContent = mode === 'one'
+      ? 'Un solo uso: en cuanto alguien paga con él, queda gastado y ya no vale para nadie (aunque se filtre).'
+      : mode === 'many'
+        ? 'Se gasta un uso por cada pago con el cupón (entre todos los jugadores).'
+        : 'Vale para todos hasta que lo pauses, lo borres o caduque.';
+  }
+  $('cUses').addEventListener('change', setUses);
   $('cCode').addEventListener('input', () => {
     const v = $('cCode').value.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
     if (v !== $('cCode').value) $('cCode').value = v;
   });
   $('cRandom').addEventListener('click', () => {
     const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const part = [...crypto.getRandomValues(new Uint8Array(6))].map((b) => abc[b % abc.length]).join('');
+    // 8 letras al azar (más de un billón de combinaciones): no se adivina
+    const part = [...crypto.getRandomValues(new Uint8Array(8))].map((b) => abc[b % abc.length]).join('');
     $('cCode').value = `TF-${part}`;
   });
   $('couponForm').addEventListener('submit', async (e) => {
@@ -321,25 +379,41 @@
       code: $('cCode').value.trim(),
       kind: $('cKind').value,
       value: $('cValue').value.trim(),
-      maxUses: $('cMax').value.trim(),
+      maxUses: $('cUses').value === 'one' ? 1 : $('cUses').value === 'many' ? $('cMax').value.trim() : '',
       minTotal: $('cMin').value.trim(),
       expiresAt: $('cExp').value,
-      perPlayer: $('cPer').checked,
+      perPlayer: $('cUses').value !== 'one' && $('cPer').checked,
       note: $('cNote').value.trim(),
     };
+    if ($('cUses').value === 'many' && !body.maxUses) {
+      $('cMax').focus();
+      return show('Escribe cuántas veces se puede usar (o elige «1 sola vez» o «Sin límite»).', 'err');
+    }
     btn.disabled = true;
     try {
       const { coupon } = await api('/api/staff/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       $('couponForm').reset();
       setKind();
+      setUses();
       await loadCoupons();
-      show(`Cupón ${coupon.code} creado. Pásaselo a los jugadores: lo escriben al pagar.`, 'ok');
+      show(coupon.maxUses === 1
+        ? `Cupón ${coupon.code} creado, de UN SOLO USO: en cuanto alguien pague con él, queda gastado y ya no vale para nadie.`
+        : `Cupón ${coupon.code} creado. Pásaselo a los jugadores: lo escriben al pagar.`, 'ok');
     } catch (err) {
       show(err.message, 'err');
     }
     btn.disabled = false;
   });
   $('couponList').addEventListener('click', async (e) => {
+    const usesBtn = e.target.closest('button[data-uses]');
+    if (usesBtn) {
+      const box = $('couponList').querySelector(`[data-uses-of="${CSS.escape(usesBtn.dataset.uses)}"]`);
+      const open = usesBtn.getAttribute('aria-expanded') === 'true';
+      usesBtn.setAttribute('aria-expanded', String(!open));
+      if (open) box.hidden = true;
+      else await showUses(usesBtn.dataset.uses, box);
+      return;
+    }
     const copy = e.target.closest('button[data-copy]');
     if (copy) {
       try {

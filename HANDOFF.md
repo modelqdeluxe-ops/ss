@@ -13,6 +13,22 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (3 nov 2026, 5.ª ronda): CUPONES DE UN SOLO USO, a prueba de filtraciones, y la lista de quién los usó (hecho)
+El dueño: «quiero generar 1 solo cupón: cuando lo use ya queda inhabilitado, porque nos pueden filtrar el cupón y
+usarlo todos; pon ahí los usos de ese cupón». Antes había «Usos máximos» (con 1 casi servía), pero escondido y con tres
+huecos: dos pagos a la vez podían usarlo los dos; quien cancelaba y volvía quedaba bloqueado una hora; y una página de
+Mercado Pago abandonada se podía pagar días después.
+- Tabla `coupon_claims` (store.js): cada pago reclama su uso ANTES de abrir la página de pago con un solo
+  `INSERT … SELECT … WHERE` (`claimCoupon`); `setPay`/`complete` en app.js lo pasan a 'waiting', 'used' o 'void'
+  (caducado o fallido: vuelve a quedar libre). Apartado mientras el pago se puede pagar (65 min; PayPal 190); con
+  cupón, la preferencia de Mercado Pago caduca a la hora (`expiresInMinutes`). Los usos de antes se copian solos a la
+  tabla (MIGRATIONS).
+- Panel: «¿Cuántas veces se puede usar?» con **«1 sola vez (se desactiva al usarse)» por defecto**, «Varias veces…» y
+  «Sin límite»; «Usado» en rojo cuando se gastó; «Usos (N)» con quién, cuándo, qué, cuánto, estado y pedido
+  (`GET /api/staff/coupons/<código>/uses`); «Generar» con 8 letras.
+- Comprobado: 76 pruebas (nuevas: un solo uso con el que cancela y vuelve, dos pagos A LA VEZ → solo uno, el que
+  caduca libera el uso, carrito, lista de usos y la caducidad de Mercado Pago) y en Chromium el panel y la tienda.
+
 ### Web (3 nov 2026, 4.ª ronda): cada rango se cobra según QUIEN LO RECIBE, y el carrito lo dice (hecho)
 El dueño: «si quiero comprar 2 rangos, ¿qué pasa? Hay compra por regalo y compra mía: debe identificar cuál es regalo y
 cuál es mía, si la persona a la que le regala ya tiene rango o no; si ambas personas no tienen rango, obvio que cobra

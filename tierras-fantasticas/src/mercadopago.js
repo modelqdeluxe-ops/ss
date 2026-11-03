@@ -78,7 +78,9 @@ export class MercadoPago {
   // La «preferencia»: lo que se cobra y a dónde vuelve el comprador. init_point es la página de pago.
   // (3 nov 2026) «items» ([{ id, title, description, pictureUrl, quantity, unitPrice }]) cobra varios productos de una
   // vez (el carrito); si no, la línea única de siempre.
-  createPreference({ orderId, title, description, pictureUrl, quantity, unitPrice, currency, successUrl, failureUrl, pendingUrl, notificationUrl, statement, items }) {
+  // (3 nov 2026) expiresInMinutes: la página de pago deja de aceptar pagos pasado ese tiempo (con un cupón, para que un uso
+  // apartado no se pague días después; los pagos en efectivo ya empezados siguen su curso)
+  createPreference({ orderId, title, description, pictureUrl, quantity, unitPrice, currency, successUrl, failureUrl, pendingUrl, notificationUrl, statement, items, expiresInMinutes }) {
     const lines = items?.length ? items : [{ id: orderId, title, description, pictureUrl, quantity, unitPrice }];
     return this.request(
       'POST',
@@ -99,6 +101,13 @@ export class MercadoPago {
         auto_return: 'approved',
         ...(notificationUrl ? { notification_url: notificationUrl } : {}),
         ...(statement ? { statement_descriptor: statement.slice(0, 22) } : {}),
+        ...(expiresInMinutes
+          ? {
+              expires: true,
+              expiration_date_from: new Date(Date.now() - 60_000).toISOString().replace('Z', '+00:00'),
+              expiration_date_to: new Date(Date.now() + expiresInMinutes * 60_000).toISOString().replace('Z', '+00:00'),
+            }
+          : {}),
         metadata: { order_id: orderId },
       },
       { 'X-Idempotency-Key': `create-${orderId}` },
