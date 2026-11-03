@@ -245,9 +245,15 @@ function muroArriba(tipo, m, v) {
     }
     for (let y = 1; y < 16; y++) for (let x = 1; x < 16; x++) if (L.get(x - 1, y - 1) === R[1] && L.get(x, y) !== R[1] && r() < 0.6) L.px(x, y, R[4]);
   }
-  // Como en Core Keeper: la tapa (que el juego pinta más oscura, INFO_MURO.tapa) tiene, donde da al suelo, un canto
-  // del material (claro donde mira a la luz) y el borde del tono más oscuro del material, nunca negro.
-  const N = m & 1, E = m & 2, S = m & 4, O = m & 8, B = R[0];
+  // Como en Core Keeper (ESTUDIO-CK.md, la plantilla de sus paredes): por dentro la pared es una masa negra; solo
+  // donde da al suelo queda un marco de 3 px del material, con su textura, un canto claro y el borde del tono más
+  // oscuro del material.
+  const N = m & 1, E = m & 2, S = m & 4, O = m & 8, B = R[0], MARCO = 3, masa = mezcla(R[0], '#000000', 0.6);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const d = Math.min(N ? y : 99, S ? 15 - y : 99, O ? x : 99, E ? 15 - x : 99);
+    if (d >= MARCO) L.px(x, y, masa);
+    else if (d === MARCO - 1) L.px(x, y, mezcla(L.get(x, y) || R[1], masa, 0.45));
+  }
   if (N) { L.hl(0, 0, 16, B); L.hl(0, 1, 16, R[5]); }
   if (O) { L.vl(0, 0, 16, B); L.vl(1, N ? 1 : 0, 16, R[4]); }
   if (E) { L.vl(15, 0, 16, B); L.vl(14, N ? 1 : 0, 16, R[3]); }

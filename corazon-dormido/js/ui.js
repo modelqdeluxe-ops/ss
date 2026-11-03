@@ -678,8 +678,8 @@ function dibujarAspecto(ctx) {
   const intro = partirTexto('El último latido del Corazón hizo un cuerpo nuevo en el altar. Eres tú.', LW - 24);
   intro.forEach((l, k) => texto(ctx, l, LW / 2, 24 + k * ALTO_LINEA, '#b8aab8', { alin: 'c', borde: COL.negro }));
   const k = LH >= 200 ? 3 : 2, pie = Math.round(LH * 0.66);
-  // de frente quieto y de perfil andando (esqueleto.js); cada cuadro está recortado: se coloca por los pies
-  const nq = (PJ_ESQ.ANIMS.q || [, 2])[1], na = (PJ_ESQ.ANIMS.a || [, 6])[1];
+  // de frente quieto y de perfil andando (personaje-px.js); cada cuadro está recortado: se coloca por los pies
+  const nq = (fuentePJ().ANIMS.q || [, 2])[1], na = (fuentePJ().ANIMS.a || [, 6])[1];
   const q = 'pj_ab_q' + (Math.floor((J.t / 1.6) * nq) % nq), a = 'pj_de_a' + (Math.floor(J.t * 10) % na);
   const dxDe = (n) => (META_SPR[n] ? META_SPR[n].dx * 16 * k : 0);
   sprGrande(ctx, q, LW * 0.3 + dxDe(q), pie, k);

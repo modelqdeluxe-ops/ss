@@ -1,7 +1,7 @@
 'use strict';
-// El personaje: pixel art movido por el esqueleto 2D (esqueleto.js, PJ_ESQ) con las animaciones CC0 de KayKit, en
-// las tres direcciones (abajo, arriba y a la derecha; la izquierda es la derecha volteada) y en todas las animaciones
-// de PJ_ESQ.ANIMS (quieto, andar, correr, golpes, golpe recibido, morir, usar, lanzar, disparar, esquivar). Se vuelve
+// El personaje: pixel art cuadro a cuadro como el de Core Keeper (personaje-px.js, PJ_PX), en las tres direcciones
+// (abajo, arriba y a la derecha; la izquierda es la derecha volteada) y en todas sus animaciones (quieto, andar,
+// correr, golpes, golpe recibido, morir, usar, lanzar, disparar, esquivar). Se vuelve
 // a hornear cuando cambian el aspecto o la armadura. Cada cuadro se recorta a lo que tiene dibujado (con los pies
 // siempre en la misma fila) y guarda en META_SPR dónde están sus dos manos y hacia dónde apuntan, para poner el arma
 // y la antorcha (principal.js, ponerEnMano). Va a la zona dinámica del atlas. El muñeco 3D (muneco) queda para el
@@ -29,6 +29,10 @@ const MATS_ARMADURA = (() => {
     veloCasco: mat(['#0c0e14', '#161a24', '#222836', '#303848', '#40495c', '#525e74'], { tex: (x, y) => (y % 3 === 0 ? -0.8 : 0) }),
   };
 })();
+
+// De dónde salen los cuadros del personaje: cuadro a cuadro como Core Keeper (personaje-px.js, PJ_PX); si no está,
+// el esqueleto 2D de la 0.8 (esqueleto.js, PJ_ESQ).
+function fuentePJ() { return typeof PJ_PX !== 'undefined' ? PJ_PX : typeof PJ_ESQ !== 'undefined' ? PJ_ESQ : null; }
 
 const Personaje = (() => {
   const cacheMat = new Map();
@@ -186,7 +190,7 @@ const Personaje = (() => {
   let trabajo = null, actual = null;
   function lista() {
     const out = [];
-    const anims = typeof PJ_ESQ !== 'undefined' ? Object.entries(PJ_ESQ.ANIMS).map(([a, [, n]]) => [a, n]) : ANIMS;
+    const F = fuentePJ(), anims = F ? Object.entries(F.ANIMS).map(([a, [, n]]) => [a, n]) : ANIMS;
     for (const dir of ['ab', 'ar', 'de']) for (const [anim, n] of anims) for (let f = 0; f < n; f++) out.push([dir, anim, f]);
     return out;
   }
@@ -230,9 +234,9 @@ const Personaje = (() => {
     const t0 = performance.now();
     while (trabajo.pend.length && performance.now() - t0 < ms) {
       const [dir, anim, f] = trabajo.pend.shift();
-      // el esqueleto 2D (esqueleto.js); el muñeco horneado queda para el taller
-      if (typeof PJ_ESQ !== 'undefined') {
-        const c = recortarCuadro(PJ_ESQ.cuadro(dir, anim, f, trabajo.asp, trabajo.eq));
+      // cuadro a cuadro (personaje-px.js); el muñeco horneado queda para el taller
+      if (fuentePJ()) {
+        const c = recortarCuadro(fuentePJ().cuadro(dir, anim, f, trabajo.asp, trabajo.eq));
         trabajo.hechos.push([`pj_${dir}_${anim}${f}`, c.lienzo, c.dx, c.manos]);
       } else {
         const r = hornearCuadro(dir, anim, f, trabajo.asp, trabajo.eq);

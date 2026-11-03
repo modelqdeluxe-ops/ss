@@ -415,7 +415,7 @@ const GL = (() => {
       }
       const im = INFO_MURO[m], arte = im.arte, v = hash2(tx, ty, 1) < 0.5 ? 0 : 1, alto = ALTO * (im.alto || 1);
       const N = !muroEn(tx, ty - 1), E = !muroEn(tx + 1, ty), S = !muroEn(tx, ty + 1), O = !muroEn(tx - 1, ty);
-      const tapa = im.tapa ?? 0.42;
+      const tapa = im.tapa ?? 0.8; // la tapa es negra por dentro (como Core Keeper): el marco del material se ve claro
       T4[0] = T4[1] = T4[2] = T4[3] = tapa;
       const lzN = ty + 0.5 - (N ? 0.45 : 0), lzS = ty + 0.5 + (S ? 0.45 : 0);
       LZ[0] = tx + 0.5; LZ[1] = lzN; LZ[2] = tx + 0.5; LZ[3] = lzN; LZ[4] = tx + 0.5; LZ[5] = lzS; LZ[6] = tx + 0.5; LZ[7] = lzS;

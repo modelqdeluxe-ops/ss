@@ -362,10 +362,10 @@ function dibujarObjeto3d(o) {
   }
 }
 
-// Qué animación del esqueleto (PJ_ESQ.ANIMS) toca y en qué cuadro: el golpe según la herramienta, herido, muerto,
+// Qué animación del personaje (fuentePJ().ANIMS) toca y en qué cuadro: el golpe según la herramienta, herido, muerto,
 // usar o comer, pescar, andar (atado a lo recorrido, para que los pies no patinen), correr y quieto.
 function animJugador(p) {
-  const A = PJ_ESQ.ANIMS, n = (a) => A[a][1], cuadro = (a, k) => [a, Math.max(0, Math.min(n(a) - 1, Math.floor(k * n(a))))];
+  const A = fuentePJ().ANIMS, n = (a) => A[a][1], cuadro = (a, k) => [a, Math.max(0, Math.min(n(a) - 1, Math.floor(k * n(a))))];
   if (J.estado === 'muerto') return cuadro('m', (J.t - (p.muerteT ?? J.t)) / 0.9);
   if (p.swing > 0 && p.swingDur) return cuadro(p.swingAnim || 'g', 1 - p.swing / p.swingDur);
   if (p.heridoT !== undefined && J.t - p.heridoT < 0.3) return cuadro('r', (J.t - p.heridoT) / 0.3);
@@ -375,7 +375,7 @@ function animJugador(p) {
   return ['q', Math.floor((J.t / 1.6) * n('q')) % n('q')];
 }
 function nombreJugador(p) {
-  if (typeof PJ_ESQ === 'undefined') return `pj_${p.dir}_q0`;
+  if (!fuentePJ()) return `pj_${p.dir}_q0`;
   const [a, f] = animJugador(p);
   return `pj_${p.dir}_${a}${f}`;
 }
@@ -475,7 +475,7 @@ function dibujarCriatura3d(e) {
 // Qué cuadro toca a una criatura con esqueleto (criaturas-esq.js), por lo que hace y el tiempo: aparecer (n), golpe
 // recibido (r), preparar el ataque (p, al ritmo de lo que tarda en soltarlo), golpear (g: al embestir o justo después
 // de preparar), andar (a, atado a lo que avanza para que los pies no patinen) y quieta (q).
-const PREPARA = { lancea: 0.45, bruto: 0.8, seton: 0.6, escupe: 0.5, chaman: 0.55, jardinero: 0.55, cazador: 0.5, trampa: 0.6, avispa: 0.55, carga: 0.75, tentaculo: 0.4, farol: 0.55, fantasma: 0.6, estatua: 0.85 };
+const PREPARA = { repta: 0.35, salta: 0.55, lancea: 0.45, bruto: 0.8, seton: 0.6, escupe: 0.5, chaman: 0.55, jardinero: 0.55, cazador: 0.5, trampa: 0.6, avispa: 0.55, carga: 0.75, tentaculo: 0.4, farol: 0.55, fantasma: 0.6, estatua: 0.85 };
 function cuadroCriatura(e, c, A) {
   const t = e.tipo, fr = (a, k) => `${t}_${a}${Math.max(0, Math.min(A[a].n - 1, Math.floor(k)))}`;
   if (e.estAnt !== e.estado) { if (e.estAnt === 'prepara' || e.estAnt === 'conjura') e.golpeT = J.t; e.estAnt = e.estado; }
@@ -491,8 +491,7 @@ function cuadroCriatura(e, c, A) {
     if (e.z > 0) return fr('g', ((1 - Math.max(-1, Math.min(1, (e.vz || 0) / 110))) / 2) * A.g.n);
     if (e.aplasta > 0) return fr('p', A.p.n - 1);
     if (A.r && g < 0.3) return fr('r', (g / 0.3) * A.r.n);
-    const espera = e.tipo === 'babosa_roja' ? 0.55 : 0.7;
-    if (e.alerta && e.t > espera - 0.3) return fr('p', Math.min(0.999, (e.t - espera + 0.3) / 0.3) * A.p.n);
+    if (e.estado === 'prepara') return fr('p', Math.min(0.999, e.t / 0.55) * A.p.n);
   }
   if (A.r && g < 0.3 && e.estado !== 'carga') return fr('r', (g / 0.3) * A.r.n);
   if ((e.estado === 'prepara' || e.estado === 'conjura') && A.p) return fr('p', Math.min(0.999, e.t / (PREPARA[c.conducta] || 0.5)) * A.p.n);

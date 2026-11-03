@@ -110,12 +110,14 @@ function deambular(e, c, dt) {
   if (e.estado !== 'escondida') e.estado = 'anda';
   const p = J.jug, lejos = Math.hypot(p.x - e.x, p.y - e.y), guarda = e.fija !== undefined;
   e.paseoT = (e.paseoT || 0) - dt;
+  // al llegar se para 0,5–1 s (Core Keeper) y vuelve a echar a andar
+  if (e.modo === 'quieta' && e.paseoT > 1) e.paseoT = 0.5 + Math.random() * 0.5;
   if (e.paseoT <= 0) {
-    e.paseoT = 1.5 + Math.random() * 3;
+    e.paseoT = 3;
     const s = Math.random(), vuelve = guarda && Math.hypot(e.x - e.casa.x, e.y - e.casa.y) > 6 * T;
     if (vuelve) e.modo = 'casa';
     else if (!guarda && lejos > 5 * T && lejos < 16 * T && s < 0.32) e.modo = 'rastrea'; // pocas te rastrean, y solo de cerca
-    else if (s < 0.75) { e.modo = 'pasea'; const a = Math.random() * Math.PI * 2, d = (1 + Math.random() * 3) * T, o = guarda ? e.casa : e; e.paseo = { x: o.x + Math.cos(a) * d, y: o.y + Math.sin(a) * d }; }
+    else if (s < 0.85) { e.modo = 'pasea'; const a = Math.random() * Math.PI * 2, d = (1 + Math.random() * 3) * T, o = guarda ? e.casa : e; e.paseo = { x: o.x + Math.cos(a) * d, y: o.y + Math.sin(a) * d }; }
     else e.modo = 'quieta';
   }
   let dx = 0, dy = 0;
@@ -129,6 +131,40 @@ function deambular(e, c, dt) {
   e.mira = dx >= 0 ? 1 : -1;
   if (mover(e, dx * c.vel * 0.38 * dt, dy * c.vel * 0.38 * dt) && e.modo !== 'rastrea') e.modo = 'quieta';
 }
+// Ataque cuerpo a cuerpo como el de Core Keeper (ESTUDIO-CK.md, el caveling): tocar no hace daño; se acerca hasta
+// 1,5 casillas, prepara el golpe 0,35 s mirando hacia ti, se lanza hacia delante y golpea 0,35 s (el daño, una vez, a
+// los 0,05 s, en un círculo de 0,6 casillas un poco por delante) y espera 1–3 s rondando a 0,5–2 casillas.
+const CUERPO = { prepara: 0.35, golpe: 0.35, antes: 0.05, alcance: 1.5, radio: 0.6, delante: 0.3, impulso: 110 };
+function cuerpoACuerpo(e, c, r, lejos, dt, ond = 1) {
+  const p = J.jug;
+  if (e.estado === 'prepara') {
+    if (e.t > CUERPO.prepara) { e.estado = 'muerde'; e.t = 0; e.dio = false; e.kbx += e.cx * CUERPO.impulso; e.kby += e.cy * CUERPO.impulso; }
+    return;
+  }
+  if (e.estado === 'muerde') {
+    if (!e.dio && e.t >= CUERPO.antes) {
+      e.dio = true;
+      const hx = e.x + e.cx * CUERPO.delante * T, hy = e.y + e.cy * CUERPO.delante * T;
+      if (Math.hypot(p.x - hx, (p.y - hy) * 1.2) < CUERPO.radio * T + p.hw + e.radio * 0.5) danarJugador(c.dano, e);
+      Sonido.sfx.zas();
+    }
+    if (e.t > CUERPO.golpe) { e.estado = 'anda'; e.t = 0; e.cd = 1 + Math.random() * 2; }
+    return;
+  }
+  if (!r) return;
+  if (lejos < CUERPO.alcance * T + e.radio && e.cd <= 0 && veJugador(e)) {
+    const a = Math.atan2(p.y - e.y, p.x - e.x);
+    e.estado = 'prepara'; e.t = 0; e.cx = Math.cos(a); e.cy = Math.sin(a); e.mira = e.cx >= 0 ? 1 : -1;
+    return;
+  }
+  // mientras espera el siguiente golpe se queda a 0,5–2 casillas
+  if (e.cd > 0 && lejos < 2 * T) { if (lejos < 1.2 * T) mover(e, -r.x * c.vel * 0.5 * dt, -r.y * c.vel * 0.5 * dt); return; }
+  mover(e, r.x * c.vel * ond * dt, r.y * c.vel * ond * dt);
+}
+// Las que no hacen daño al tocarlas (como en Core Keeper): solo con su ataque (las que saltan, al caer encima; las
+// que embisten, en la embestida).
+const SIN_CONTACTO = new Set(['repta', 'salta', 'lancea', 'seton', 'escupe', 'chaman', 'bruto']);
+
 // Sin turno: te rodea a media distancia, esperando hueco.
 function rodear(e, c, r, lejos, dt) {
   if (!e.giro) e.giro = Math.random() < 0.5 ? 1 : -1;
@@ -231,6 +267,7 @@ function actualizarCriaturas(dt) {
     if (e.veneno) { e.veneno.t -= dt; e.venT = (e.venT || 0) - dt; if (e.venT <= 0) { e.venT = 0.5; e.vida -= e.veneno.dano; numero(e.x, e.y, e.veneno.dano, '#9aff6a', 14); if (e.vida <= 0) morirCriatura(e); } if (e.veneno.t <= 0) e.veneno = null; }
     mover(e, e.kbx * dt, e.kby * dt);
     e.kbx *= Math.pow(0.001, dt); e.kby *= Math.pow(0.001, dt);
+    if (!e.alerta && e.vida < e.vidaMax && J.t - (e.golpeadoT ?? -99) > 5) e.vida = Math.min(e.vidaMax, e.vida + e.vidaMax * 0.1 * dt);
     if (e.aturdido > 0) { e.aturdido -= dt; continue; }
     if (e.reza && rezaGruto(e, Math.hypot(p.x - e.x, p.y - e.y))) continue;
     const lejos = Math.hypot(p.x - e.x, p.y - e.y);
@@ -245,11 +282,17 @@ function actualizarCriaturas(dt) {
     if (CONDUCTAS[c.conducta]) CONDUCTAS[c.conducta](e, c, r, lejos, dt);
     else switch (c.conducta) {
       case 'salta':
+        // como las babas de Core Keeper: a saltitos hacia ti y, a 3 casillas, se agachan 0,55 s y te saltan encima
+        // (0,45 s en el aire); el daño, al caerte encima
         if (e.z > 0 || e.vz > 0) {
           e.vz -= 420 * dt; e.z += e.vz * dt;
           if (e.saltoX !== undefined) mover(e, e.saltoX * dt, e.saltoY * dt);
-          if (e.z <= 0) { e.z = 0; e.vz = 0; e.t = 0; e.aplasta = 0.15; if (c.veneno) J.charcos.push({ x: e.x, y: e.y, t: 3.5, dano: c.dano * 0.6, tipo: 'veneno' }); }
-        } else if (e.t > (e.tipo === 'babosa_roja' ? 0.55 : 0.7) && r) { e.vz = 110; e.z = 0.01; e.saltoX = r.x * vel * 1.6; e.saltoY = r.y * vel * 1.6; }
+          if (e.z <= 0) { e.z = 0; e.vz = 0; e.t = 0; e.aplasta = 0.15; if (e.ataque) { e.ataque = false; e.cd = 0.4 + Math.random() * 0.5; } if (c.veneno) J.charcos.push({ x: e.x, y: e.y, t: 3.5, dano: c.dano * 0.6, tipo: 'veneno' }); }
+        } else if (e.estado === 'prepara') {
+          if (e.t > 0.55) { const d = Math.min(lejos, 3.5 * T) / 0.45; e.estado = 'anda'; e.ataque = true; e.vz = 94; e.z = 0.01; e.saltoX = e.cx * d; e.saltoY = e.cy * d; }
+        } else if (r && lejos < 3 * T && e.cd <= 0 && veJugador(e)) {
+          const a = Math.atan2(p.y - e.y, p.x - e.x); e.estado = 'prepara'; e.t = 0; e.cx = Math.cos(a); e.cy = Math.sin(a);
+        } else if (e.t > 0.7 && r) { e.vz = 70; e.z = 0.01; e.saltoX = r.x * vel * 0.9; e.saltoY = r.y * vel * 0.9; }
         e.aplasta = (e.aplasta || 0) - dt;
         break;
       case 'seton':
@@ -294,8 +337,8 @@ function actualizarCriaturas(dt) {
           else mover(e, r.x * vel * dt, r.y * vel * dt);
         }
         break;
-      default: // repta
-        if (r) { const ond = 0.75 + 0.25 * Math.sin(e.t * 8); mover(e, r.x * vel * ond * dt, r.y * vel * ond * dt); }
+      default: // repta: se arrastra ondulando y muerde como un caveling
+        cuerpoACuerpo(e, c, r, lejos, dt, 0.75 + 0.25 * Math.sin(e.t * 8));
     }
     }
     // separarse de las demás
@@ -309,7 +352,8 @@ function actualizarCriaturas(dt) {
       const dx = e.x - p.x, dy = (e.y - p.y) * 1.6, d = Math.hypot(dx, dy), min = e.radio + p.hw + 5;
       if (d < min && d > 0.01) mover(e, (dx / d) * (min - d) * 0.5, (dy / d) * (min - d) * 0.3);
     }
-    if ((e.z < 4 || c.vuela) && e.estado !== 'prepara' && e.estado !== 'escondida' && Math.abs(p.x - e.x) < e.radio + p.hw + 8 && Math.abs(p.y - e.y) < 10) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
+    const toca = SIN_CONTACTO.has(c.conducta) ? e.estado === 'carga' || (c.conducta === 'salta' && e.ataque && e.z > 0 && e.z < 8) : (e.z < 4 || c.vuela) && e.estado !== 'prepara' && e.estado !== 'escondida';
+    if (toca && Math.abs(p.x - e.x) < e.radio + p.hw + 8 && Math.abs(p.y - e.y) < 10) danarJugador(e.estado === 'carga' ? c.dano * 1.5 : c.dano, e);
   }
   // las que no saben de ti y se han quedado muy lejos se van (el mundo se renueva)
   J.enemigos = J.enemigos.filter((e) => e.vida > 0 && Math.hypot(e.x - p.x, e.y - p.y) < (e.alerta || e.fija !== undefined ? 36 : 26) * T);
