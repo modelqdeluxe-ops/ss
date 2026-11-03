@@ -744,6 +744,15 @@ const PIEZAS_CRI = (() => {
   // Calavera (Velador caído, Guardián): cráneo con cuencas y dos puntos de luz fría.
   function calavera(K, c, o = {}) {
     const hu = o.hueso || R.hueso, x = c[0] + 0.5, y = c[1] - 3.5, e = o.e || 1;
+    if (K.D.vista === 'ab') return K.pieza(c[2] + 2, () => { // de frente: las dos cuencas y la mandíbula debajo
+      const cx = c[0];
+      K.ovalo([cx, y], 3.4 * e, 3.4 * e, hu);
+      K.ovalo([cx, y + 2.8 * e], 2.2 * e, 1.4 * e, hu);
+      for (const ex of [-2, 0.6]) { for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) K.px(cx + ex * e + i, y - 0.6 * e + j, OSCURO, hu); K.px(cx + ex * e + (ex < 0 ? 1 : 0), y - 0.6 * e, (o.ojo || OJO.frio)[0], hu, true); }
+      for (let i = -1; i <= 1; i++) K.px(cx + i * e, y + 2.8 * e, i ? OSCURO : hu[4], hu);
+      K.px(cx - 1.6 * e, y - 2.4 * e, hu[4], hu);
+    });
+    if (K.D.vista === 'ar') return K.pieza(c[2] + 2, () => { K.ovalo([c[0], y], 3.4 * e, 3.4 * e, hu); K.px(c[0] - 1.6 * e, y - 2.4 * e, hu[4], hu); });
     K.pieza(c[2] + 2, () => {
       K.ovalo([x, y], 3.4 * e, 3.4 * e, hu);
       K.ovalo([x + 1.2 * e, y + 2.6 * e], 2.2 * e, 1.5 * e, hu); // la mandíbula
@@ -790,7 +799,7 @@ const PIEZAS_CRI = (() => {
 
   // Velador caído: esqueleto con túnica y alabarda. Al morir se desmonta (las piernas se quedan de pie).
   DEF.velador_caido = {
-    W: 60, H: 52, ox: 26, oy: 48, px: 14, yaw: 1.05, fuente: ANIM_ESQUELETO, zancada: 22,
+    W: 60, H: 52, ox: 26, oy: 48, px: 14, yaw: 1.05, vistas: true, fuente: ANIM_ESQUELETO, zancada: 22,
     prop: { pierna: 1, brazo: 1, hombros: 0.85, caderas: 0.8, encorvar: 0.15, cuello: 0.7, cadera: 0.39 },
     anims: con(ANDAR_HUMANO, {
       a: { clip: 'Walking_D_Skeletons', n: 8, bucle: true },
@@ -803,7 +812,11 @@ const PIEZAS_CRI = (() => {
       esqueletoDe(K);
       tunica(K, ['#06080e', '#141a2a', '#222c44', '#344264'], { largo: 0.7 });
       calavera(K, K.S.head);
-      K.pieza(K.S.head[2] + 1.5, () => { const h = K.S.head; K.poli([[h[0] - 4.5, h[1] - 5], [h[0] + 1, h[1] - 9.5], [h[0] + 3.5, h[1] - 6], [h[0] - 1, h[1] - 3], [h[0] - 4.5, h[1] + 1]], ['#06080e', '#141a2a', '#222c44', '#344264']); });
+      const capucha = ['#06080e', '#141a2a', '#222c44', '#344264'], h = K.S.head, vista = K.D.vista;
+      // la capucha: de lado, por detrás de la nuca; de frente, enmarca la calavera; de espaldas, la tapa
+      if (vista === 'ab') K.pieza(h[2] - 1.5, () => K.poli([[h[0] - 5.5, h[1] + 1], [h[0] - 5, h[1] - 6], [h[0], h[1] - 10], [h[0] + 5, h[1] - 6], [h[0] + 5.5, h[1] + 1]], capucha));
+      else if (vista === 'ar') K.pieza(h[2] + 3, () => K.poli([[h[0] - 5, h[1] + 1], [h[0] - 4.5, h[1] - 6], [h[0], h[1] - 9.5], [h[0] + 4.5, h[1] - 6], [h[0] + 5, h[1] + 1]], capucha));
+      else K.pieza(h[2] + 1.5, () => K.poli([[h[0] - 4.5, h[1] - 5], [h[0] + 1, h[1] - 9.5], [h[0] + 3.5, h[1] - 6], [h[0] - 1, h[1] - 3], [h[0] - 4.5, h[1] + 1]], capucha));
       // la alabarda: asta larga y hoja de hacha con pico
       const v = vara(K, 9, 16, R.madera, { grosor: 1 });
       K.pieza(v.z + 0.01, () => {
@@ -816,7 +829,7 @@ const PIEZAS_CRI = (() => {
 
   // Portador: cadáver de minero encorvado; de la espalda le sale un hongo enorme que le tapa la cabeza.
   DEF.seton = {
-    W: 52, H: 48, ox: 24, oy: 44, px: 13, yaw: 1.05, fuente: ANIM_ESQUELETO, zancada: 16,
+    W: 52, H: 48, ox: 24, oy: 44, px: 13, yaw: 1.05, vistas: true, fuente: ANIM_ESQUELETO, zancada: 16,
     prop: { pierna: 0.9, brazo: 1.05, hombros: 0.85, caderas: 0.85, encorvar: 0.55, cuello: 0.55, cadera: 0.39 },
     anims: con(ANDAR_HUMANO, {
       a: { clip: 'Walking_D_Skeletons', n: 8, bucle: true },
@@ -827,8 +840,9 @@ const PIEZAS_CRI = (() => {
       const muerto = ['#141418', '#2e2e36', '#4a4a56', '#6a6a78', '#8e8e9a'];
       cuerpo(K, { piel: muerto, tronco: ['#140c08', '#30200e', '#4e3418', '#6e4c26'], pierna: ['#10101a', '#20202e', '#363648', '#4c4c62'], pie: R.cuero });
       const h = K.S.head, ch = K.S.chest;
-      // la cara hundida (casi no se ve bajo el sombrero)
-      K.pieza(h[2] + 1, () => { K.ovalo([h[0] + 1.5, h[1] - 2], 2.8, 2.8, muerto); K.px(h[0] + 2, h[1] - 2.5, OSCURO, muerto); K.px(h[0] + 3.5, h[1] - 2.3, OSCURO, muerto); });
+      // la cara hundida (casi no se ve bajo el sombrero); de frente, centrada; de espaldas, no se ve
+      if (K.D.vista === 'ab') K.pieza(h[2] + 1, () => { K.ovalo([h[0], h[1] - 2], 2.8, 2.8, muerto); K.px(h[0] - 1, h[1] - 2.5, OSCURO, muerto); K.px(h[0] + 1, h[1] - 2.5, OSCURO, muerto); });
+      else if (K.D.vista !== 'ar') K.pieza(h[2] + 1, () => { K.ovalo([h[0] + 1.5, h[1] - 2], 2.8, 2.8, muerto); K.px(h[0] + 2, h[1] - 2.5, OSCURO, muerto); K.px(h[0] + 3.5, h[1] - 2.3, OSCURO, muerto); });
       // el hongo: tallo desde la espalda y un sombrero enorme con manchas, que le tapa la cabeza
       const c = [ch[0] - 1, ch[1] - 9];
       K.pieza(h[2] + 1.6, () => {
