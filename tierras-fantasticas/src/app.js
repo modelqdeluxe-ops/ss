@@ -730,17 +730,20 @@ export function createApp(env) {
       const uuid = l.recipient?.uuid;
       const rank = rankById.get(l.product.id);
       let q;
-      if (rank && uuid) {
-        const inCart = cartRank.get(uuid);
-        const current = inCart || (await store.getRank(uuid));
+      if (rank) {
+        // (3 nov 2026, el dueño: «los precios no los calcula bien el carrito») también sin saber aún quién es (sin el
+        // nombre escrito, «para ti»): dos rangos para el mismo jugador siempre se encadenan, como al cobrarlos
+        const who = uuid || 'self';
+        const inCart = cartRank.get(who);
+        const current = inCart || (uuid ? await store.getRank(uuid) : null);
         const owned = current ? rankById.get(current.rankId) : null;
         if (current && current.tier >= rank.tier) {
           q = inCart
-            ? { blocked: `${l.recipient.name} ya lleva ${owned?.name || 'un rango igual o superior'} en este carrito.`, code: 'rank_owned' }
+            ? { blocked: `${l.recipient?.name || 'Este jugador'} ya lleva ${owned?.name || 'un rango igual o superior'} en este carrito.`, code: 'rank_owned' }
             : { blocked: `Este jugador ya tiene ${owned?.name || 'un rango igual o superior'}. Solo puedes mejorar a un rango superior.`, code: 'rank_owned' };
         } else {
           q = { unit: owned ? Math.max(MIN_CHARGE, rank.price - owned.price) : rank.price, from: owned || null };
-          cartRank.set(uuid, { rankId: rank.id, tier: rank.tier });
+          cartRank.set(who, { rankId: rank.id, tier: rank.tier });
         }
       } else {
         q = uuid ? await quote(l.product, uuid) : { unit: l.product.price };

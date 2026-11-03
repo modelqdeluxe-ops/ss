@@ -13,6 +13,19 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (3 nov 2026, 3.ª ronda): los PRECIOS del carrito, siempre los del servidor (hecho)
+Queja del dueño: «los precios no los calcula bien el carrito». Medido en Chromium con 4 carritos (sin cuenta, dos
+rangos, Notch con Mortal, regalos): (1) sin el nombre escrito, dos rangos para ti salían a precio completo (Mortal +
+Mágico = 16,98) y al escribir el nombre bajaba a 11,99 (lo que se cobra: el segundo es una mejora); (2) el botón
+flotante sumaba el catálogo (16,98) mientras la ventana decía 11,99 (contaba un rango que ya tienes y no las mejoras);
+(3) una mejora salía a 7,00 sin decir por qué.
+- `priceLines` encadena los rangos del mismo jugador también sin saber aún quién es («self»).
+- El botón flotante pide el total al servidor (`refreshFabQuote`, el mismo cálculo que la ventana, con el cupón) y
+  mientras llega enseña el número de productos; la ventana enseña «Calculando…» en vez de un total de catálogo.
+- Cada línea con mejora enseña el precio del catálogo tachado y el de la mejora (`.cart-was`).
+- Comprobado: los 4 carritos cuadran (botón flotante = total = suma de líneas), en pesos desde México (46,98 USD =
+  874,53 MXN, con cupón 42,28 = 787,01, igual que el servidor) y 73 pruebas.
+
 ### Web (3 nov 2026, 2.ª ronda): el carrito SIN TOPES y con REGALOS PARA VARIOS JUGADORES en un solo pago (hecho)
 Queja del dueño tras la 1.ª ronda: «solo deja añadir 3 compras, solo deja añadir 1 rango… quiero que añada todo lo que yo
 quiera; y que se pueda como regalo: mandar varios regalos, subirlos al carrito, para enviarle a 4 jugadores distintos en

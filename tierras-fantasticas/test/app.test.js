@@ -2510,3 +2510,24 @@ test('el cupón se comprueba aunque el carrito tenga algo que el jugador ya tien
   assert.strictEqual(q.data.coupon.code, 'VERANO10');
   assert.deepStrictEqual([q.data.subtotal, q.data.discount], [priceOf('crate-oni'), Math.round(priceOf('crate-oni') / 10)]);
 });
+
+test('precios del carrito: dos rangos para ti se encadenan también antes de escribir el nombre (lo mismo que se cobra)', async () => {
+  // Sin nombre (aún no se sabe quién es): Mortal + Mágico = el precio de Mágico, como al pagar
+  const q = await quoteCart({ items: [{ productId: 'rango-magico' }, { productId: 'rango-mortal' }] });
+  assert.strictEqual(q.status, 200);
+  assert.deepStrictEqual(q.data.lines.map((l) => [l.productId, l.unit]), [
+    ['rango-mortal', priceOf('rango-mortal')],
+    ['rango-magico', priceOf('rango-magico') - priceOf('rango-mortal')],
+  ]);
+  assert.strictEqual(q.data.total, priceOf('rango-magico'));
+  // Con el nombre de alguien sin rango, lo mismo; y es lo que se cobra
+  await seen('Precio_Rangos');
+  const named = await quoteCart({ items: [{ productId: 'rango-magico' }, { productId: 'rango-mortal' }], username: 'Precio_Rangos' });
+  assert.strictEqual(named.data.total, q.data.total);
+  const { data } = await cartCheckout({ items: [{ productId: 'rango-magico' }, { productId: 'rango-mortal' }], username: 'Precio_Rangos' });
+  assert.strictEqual(sessionOf(data.id).amount_total, q.data.total);
+  // Lo mismo regalado a otro jugador (sin rango): también encadenado
+  const cookie = await register('Precio_Regala');
+  const gift = await quoteCart({ items: [{ productId: 'rango-magico', to: 'Precio_Rangos' }, { productId: 'rango-mortal', to: 'Precio_Rangos' }] }, { Cookie: cookie });
+  assert.strictEqual(gift.data.total, priceOf('rango-magico'));
+});
