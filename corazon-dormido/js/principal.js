@@ -483,6 +483,7 @@ function cuadroCriatura(e, c, A) {
   e.ax = e.x; e.ay = e.y;
   if (v > 0.04) { e.andaT = J.t; e.paso = (e.paso || 0) + Math.min(v, 4); }
   const nace = J.t - (e.nace ?? -9), D = CRI.DEF[t];
+  if (D.vistas && v > 0.04) e.vista = Math.abs(vy) > Math.abs(vx) * 1.3 ? (vy > 0 ? 'ab' : 'ar') : 'de';
   if (A.n && nace < 0.8) return fr('n', (nace / 0.8) * A.n.n);
   if (e.estado === 'escondida' && A.e) return fr('e', (J.t * 4) % A.e.n);
   if (e.estado === 'despierta' && A.d) return fr('d', Math.min(0.999, e.t / 0.8) * A.d.n);
@@ -497,8 +498,11 @@ function cuadroCriatura(e, c, A) {
   if ((e.estado === 'prepara' || e.estado === 'conjura') && A.p) return fr('p', Math.min(0.999, e.t / (PREPARA[c.conducta] || 0.5)) * A.p.n);
   if (A.g && (e.estado === 'carga' || e.estado === 'muerde')) return fr('g', Math.min(0.999, e.t / 0.3) * A.g.n);
   if (A.g && e.golpeT && J.t - e.golpeT < 0.45) return fr('g', ((J.t - e.golpeT) / 0.45) * A.g.n);
-  if (A.a && J.t - (e.andaT || -9) < 0.12) return fr('a', ((e.paso / (D.zancada || 20)) * A.a.n) % A.a.n);
-  return fr('q', ((J.t * (D.fpsQuieta || 5) + (e.x % 7)) % A.q.n));
+  // de frente o de espaldas si anda sobre todo hacia abajo o hacia arriba (como Core Keeper); de lado si no
+  const vista = D.vistas && e.vista && e.vista !== 'de' ? e.vista : null;
+  const frv = (a, k) => (vista && SPR[`${t}_${vista}_${a}0`] ? `${t}_${vista}_${a}${Math.max(0, Math.min(A[a].n - 1, Math.floor(k)))}` : fr(a, k));
+  if (A.a && J.t - (e.andaT || -9) < 0.12) return frv('a', ((e.paso / (D.zancada || 20)) * A.a.n) % A.a.n);
+  return frv('q', ((J.t * (D.fpsQuieta || 5) + (e.x % 7)) % A.q.n));
 }
 // Las de esqueleto ya se mueven solas: solo el retroceso del golpe y, las que no tienen «aparecer», salir del suelo.
 function animarEsqueleto(e, n, c) {

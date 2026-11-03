@@ -361,11 +361,19 @@ const CRI = (() => {
   const DEF = {};
   // Hornea una criatura y la apunta en el atlas: <tipo>_<anim><f> (y _luz). Los nombres viejos (<tipo>_0…3) quedan
   // como alias de estos cuadros.
+  // Como las criaturas de Core Keeper (ESTUDIO-CK.md), las que tienen D.vistas se ven también de frente (ab) y de
+  // espaldas (ar) al quedarse quietas y al andar: el mismo esqueleto girado (yaw) y el dibujo sabe qué vista toca
+  // (K.D.vista). Nombres: <tipo>_ab_<anim><cuadro> y <tipo>_ar_<anim><cuadro>.
+  const VISTAS = { ab: 0.3, ar: Math.PI - 0.3 };
   function hornear(tipo) {
     const D = DEF[tipo], hechos = [];
     for (const [anim, A] of Object.entries(D.anims)) for (let f = 0; f < A.n; f++) {
       const r = recortar(D, cuadro(D, anim, f)), nombre = `${tipo}_${anim}${f}`;
       hechos.push([nombre, r]);
+    }
+    if (D.vistas) for (const [v, yaw] of Object.entries(VISTAS)) {
+      const Dv = Object.assign({}, D, { yaw, vista: v });
+      for (const anim of ['q', 'a']) if (D.anims[anim]) for (let f = 0; f < D.anims[anim].n; f++) hechos.push([`${tipo}_${v}_${anim}${f}`, recortar(Dv, cuadro(Dv, anim, f))]);
     }
     return hechos;
   }

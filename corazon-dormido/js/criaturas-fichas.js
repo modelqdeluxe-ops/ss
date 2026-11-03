@@ -70,6 +70,8 @@ const PIEZAS_CRI = (() => {
   // Cabeza de gruto con máscara de cráneo, mirando a la derecha (3/4). c: el hueso de la cabeza en px. o: { e
   // (escala), hueso, capucha (rampa o 'hojas'), cuernos ('cabra' | 'toro'), pez, mandibula (rampa de hierro), ojo }
   function mascara(K, c, o = {}) {
+    if (K.D.vista === 'ab') return mascaraFrente(K, c, o);
+    if (K.D.vista === 'ar') return mascaraEspalda(K, c, o);
     const hu = o.hueso || R.hueso, e = o.e || 1, x = c[0] + 1 * e, y = c[1] - 3.5 * e, P = (dx, dy) => [x + dx * e, y + dy * e];
     const ojo = o.ojo || OJO.ambar;
     // lo de detrás: la capucha (de piel o de hojas) y los cuernos
@@ -112,10 +114,50 @@ const PIEZAS_CRI = (() => {
     if (o.cuernos === 'toro') K.pieza(c[2] + 2.2, () => { K.cap(P(1.5, -2.6), P(4.6, -3.6), 1.2 * e, 0.9 * e, hu); K.cap(P(4.6, -3.6), P(5.6, -6.4), 0.9 * e, 0.4 * e, hu); });
     K.puntos = Object.assign(K.puntos || {}, { cabeza: [x, y] });
   }
+  // La máscara de frente (mira a la cámara): el cráneo simétrico con las dos cuencas, el hocico hacia abajo y la
+  // capucha detrás asomando por los lados; los cuernos, a los dos lados.
+  function mascaraFrente(K, c, o = {}) {
+    const hu = o.hueso || R.hueso, e = o.e || 1, x = c[0], y = c[1] - 3.5 * e, P = (dx, dy) => [x + dx * e, y + dy * e];
+    const ojo = o.ojo || OJO.ambar;
+    K.pieza(c[2] - 1.5, () => {
+      if (o.capucha === 'hojas') for (const [dx, dy, a] of [[-3.6, -1.5, -0.4], [3.6, -1.5, 0.4], [0, -4.2, 0], [-4, 1.6, 0.6], [4, 1.6, -0.6]]) K.ovalo(P(dx, dy), 2.6 * e, 1.5 * e, R.musgo, { ang: a });
+      else K.ovalo(P(0, -0.5), 4.6 * e, 4.2 * e, o.capucha || R.pielBestia);
+      if (o.cuernos === 'cabra') for (const l of [-1, 1]) K.cap(P(l * 2.2, -3), P(l * 3.6, -8), 1.3 * e, 0.6 * e, hu);
+      if (o.cuernos === 'toro') for (const l of [-1, 1]) { K.cap(P(l * 3, -2.5), P(l * 6, -3.2), 1.2 * e, 0.9 * e, hu); K.cap(P(l * 6, -3.2), P(l * 6.4, -6), 0.9 * e, 0.4 * e, hu); }
+    });
+    K.pieza(c[2] + 2, () => {
+      K.ovalo(P(0, -0.3), 3.6 * e, 3.4 * e, hu); // el cráneo
+      if (o.pez) K.poli([P(-1, -3), P(0, -6.5), P(1, -3)], hu, { normal: () => [-0.4, -0.6] });
+      K.ovalo(P(0, 2.4), 2.1 * e, 1.7 * e, hu); // el hocico, hacia abajo
+      K.px(x - 0.8 * e, y + 2.6 * e, OSCURO, hu); K.px(x + 0.8 * e, y + 2.6 * e, OSCURO, hu); // los agujeros de la nariz
+      const ce = Math.max(2, Math.round(2 * e));
+      for (const ex of [-2.2, 0.4]) {
+        const ox = Math.round(x + ex * e), oy = Math.round(y - 0.8 * e);
+        for (let j = 0; j < ce; j++) for (let i = 0; i < ce; i++) K.px(ox + i, oy + j, OSCURO, hu);
+        K.px(ox + (ex < 0 ? ce - 1 : 0), oy, ojo[0], hu, true); K.px(ox + (ex < 0 ? 0 : ce - 1), oy + ce - 1, ojo[1], hu, true);
+      }
+      K.px(x - 2 * e, y - 2.6 * e, hu[4], hu); K.px(x - 1 * e, y - 3 * e, hu[4], hu);
+      if (o.mandibula) { const m = o.mandibula; K.poli([P(-2.4, 3), P(2.4, 3), P(2, 4.8), P(-2, 4.8)], m); for (const i of [-1, 1]) K.px(x + i * 1.2 * e, y + 3.8 * e, m[4] || m[3], m); }
+      else for (let i = -1; i <= 1; i++) K.px(x + i * e, y + 3.9 * e, i ? hu[3] : hu[4], hu);
+    });
+    K.puntos = Object.assign(K.puntos || {}, { cabeza: [x, y] });
+  }
+  // De espaldas: la capucha (o el cráneo por detrás) tapa la cabeza; los cuernos asoman.
+  function mascaraEspalda(K, c, o = {}) {
+    const hu = o.hueso || R.hueso, e = o.e || 1, x = c[0], y = c[1] - 3.5 * e, P = (dx, dy) => [x + dx * e, y + dy * e];
+    K.pieza(c[2] + 2, () => {
+      K.ovalo(P(0, -0.2), 3.6 * e, 3.4 * e, hu);
+      if (o.capucha === 'hojas') for (const [dx, dy, a] of [[-2.6, -1.4, -0.4], [2.6, -1.4, 0.4], [0, -2.8, 0], [-2.8, 1.6, 0.6], [2.8, 1.6, -0.6], [0, 1.4, 0]]) K.ovalo(P(dx, dy), 2.4 * e, 1.5 * e, R.musgo, { ang: a });
+      else K.ovalo(P(0, 0.2), 4.4 * e, 4.0 * e, o.capucha || R.pielBestia);
+      if (o.cuernos === 'cabra') for (const l of [-1, 1]) K.cap(P(l * 2.2, -3), P(l * 3.6, -8), 1.3 * e, 0.6 * e, hu);
+      if (o.cuernos === 'toro') for (const l of [-1, 1]) { K.cap(P(l * 3, -2.5), P(l * 6, -3.2), 1.2 * e, 0.9 * e, hu); K.cap(P(l * 6, -3.2), P(l * 6.4, -6), 0.9 * e, 0.4 * e, hu); }
+    });
+    K.puntos = Object.assign(K.puntos || {}, { cabeza: [x, y] });
+  }
   // La base de todos los grutos: el cuerpo, la máscara, el taparrabos y lo que lleva cada uno.
   function gruto(o) {
     return {
-      W: o.W || 56, H: o.H || 48, ox: o.ox || 24, oy: o.oy || 44, px: o.px || 13, yaw: 1.05, fuente: ANIM_ESQUELETO, prop: Object.assign({}, PROP_GRUTO, o.prop || {}),
+      W: o.W || 56, H: o.H || 48, ox: o.ox || 24, oy: o.oy || 44, px: o.px || 13, yaw: 1.05, vistas: true, fuente: ANIM_ESQUELETO, prop: Object.assign({}, PROP_GRUTO, o.prop || {}),
       anims: o.anims,
       dibujar(K) {
         const piel = o.piel || R.gruto, e = (o.mascara && o.mascara.e) || 1;
