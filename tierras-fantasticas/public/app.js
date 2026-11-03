@@ -1990,6 +1990,8 @@
   let dialogMode = 'single';
   let coupon = null;
   let quote = null;
+  // El último precio que dio el servidor para el carrito: las líneas lo enseñan mientras llega el nuevo
+  let lastQuote = null;
   let quoting = false;
   let quoteSeq = 0;
   let quoteTimer = null;
@@ -2009,10 +2011,14 @@
       total = quote.total;
       mxn = quote.mxn;
     } else if (dialogMode === 'cart') {
-      // Mientras llega el precio del servidor: el del catálogo
-      const lines = cartLines();
-      total = lines.reduce((a, l) => a + l.p.price * l.qty, 0);
-      mxn = rate ? lines.reduce((a, l) => a + Math.ceil(l.p.price * rate - 1e-9) * l.qty, 0) : null;
+      // (3 nov 2026) El total del carrito es siempre el del servidor (mejoras de rango, lo que ya tiene, el cupón):
+      // mientras llega, «Calculando…» y no un total de catálogo que luego cambia
+      $('#dialog-total').textContent = cart.length ? 'Calculando…' : formatPrice(0);
+      if ($('#pay-mp-mxn')) $('#pay-mp-mxn').textContent = '';
+      if ($('#pay-card-mxn')) $('#pay-card-mxn').textContent = '';
+      $('#dialog-upgrade').textContent = '';
+      $('#dialog-sum').hidden = true;
+      return;
     } else {
       const qty = qtyNow();
       total = unitPrice() * qty;
@@ -2319,11 +2325,40 @@
     fab.hidden = !n;
     document.body.classList.toggle('has-cart', n > 0);
     $('.cart-count', fab).textContent = n > 99 ? '99+' : String(n);
-    const lines = cartLines();
-    // (aproximado: lo tuyo con tu precio de mejora; el precio de verdad lo calcula el servidor al abrir el carrito)
-    const total = lines.reduce((a, l) => a + ((l.to ? null : ownedQuote(l.p)?.unit) ?? l.p.price) * l.qty, 0);
-    $('small', fab).textContent = lines.length ? formatPrice(total) : `${n} ${n === 1 ? 'producto' : 'productos'}`;
-    fab.setAttribute('aria-label', `Abrir el carrito: ${n} ${n === 1 ? 'producto' : 'productos'}${lines.length ? `, ${formatPrice(total)}` : ''}`);
+    // (3 nov 2026, el dueño: «los precios no los calcula bien el carrito») el total lo calcula el servidor, el mismo que
+    // enseña la ventana del carrito (antes aquí se sumaba el catálogo y no cuadraba con mejoras de rango ni con lo que ya
+    // se tiene). Mientras llega, el número de productos.
+    const known = sells && fabQuote.sig === cartSig() && fabQuote.total !== null;
+    if (sells && n && !known) refreshFabQuote();
+    const count = `${n} ${n === 1 ? 'producto' : 'productos'}`;
+    $('small', fab).textContent = known ? formatPrice(fabQuote.total) : count;
+    fab.setAttribute('aria-label', `Abrir el carrito: ${count}${known ? `, ${formatPrice(fabQuote.total)}` : ''}`);
+  }
+  // El total del botón flotante: lo mismo que pediría la ventana del carrito (tus productos con tu nombre, los regalos
+  // con el suyo, el cupón aplicado)
+  let fabQuote = { sig: '', total: null };
+  let fabTimer = null;
+  const selfName = () => (dialogMode === 'cart' && player?.name) || me.user?.name || storageGet('tf-username') || '';
+  const cartSig = () => JSON.stringify([cart, coupon?.code || '', cartHasSelf() ? selfName().toLowerCase() : '']);
+  function refreshFabQuote() {
+    clearTimeout(fabTimer);
+    fabTimer = setTimeout(async () => {
+      const sig = cartSig();
+      if (!cart.length) return;
+      try {
+        const res = await fetch('/api/cart/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: cartItems(), username: cartHasSelf() ? selfName() || undefined : undefined, coupon: coupon?.code }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || sig !== cartSig()) return;
+        fabQuote = { sig, total: data.total };
+        renderCartFab();
+      } catch {
+        /* sin conexión: se queda el número de productos */
+      }
+    }, 250);
   }
   function bumpFab() {
     if (!fab || calm) return;
@@ -2380,7 +2415,7 @@
       return;
     }
     const fromServer = new Map();
-    for (const l of quote?.lines || []) for (const k of l.keys || [`${l.productId}|`]) fromServer.set(k, l);
+    for (const l of (quote || lastQuote)?.lines || []) for (const k of l.keys || [`${l.productId}|`]) fromServer.set(k, l);
     const row = (c) => {
       const { p, qty } = c;
       const key = lineKey(c);
@@ -2402,7 +2437,7 @@
             ${note}
           </span>
           <span class="cart-side">
-            <b class="cart-price">${s?.blocked ? '—' : formatPrice(unit * qty)}</b>
+            <b class="cart-price">${s?.blocked ? '—' : `${unit !== p.price ? `<s class="cart-was" aria-label="Antes ${formatPrice(p.price * qty)}">${formatPrice(p.price * qty)}</s>` : ''}${formatPrice(unit * qty)}`}</b>
             <span class="cart-ctrl">
               ${max > 1 ? `<span class="cart-qty" role="group" aria-label="Cantidad de ${escapeHtml(p.name)}">
                 <button type="button" data-cart-dec="${k}" aria-label="Uno menos">−</button>
@@ -2530,6 +2565,11 @@
       showError(data.error || 'No pudimos calcular el precio.');
     } else {
       quote = data;
+      if (dialogMode === 'cart') {
+        lastQuote = data;
+        fabQuote = { sig: cartSig(), total: data.total };
+        renderCartFab();
+      }
       showError('');
       if (asked && data.couponError) {
         coupon = null;
@@ -2548,6 +2588,8 @@
     renderCartLines();
     updateTotal();
     setPayable();
+    // El cupón (o el nombre) puede haber cambiado: el botón flotante se pone al día
+    renderCartFab();
   }
 
   // --- Comprobar el jugador: la tienda solo vende a nombres que han entrado al servidor ---

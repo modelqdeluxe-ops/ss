@@ -8916,3 +8916,11 @@ body.has-cart .to-top {
   line-height: 1.25;
   white-space: normal;
 }
+
+/* Precio de mejora en el carrito: el del catálogo tachado delante (para que se vea por qué es menos) */
+.cart-was {
+  margin-right: 6px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 13px;
+}
