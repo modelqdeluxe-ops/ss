@@ -13,6 +13,17 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
 
+### Web (3 nov 2026, 4.ª ronda): cada rango se cobra según QUIEN LO RECIBE, y el carrito lo dice (hecho)
+El dueño: «si quiero comprar 2 rangos, ¿qué pasa? Hay compra por regalo y compra mía: debe identificar cuál es regalo y
+cuál es mía, si la persona a la que le regala ya tiene rango o no; si ambas personas no tienen rango, obvio que cobra
+completo». Ya era así (cada línea con su destinatario y su rango); lo que confundía era el ejemplo de la 3.ª ronda
+(«Mortal + Mágico = 11,99»: los dos para la MISMA persona). Ahora la línea lo explica (`upgradeInCart` en
+`/api/cart/quote`): «Amigo_A no tiene rango: precio completo», «Amigo_C ya tiene Mortal: pagas solo la diferencia»,
+«Ya tienes Mortal…», y solo dos rangos para la misma persona dicen «También llevas Mortal en este carrito…». El aviso
+de un regalo de un rango igual o menor dice el nombre («Ami ya tiene Mágico: solo se le puede regalar uno superior»).
+Prueba nueva (74): mío + regalo sin rango = los dos completos; regalo a quien tiene Mortal = la diferencia; 4 rangos
+para 4 personas, cada uno según la suya; y en Chromium el carrito de Notch (Mortal) con 4 rangos = 26,98.
+
 ### Web (3 nov 2026, 3.ª ronda): los PRECIOS del carrito, siempre los del servidor (hecho)
 Queja del dueño: «los precios no los calcula bien el carrito». Medido en Chromium con 4 carritos (sin cuenta, dos
 rangos, Notch con Mortal, regalos): (1) sin el nombre escrito, dos rangos para ti salían a precio completo (Mortal +
