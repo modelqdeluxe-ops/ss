@@ -9,8 +9,9 @@
 - Responde al dueño en español.
 - Juego para móvil **Corazón Dormido** (`corazon-dormido/`, al estilo de Core Keeper; no tiene que ver con TF Client): lee
   `corazon-dormido/README.md` antes de tocarlo y pruébalo con `node corazon-dormido/herramientas/probar.cjs <carpeta>`.
-  **La 0.8 (rehecho a calidad Core Keeper) está publicada; cómo se hizo y lo que queda por repasar, en
-  `corazon-dormido/CHECKPOINT-0.8.md`, y las reglas del arte en `corazon-dormido/ARTE.md`: léelos antes de seguir.**
+  **La 0.9 (construido como Core Keeper, estudiando sus archivos) es la última; lo hecho y lo que queda, en
+  `corazon-dormido/ESTUDIO-CK.md` (y la 0.8 en `CHECKPOINT-0.8.md`); las reglas del arte en `corazon-dormido/ARTE.md`:
+  léelos antes de seguir.**
   Cada push que toca `corazon-dormido/` compila el APK y sustituye el que descarga el dueño: los commits de trabajo
   sin terminar llevan `[skip ci]`. El dueño compró Core Keeper: lo que se ha sacado de sus archivos (medidas y
   números, nunca sus dibujos ni su código) está en `corazon-dormido/ESTUDIO-CK.md`.

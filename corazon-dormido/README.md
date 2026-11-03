@@ -5,7 +5,7 @@ propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art
 luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
-Estado: **versión 0.8.0, el arte a calidad Core Keeper**. Es un juego para **Android** (app nativa que lleva
+Estado: **versión 0.9.0, construido como Core Keeper**. Es un juego para **Android** (app nativa que lleva
 el juego dentro; va a la Play Store) que también se puede abrir en el navegador. Fantasía oscura: el mundo es el
 cuerpo de un dios muerto, Ásor, y su Corazón duerme enfermo de la Podre (la historia, la dirección de arte, el
 bestiario y los jefes están en **`LORE.md`**, que manda sobre todo lo demás). Mundo de 2048×2048 con la Selva
@@ -73,6 +73,19 @@ y para la música; vibra al recibir golpes. `js/app.js` es el puente con el jueg
   ese AAB es el que se sube a la Play Console (con «Firma de apps de Google Play»). Guarda `subida.jks` y sus
   contraseñas fuera del repo: sin ellas no se pueden subir actualizaciones.
 - Paquete: `com.corazondormido.juego` (se puede cambiar antes de la primera subida a la tienda, no después).
+
+## Lo nuevo de la 0.9.0
+
+Estudiados los archivos de Core Keeper (el dueño lo compró; `ESTUDIO-CK.md`: medidas y números, nada de sus dibujos):
+
+- **Personaje cuadro a cuadro**, como el suyo: celdas de 26×26 (13×20), 6 cuadros al andar, golpe en arco en 6,
+  herido, morir, usar, disparar y esquivar; armaduras por capas; la herramienta en la mano y la antorcha en la otra.
+- **Combate como Core Keeper**: las criaturas no hacen daño al tocarlas; preparan el golpe (0,35 s), se lanzan y
+  golpean delante y esperan 1–3 s; las babas se agachan y te saltan encima a 3 casillas; pasean y se paran 0,5–1 s y
+  se curan fuera de pelea.
+- **Babas nuevas**: gotas limpias que respiran, avanzan a saltitos, se estiran en el aire y se espachurran.
+- **Los grutos se ven de frente y de espaldas** al andar hacia abajo o hacia arriba.
+- **Paredes como las suyas**: la parte de arriba es una masa negra con un marco del material donde da al suelo.
 
 ## Lo nuevo de la 0.8.0
 

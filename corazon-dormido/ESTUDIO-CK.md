@@ -75,3 +75,19 @@ nosotros (ver `ARTE.md`).
    curarse fuera de pelea.
 4. Paredes con la tapa negra y el marco, suelos con borde oscuro por zona y autotile.
 5. Objetos de una casilla con cuatro orientaciones y el fuego en una capa animada.
+
+## Hecho en la 0.9.0
+- Personaje cuadro a cuadro (`js/personaje-px.js`, `PJ_PX`): sustituye al esqueleto (`fuentePJ()` en personaje.js).
+- Ataque cuerpo a cuerpo de las criaturas con sus tiempos y sin daño por contacto (`js/criaturas.js`:
+  `cuerpoACuerpo`, `SIN_CONTACTO`), babas que saltan encima, paseo y curación con sus números.
+- Babas cuadro a cuadro (`criaturas-fichas.js`, `baba` y `BABA_CUADROS`); el sapo sigue con el esqueleto (`babaEsq`).
+- Vistas de frente y de espaldas (`D.vistas`, `CRI.hornear`: `<tipo>_ab_*` y `<tipo>_ar_*`) en los grutos, con la
+  máscara de frente y de espaldas; el juego elige la vista por hacia dónde anda (`principal.js`, `cuadroCriatura`).
+- Paredes: tapa negra con marco de 3 px (`arte.js`, `muroArriba`; `gl.js`, tapa 0,8).
+
+## Lo que queda (por orden)
+1. Las demás criaturas con vistas de frente y espaldas (gusanos, sanguijuela, necrófago, velados…).
+2. Los ataques de las criaturas también de frente y de espaldas (ahora solo de lado).
+3. Suelos con el borde oscuro de cada zona y objetos con cuatro orientaciones.
+4. Leer el código del juego (`Pug.Other.dll`) para las fórmulas del jugador (velocidad, picar, empuje): hace falta
+   permiso para instalar el descompilador de .NET.
