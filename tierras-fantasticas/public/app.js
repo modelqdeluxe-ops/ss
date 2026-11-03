@@ -2423,11 +2423,21 @@
       const unit = s?.unit ?? p.price;
       const max = p.maxQuantity || 10;
       const kind = p.category === 'crates' ? 'Crate' : CATEGORY_LABEL[p.category] || p.category;
-      const note = s?.blocked
-        ? `<span class="cart-note bad">${escapeHtml(s.blocked)}</span>`
-        : s?.upgradeFrom
-          ? `<span class="cart-note">Mejora desde ${escapeHtml(s.upgradeFrom.replace(/^Rango\s+/i, ''))}: pagas la diferencia</span>`
-          : '';
+      // (3 nov 2026, el dueño: «debe saber identificar cuál es regalo y cuál es mía, si la persona a la que le regala ya
+      // tiene rango o no») cada rango se cobra según quien lo recibe, y la línea lo dice
+      const from = s?.upgradeFrom ? escapeHtml(s.upgradeFrom.replace(/^Rango\s+/i, '')) : '';
+      const who = c.to ? escapeHtml(c.to) : '';
+      let why = '';
+      if (s?.upgradeFrom && s.upgradeInCart) {
+        why = c.to
+          ? `También le regalas ${from} en este carrito: este le sube desde ${from} y pagas solo la diferencia.`
+          : `También llevas ${from} en este carrito: este te sube desde ${from} y pagas solo la diferencia.`;
+      } else if (s?.upgradeFrom) {
+        why = c.to ? `${who} ya tiene ${from}: pagas solo la diferencia.` : `Ya tienes ${from}: pagas solo la diferencia.`;
+      } else if (s && !s.blocked && p.category === 'rangos') {
+        why = c.to ? `${who} no tiene rango: precio completo.` : cartHasSelf() && player ? 'No tienes rango: precio completo.' : '';
+      }
+      const note = s?.blocked ? `<span class="cart-note bad">${escapeHtml(s.blocked)}</span>` : why ? `<span class="cart-note${s?.upgradeFrom ? '' : ' plain'}">${why}</span>` : '';
       const k = escapeHtml(key);
       return `<li class="cart-line${s?.blocked ? ' is-blocked' : ''}"${themeAttr(p) || rankAttr(p)}>
           <span class="cart-img">${p.image ? img(p.image, '') : ''}</span>

@@ -740,9 +740,13 @@ export function createApp(env) {
         if (current && current.tier >= rank.tier) {
           q = inCart
             ? { blocked: `${l.recipient?.name || 'Este jugador'} ya lleva ${owned?.name || 'un rango igual o superior'} en este carrito.`, code: 'rank_owned' }
-            : { blocked: `Este jugador ya tiene ${owned?.name || 'un rango igual o superior'}. Solo puedes mejorar a un rango superior.`, code: 'rank_owned' };
+            : l.gift
+              ? { blocked: `${l.recipient.name} ya tiene ${owned?.name || 'un rango igual o superior'}: solo se le puede regalar un rango superior.`, code: 'rank_owned' }
+              : { blocked: `Este jugador ya tiene ${owned?.name || 'un rango igual o superior'}. Solo puedes mejorar a un rango superior.`, code: 'rank_owned' };
         } else {
-          q = { unit: owned ? Math.max(MIN_CHARGE, rank.price - owned.price) : rank.price, from: owned || null };
+          // fromCart: la mejora es desde otro rango que va en este mismo carrito para el mismo jugador (no desde el que ya
+          // tiene en el servidor)
+          q = { unit: owned ? Math.max(MIN_CHARGE, rank.price - owned.price) : rank.price, from: owned || null, fromCart: Boolean(inCart && owned) };
           cartRank.set(who, { rankId: rank.id, tier: rank.tier });
         }
       } else {
@@ -755,6 +759,7 @@ export function createApp(env) {
         l.unit = q.unit;
         l.line = q.unit * l.quantity;
         l.from = q.from || null;
+        l.fromCart = Boolean(q.fromCart);
       }
     }
     return { lines };
@@ -1578,6 +1583,8 @@ export function createApp(env) {
           unit: l.unit,
           line: l.line,
           upgradeFrom: l.from?.name || null,
+          // (3 nov 2026) la mejora es desde un rango que va en este carrito (true) o desde el que ya tiene (false)
+          upgradeInCart: l.fromCart || false,
           blocked: l.blocked,
           to: l.recipient?.name || l.to || null,
           gift: l.gift,

@@ -2531,3 +2531,63 @@ test('precios del carrito: dos rangos para ti se encadenan también antes de esc
   const gift = await quoteCart({ items: [{ productId: 'rango-magico', to: 'Precio_Rangos' }, { productId: 'rango-mortal', to: 'Precio_Rangos' }] }, { Cookie: cookie });
   assert.strictEqual(gift.data.total, priceOf('rango-magico'));
 });
+
+test('rangos en el carrito: cada uno se cobra según QUIEN LO RECIBE (lo mío con mi rango, cada regalo con el de su jugador)', async () => {
+  received.length = 0;
+  await seen('Yo_SinRango', 'Ami_SinRango', 'Ami_ConMortal', 'Ami_ConMagico');
+  // Ami_ConMortal ya tiene Mortal y Ami_ConMagico, Mágico
+  await pay(await checkout({ productId: 'rango-mortal', username: 'Ami_ConMortal' }));
+  await pay(await checkout({ productId: 'rango-magico', username: 'Ami_ConMagico' }));
+  const cookie = await register('Yo_SinRango');
+  const price = async (items) => {
+    const q = await quoteCart({ items, username: 'Yo_SinRango' }, { Cookie: cookie });
+    assert.strictEqual(q.status, 200, JSON.stringify(q.data));
+    return q.data;
+  };
+  const M = priceOf('rango-mortal');
+  const G = priceOf('rango-magico');
+  const I = priceOf('rango-inmortal');
+  // Un rango para mí y otro de regalo para alguien sin rango: los dos completos (son dos personas)
+  let q = await price([{ productId: 'rango-mortal' }, { productId: 'rango-magico', to: 'Ami_SinRango' }]);
+  assert.deepStrictEqual(q.lines.map((l) => [l.productId, l.to, l.gift, l.unit, l.upgradeFrom]), [
+    ['rango-mortal', 'Yo_SinRango', false, M, null],
+    ['rango-magico', 'Ami_SinRango', true, G, null],
+  ]);
+  assert.strictEqual(q.total, M + G);
+  // El mismo rango para mí y de regalo: los dos completos
+  q = await price([{ productId: 'rango-magico' }, { productId: 'rango-magico', to: 'Ami_SinRango' }]);
+  assert.strictEqual(q.total, G * 2);
+  // Regalo a quien ya tiene Mortal: paga la diferencia (desde SU rango), y lo mío sigue completo
+  q = await price([{ productId: 'rango-magico' }, { productId: 'rango-magico', to: 'Ami_ConMortal' }]);
+  const regalo = q.lines.find((l) => l.to === 'Ami_ConMortal');
+  assert.deepStrictEqual([regalo.unit, regalo.upgradeFrom, regalo.upgradeInCart], [G - M, 'Rango Mortal', false]);
+  assert.strictEqual(q.lines.find((l) => !l.gift).unit, G);
+  // Regalo de un rango igual o menor al que ya tiene: bloqueado y dice quién
+  q = await price([{ productId: 'rango-inmortal', to: 'Ami_ConMagico' }]);
+  assert.match(q.lines[0].blocked, /Ami_ConMagico ya tiene Rango Mágico/);
+  // Cuatro rangos para cuatro personas en un pago: cada uno según la suya
+  q = await price([
+    { productId: 'rango-inmortal' },
+    { productId: 'rango-inmortal', to: 'Ami_SinRango' },
+    { productId: 'rango-inmortal', to: 'Ami_ConMortal' },
+    { productId: 'rango-mortal', to: 'Ami_ConMagico' },
+  ]);
+  assert.deepStrictEqual(q.lines.map((l) => [l.to, l.unit]).sort(), [
+    ['Ami_ConMagico', null],
+    ['Ami_ConMortal', I - M],
+    ['Ami_SinRango', I],
+    ['Yo_SinRango', I],
+  ].sort());
+  // Solo dos rangos para la MISMA persona se encadenan (el segundo sube desde el primero, como comprarlos seguidos)
+  q = await price([{ productId: 'rango-mortal', to: 'Ami_SinRango' }, { productId: 'rango-magico', to: 'Ami_SinRango' }]);
+  assert.deepStrictEqual(q.lines.map((l) => [l.unit, l.upgradeInCart]), [[M, false], [G - M, true]]);
+  // Y se cobra igual: el mío completo y el regalo completo
+  const { data } = await cartCheckout({ items: [{ productId: 'rango-mortal' }, { productId: 'rango-magico', to: 'Ami_SinRango' }], username: 'Yo_SinRango' }, { cookie });
+  assert.strictEqual(sessionOf(data.id).amount_total, M + G);
+  await pay(data.id);
+  await serverDelivers('Yo_SinRango', 'Ami_SinRango');
+  assert.ok(received.includes('lp user Yo_SinRango parent set mortal'));
+  assert.ok(received.includes('lp user Ami_SinRango parent set magico'));
+  assert.strictEqual((await (await get('/api/player/Yo_SinRango')).json()).rank.id, 'rango-mortal');
+  assert.strictEqual((await (await get('/api/player/Ami_SinRango')).json()).rank.id, 'rango-magico');
+});

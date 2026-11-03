@@ -8924,3 +8924,8 @@ body.has-cart .to-top {
   font-weight: 600;
   font-size: 13px;
 }
+
+/* «Amigo_A no tiene rango: precio completo»: la explicación neutra (sin el tono de aviso) */
+.cart-note.plain {
+  color: var(--muted);
+}
