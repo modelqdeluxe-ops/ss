@@ -64,8 +64,31 @@
         ? 'Gratis'
         : new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount / 100);
     $('d-user').textContent = order.gift ? `${order.username} · regalo de ${order.gift.from}` : order.username;
-    $('d-product').textContent = (order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product) + (order.upgradeFrom ? ` (mejora desde ${order.upgradeFrom})` : '');
-    $('d-total').textContent = total;
+    if (order.cart && Array.isArray(order.items)) {
+      // (3 nov 2026) el carrito: todos sus productos, pagados en un solo pago
+      $('d-product-label').textContent = 'Productos';
+      $('d-product').replaceChildren(
+        ...order.items.map((it) => {
+          const line = document.createElement('span');
+          line.className = 'receipt-line';
+          line.textContent = `${it.product}${it.quantity > 1 ? ` ×${it.quantity}` : ''}${it.upgradeFrom ? ` (mejora desde ${it.upgradeFrom})` : ''}`;
+          return line;
+        }),
+      );
+    } else {
+      $('d-product').textContent = (order.quantity > 1 ? `${order.product} ×${order.quantity}` : order.product) + (order.upgradeFrom ? ` (mejora desde ${order.upgradeFrom})` : '');
+    }
+    const usd = (c) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
+    $('d-total').textContent = order.coupon?.discount ? `${total} · cupón ${order.coupon.code} (−${usd(order.coupon.discount)})` : total;
+    // Pagado: el carrito de este navegador ya no hace falta
+    if (order.cart && PAID.includes(order.status)) {
+      try {
+        localStorage.removeItem('tf-cart');
+      } catch {
+        // sin almacenamiento
+      }
+      window.dispatchEvent(new Event('tf-cart-changed'));
+    }
     $('d-delivery').textContent = deliveryText[order.status] || order.status;
     $('details').hidden = false;
     if (order.discord) {

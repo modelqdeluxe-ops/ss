@@ -49,6 +49,26 @@
     .tests { margin-top: 10px; max-height: 320px; overflow-y: auto; display: grid; gap: 6px; }
     .test { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
     .test .grow { flex: 1; min-width: 0; }
+    /* Cupones de descuento */
+    .coupon-form { display: grid; gap: 10px; margin-top: 4px; }
+    .coupon-form .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+    .coupon-form .f { display: grid; gap: 4px; margin: 0; font-size: 13px; color: var(--dim); }
+    .coupon-form .f input, .coupon-form .f select { width: 100%; flex: none; }
+    .coupon-form .f i { font-style: normal; opacity: .8; }
+    .coupon-form .f .with { display: flex; gap: 6px; }
+    .coupon-form .f .with input { flex: 1 1 auto; min-width: 0; }
+    select { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; }
+    .check { display: flex !important; align-items: center; gap: 8px; margin: 0 !important; color: var(--text); cursor: pointer; }
+    .check input { flex: none; width: 18px; height: 18px; }
+    .coupon-form .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .coupons { margin-top: 12px; display: grid; gap: 6px; }
+    .coupon { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+    .coupon .code { font: 600 15px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--gold); letter-spacing: .5px; }
+    .coupon .grow { flex: 1 1 260px; min-width: 0; }
+    .coupon .state { font-size: 12px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); }
+    .coupon .state.on { border-color: var(--green); color: #7fd18a; }
+    .coupon .state.off { border-color: var(--red); color: #f08a8d; }
+    .coupon.is-off { opacity: .75; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -76,6 +96,42 @@
         <input id="testFilter" type="search" autocomplete="off" placeholder="Buscar producto (rango, crate, pack, efecto, skill…)">
       </div>
       <div id="testList" class="tests"></div>
+    </section>
+    <section class="block" id="couponsBlock">
+      <label for="cCode">Cupones de descuento <span class="dim">(el jugador lo escribe al pagar, en la compra de un producto o en el carrito; el descuento sale del precio en dólares y el total con cupón nunca baja de <span id="cMinTotal">1,00 USD</span>, lo mínimo que se puede cobrar con tarjeta, PayPal y Mercado Pago. Para dar algo gratis, usa «Test» de arriba)</span></label>
+      <form id="couponForm" class="coupon-form" novalidate>
+        <div class="grid">
+          <label class="f"><span>Código</span>
+            <span class="with"><input id="cCode" type="text" maxlength="24" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="VERANO10" required><button type="button" id="cRandom" title="Inventar un código">Generar</button></span>
+          </label>
+          <label class="f"><span>Tipo de descuento</span>
+            <select id="cKind"><option value="percent">Porcentaje (%)</option><option value="amount">Cantidad fija (USD)</option></select>
+          </label>
+          <label class="f"><span id="cValueLabel">Porcentaje (1 a 99)</span>
+            <input id="cValue" type="text" inputmode="decimal" autocomplete="off" placeholder="10" required>
+          </label>
+        </div>
+        <div class="grid">
+          <label class="f"><span>Usos máximos <i>(vacío = ilimitados)</i></span>
+            <input id="cMax" type="text" inputmode="numeric" autocomplete="off" placeholder="Ilimitados">
+          </label>
+          <label class="f"><span>Compra mínima en USD <i>(opcional)</i></span>
+            <input id="cMin" type="text" inputmode="decimal" autocomplete="off" placeholder="Sin mínimo">
+          </label>
+          <label class="f"><span>Caduca <i>(opcional; vale todo ese día)</i></span>
+            <input id="cExp" type="date">
+          </label>
+        </div>
+        <label class="f"><span>Nota para el staff <i>(opcional, no la ve el jugador)</i></span>
+          <input id="cNote" type="text" maxlength="80" autocomplete="off" placeholder="Sorteo de Discord, streamer…">
+        </label>
+        <div class="actions">
+          <label class="check"><input type="checkbox" id="cPer"> Un solo uso por jugador</label>
+          <span class="grow"></span>
+          <button class="main" type="submit">Crear cupón</button>
+        </div>
+      </form>
+      <div id="couponList" class="coupons"></div>
     </section>
     <div class="bar">
       <span class="grow">Últimos pedidos. «Reembolsar» quita del servidor lo entregado (rango, objetos) y sus roles de Discord. El dinero, si lo hubo, se devuelve desde Stripe o PayPal. «Pruebas» descarga el expediente (PDF, en inglés y español) para responder una disputa o un contracargo.</span>
@@ -127,11 +183,12 @@
       $('login').hidden = true;
       $('panel').hidden = false;
       loadCatalog();
+      loadCoupons();
       $('rows').innerHTML = orders.length
         ? orders.map((o) => `<tr>
             <td class="dim">${esc(new Date(o.createdAt).toLocaleString('es'))}</td>
             <td>${esc(o.username)}</td>
-            <td>${esc(o.product)}<div class="dim">${esc(o.id)}</div></td>
+            <td>${esc(o.product)}<div class="dim">${esc(o.id)}${o.cartId ? ` · en el carrito ${esc(o.cartId)}` : ''}${o.coupon ? ` · cupón ${esc(o.coupon.code)} (−${esc(money(o.coupon.discount, 'usd'))})` : ''}</div></td>
             <td>${esc(money(o.amount, o.currency))}${o.amount ? `<div class="dim">${esc(o.method)}</div>` : ''}</td>
             <td class="tag ${o.refunded ? 'refunded' : ''}">${esc(o.refunded ? o.refunded[0].toUpperCase() + o.refunded.slice(1) : STATUS[o.status] || o.status)}${o.status === 'queued' && !o.refunded ? '<div class="dim">esperando a que el servidor lo entregue</div>' : ''}${o.error ? `<div class="dim">${esc(o.error)}</div>` : ''}</td>
             <td>${o.refundable ? `<button class="refund" data-id="${esc(o.id)}" data-what="${esc(`${o.product} de ${o.username}`)}">Reembolsar</button>` : ''}${o.disputable ? ` <button class="dispute" data-id="${esc(o.id)}" title="Expediente en PDF para responder una disputa o un contracargo">Pruebas</button>` : ''}</td>
@@ -210,6 +267,105 @@
     }
   });
   $('logout').addEventListener('click', () => { logout(); show(''); });
+
+  // --- Cupones de descuento (3 nov 2026) ---
+  const fmtDay = (iso) => new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City' });
+  function couponRow(c) {
+    const off = !c.active || c.expired || c.exhausted;
+    const state = c.expired ? 'Caducado' : c.exhausted ? 'Agotado' : c.active ? 'Activo' : 'Pausado';
+    const facts = [
+      `${c.used} ${c.used === 1 ? 'uso' : 'usos'}${c.maxUses ? ` de ${c.maxUses}` : ''}${c.reserved ? ` (+${c.reserved} pagando ahora)` : ''}`,
+      c.perPlayer ? 'uno por jugador' : '',
+      c.minTotal ? `compra mínima ${money(c.minTotal, 'usd')}` : '',
+      c.expiresAt ? `${c.expired ? 'caducó' : 'caduca'} el ${fmtDay(c.expiresAt)}` : 'no caduca',
+      c.note ? `«${c.note}»` : '',
+    ].filter(Boolean).join(' · ');
+    return `<div class="coupon ${off ? 'is-off' : ''}">
+      <span class="code">${esc(c.code)}</span>
+      <b>−${esc(c.label)}</b>
+      <span class="state ${off ? 'off' : 'on'}">${esc(state)}</span>
+      <span class="grow dim">${esc(facts)}</span>
+      <button type="button" data-copy="${esc(c.code)}" title="Copiar el código">Copiar</button>
+      ${c.expired ? '' : `<button type="button" data-toggle="${esc(c.code)}" data-active="${c.active ? '1' : ''}">${c.active ? 'Pausar' : 'Activar'}</button>`}
+      <button type="button" class="refund" data-delete="${esc(c.code)}">Borrar</button>
+    </div>`;
+  }
+  async function loadCoupons() {
+    try {
+      const { coupons, minTotal } = await api('/api/staff/coupons');
+      if (minTotal) $('cMinTotal').textContent = `${(minTotal / 100).toFixed(2).replace('.', ',')} USD`;
+      $('couponList').innerHTML = coupons.length ? coupons.map(couponRow).join('') : '<span class="dim">Aún no hay cupones.</span>';
+    } catch (err) {
+      $('couponList').innerHTML = `<span class="dim">${esc(err.message)}</span>`;
+    }
+  }
+  function setKind() {
+    const pct = $('cKind').value === 'percent';
+    $('cValueLabel').textContent = pct ? 'Porcentaje (1 a 99)' : 'Cantidad en USD';
+    $('cValue').placeholder = pct ? '10' : '5.00';
+  }
+  $('cKind').addEventListener('change', setKind);
+  $('cCode').addEventListener('input', () => {
+    const v = $('cCode').value.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (v !== $('cCode').value) $('cCode').value = v;
+  });
+  $('cRandom').addEventListener('click', () => {
+    const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const part = [...crypto.getRandomValues(new Uint8Array(6))].map((b) => abc[b % abc.length]).join('');
+    $('cCode').value = `TF-${part}`;
+  });
+  $('couponForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.submitter || $('couponForm').querySelector('button[type="submit"]');
+    const body = {
+      code: $('cCode').value.trim(),
+      kind: $('cKind').value,
+      value: $('cValue').value.trim(),
+      maxUses: $('cMax').value.trim(),
+      minTotal: $('cMin').value.trim(),
+      expiresAt: $('cExp').value,
+      perPlayer: $('cPer').checked,
+      note: $('cNote').value.trim(),
+    };
+    btn.disabled = true;
+    try {
+      const { coupon } = await api('/api/staff/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      $('couponForm').reset();
+      setKind();
+      await loadCoupons();
+      show(`Cupón ${coupon.code} creado. Pásaselo a los jugadores: lo escriben al pagar.`, 'ok');
+    } catch (err) {
+      show(err.message, 'err');
+    }
+    btn.disabled = false;
+  });
+  $('couponList').addEventListener('click', async (e) => {
+    const copy = e.target.closest('button[data-copy]');
+    if (copy) {
+      try {
+        await navigator.clipboard.writeText(copy.dataset.copy);
+        show(`Copiado: ${copy.dataset.copy}`, 'ok');
+      } catch {
+        show(`El código es ${copy.dataset.copy}`, 'ok');
+      }
+      return;
+    }
+    const toggle = e.target.closest('button[data-toggle]');
+    const del = e.target.closest('button[data-delete]');
+    if (!toggle && !del) return;
+    const code = (toggle || del).dataset.toggle || (toggle || del).dataset.delete;
+    if (del && !confirm(`¿Borrar el cupón ${code}?\n\nDeja de valer al momento. Los pedidos que ya lo usaron siguen diciendo qué cupón llevaron. Si solo quieres que deje de valer un tiempo, usa «Pausar».`)) return;
+    (toggle || del).disabled = true;
+    try {
+      if (del) await api(`/api/staff/coupons/${encodeURIComponent(code)}`, { method: 'DELETE' });
+      else await api(`/api/staff/coupons/${encodeURIComponent(code)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !toggle.dataset.active }) });
+      await loadCoupons();
+      show(del ? `Cupón ${code} borrado.` : toggle.dataset.active ? `Cupón ${code} pausado: ya no vale hasta que lo actives.` : `Cupón ${code} activado.`, 'ok');
+    } catch (err) {
+      (toggle || del).disabled = false;
+      show(err.message, 'err');
+    }
+  });
   $('rows').addEventListener('click', async (e) => {
     // (30 oct 2026) el expediente para responder una disputa: se descarga en PDF
     const pdfBtn = e.target.closest('button.dispute');

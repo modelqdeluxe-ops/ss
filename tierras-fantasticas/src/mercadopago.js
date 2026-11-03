@@ -76,23 +76,24 @@ export class MercadoPago {
   }
 
   // La «preferencia»: lo que se cobra y a dónde vuelve el comprador. init_point es la página de pago.
-  createPreference({ orderId, title, description, pictureUrl, quantity, unitPrice, currency, successUrl, failureUrl, pendingUrl, notificationUrl, statement }) {
+  // (3 nov 2026) «items» ([{ id, title, description, pictureUrl, quantity, unitPrice }]) cobra varios productos de una
+  // vez (el carrito); si no, la línea única de siempre.
+  createPreference({ orderId, title, description, pictureUrl, quantity, unitPrice, currency, successUrl, failureUrl, pendingUrl, notificationUrl, statement, items }) {
+    const lines = items?.length ? items : [{ id: orderId, title, description, pictureUrl, quantity, unitPrice }];
     return this.request(
       'POST',
       '/checkout/preferences',
       {
-        items: [
-          {
-            id: orderId,
-            title: title.slice(0, 250),
-            description: (description || '').slice(0, 250),
-            ...(pictureUrl ? { picture_url: pictureUrl } : {}),
-            category_id: 'virtual_goods',
-            quantity,
-            currency_id: currency,
-            unit_price: unitPrice,
-          },
-        ],
+        items: lines.map((it) => ({
+          id: it.id,
+          title: it.title.slice(0, 250),
+          description: (it.description || '').slice(0, 250),
+          ...(it.pictureUrl ? { picture_url: it.pictureUrl } : {}),
+          category_id: 'virtual_goods',
+          quantity: it.quantity,
+          currency_id: currency,
+          unit_price: it.unitPrice,
+        })),
         external_reference: orderId,
         back_urls: { success: successUrl, failure: failureUrl, pending: pendingUrl },
         auto_return: 'approved',

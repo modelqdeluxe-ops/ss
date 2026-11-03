@@ -17,6 +17,7 @@ import { hashPassword, verifyPassword } from './password.js';
 import { createMailer, mailHtml, fieldsText } from './mail.js';
 import { receiptPdf, receiptRows, money, refundPolicyFor, disputeFacts, disputePdf, stripeEvidence } from './receipt.js';
 import { toBase64 } from './pdf.js';
+import { normalizeCode, couponFromInput, couponProblem, couponDiscount, couponLabel, allocate, MIN_TOTAL as COUPON_MIN_TOTAL } from './coupons.js';
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 const ORDER_ID_RE = /^[A-Z0-9]{5,40}$/;
@@ -25,6 +26,8 @@ const PASSWORD_MAX = 128;
 // La sesión dura 60 días desde la última visita.
 const SESSION_DAYS = 60;
 const MAX_QUANTITY = 10;
+// (3 nov 2026) El carrito: como mucho tantos productos distintos en un mismo pago
+const CART_MAX_LINES = 20;
 // Stripe no cobra menos de 0,50 (en USD/EUR); una mejora de rango nunca baja de aquí.
 const MIN_CHARGE = 50;
 const SESSION_COOKIE = 'tf_session';
@@ -218,10 +221,13 @@ async function readJson(request) {
 // Solo permitimos volver a rutas de esta misma web.
 const safeReturn = (value) => (typeof value === 'string' && /^\/(?!\/)[\w\-./?=&%]*$/.test(value) ? value : '/');
 
-function orderId() {
+function orderId(prefix = 'TF') {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return `TF${[...crypto.getRandomValues(new Uint8Array(16))].map((b) => alphabet[b % alphabet.length]).join('')}`;
+  return `${prefix}${[...crypto.getRandomValues(new Uint8Array(16))].map((b) => alphabet[b % alphabet.length]).join('')}`;
 }
+// El carrito es CART + 16 letras; sus pedidos, el número del carrito + 01, 02… (así se ve de qué carrito son)
+const cartOrderId = (cart, i) => `${cart}${String(i + 1).padStart(2, '0')}`;
+const sum = (list) => list.reduce((a, b) => a + b, 0);
 
 const head = (name) => `https://mc-heads.net/avatar/${encodeURIComponent(name)}/64`;
 
@@ -472,9 +478,68 @@ export function createApp(env) {
 
   // Recibo (PDF) y sus datos: el del jugador y la copia del dueño (con IP y navegador de la aceptación)
   async function receiptFor(order, owner) {
-    const acceptance = await store.termsForOrder(order.id);
+    // Un pedido que se pagó en un carrito: la aceptación de los Términos es la del carrito, y el recibo lo dice
+    const acceptance = await store.termsForOrder(order.cartId || order.id);
     const productName = orderView(order).product;
-    return { pdf: receiptPdf({ order, productName, acceptance, owner }), rows: receiptRows({ order, productName, acceptance, owner }) };
+    const cartRec = order.cartId ? await store.getCart(order.cartId) : null;
+    const cart = cartRec ? { id: cartRec.id, count: cartRec.items.length, amount: cartRec.amount, currency: cartRec.currency } : null;
+    const args = { order, productName, acceptance, owner, cart };
+    return { pdf: receiptPdf(args), rows: receiptRows(args) };
+  }
+
+  // El carrito como un pedido (para el recibo, el correo y el expediente de una disputa): el pago entero, con sus
+  // productos. Entregado cuando lo están todos.
+  function cartAsOrder(cart, children) {
+    const done = children.length && children.every((o) => o.deliveredAt);
+    return {
+      id: cart.id,
+      status: cart.status,
+      username: cart.username,
+      uuid: cart.uuid,
+      productId: null,
+      quantity: 1,
+      amount: cart.amount,
+      currency: cart.currency,
+      discord: children.find((o) => o.discord)?.discord || cart.discord,
+      discordId: cart.discordId,
+      sessionId: cart.sessionId,
+      paymentIntent: cart.paymentIntent,
+      termsVersion: cart.termsVersion,
+      method: cart.method,
+      gift: cart.gift,
+      refunded: cart.refunded,
+      createdAt: cart.createdAt,
+      paidAt: cart.paidAt,
+      deliveredAt: done ? children.map((o) => o.deliveredAt).sort().at(-1) : null,
+    };
+  }
+  const productLabel = (o) => `${productById.get(o.productId)?.name || o.productId}${o.quantity > 1 ? ` ×${o.quantity}` : ''}`;
+  const cartProducts = (children) => children.map(productLabel).join(', ');
+
+  async function cartReceiptFor(cart, owner) {
+    const children = await store.cartOrders(cart.id);
+    const acceptance = await store.termsForOrder(cart.id);
+    const order = cartAsOrder(cart, children);
+    const items = children.map((o) => ({ name: productById.get(o.productId)?.name || o.productId, quantity: o.quantity, amount: o.amount, currency: o.currency }));
+    const coupon = cart.coupon ? { code: cart.coupon, subtotal: cart.subtotal, discount: cart.discount } : null;
+    const args = { order, productName: cartProducts(children), acceptance, owner, items, coupon };
+    return { pdf: receiptPdf(args), rows: receiptRows(args), order };
+  }
+
+  // Copia del recibo del carrito para el dueño (una sola, con todos sus productos)
+  async function mailCartReceipt(cartId) {
+    if (!mailer.enabled) return;
+    const cart = await store.getCart(cartId);
+    if (!cart || !cart.amount) return;
+    const { pdf, rows } = await cartReceiptFor(cart, true);
+    const intro = `Compra pagada en ${SERVER_NAME} con el carrito: ${cart.username}, ${money(cart.amount, cart.currency)} (${cart.items.length} productos${cart.coupon ? `, cupón ${cart.coupon}` : ''}).`;
+    const policy = refundPolicyFor(cart).lines;
+    await mailer.send({
+      subject: `Recibo ${cart.id} · ${cart.username} · ${money(cart.amount, cart.currency)}`,
+      text: `${intro}\n\n${fieldsText(rows)}\n\n${policy.join('\n')}`,
+      html: mailHtml('Recibo de compra (carrito)', intro, rows, policy.join(' ')),
+      attachments: [{ filename: `recibo-${cart.id}.pdf`, content: toBase64(pdf) }],
+    });
   }
 
   // Copia del recibo de cada compra pagada con dinero, para el dueño
@@ -551,8 +616,128 @@ export function createApp(env) {
       deliveredAt: order.deliveredAt,
       discord: order.discord ? { username: order.discord.username, status: order.discord.status || null } : null,
       gift: order.gift ? { from: order.gift.fromName, message: order.gift.message || null } : null,
+      // (3 nov 2026) el carrito con el que se pagó (junto con otros productos) y el cupón usado
+      cartId: order.cartId || null,
+      coupon: order.coupon ? { code: order.coupon, discount: order.discount || 0 } : null,
     };
   }
+
+  // --- Cupones (los crea el staff en /staff) ---
+
+  // El cupón que escribió el comprador, comprobado para esta compra: { coupon, discount } (sin cupón: coupon null) o
+  // { error }. subtotal en céntimos de dólar; payer = el UUID de quien paga (para «un uso por jugador»). A quien prueba
+  // muchos códigos que no existen se le frena unos minutos (como a quien prueba contraseñas).
+  async function applyCoupon(req, raw, { subtotal, payer }) {
+    if (raw === undefined || raw === null || String(raw).trim() === '') return { coupon: null, discount: 0 };
+    const key = `coupon:${req.headers.get('CF-Connecting-IP') || 'local'}`;
+    if (await store.loginLocked(key)) return { error: 'Has probado demasiados cupones que no existen. Espera unos minutos.', code: 'coupon_locked' };
+    const code = normalizeCode(String(raw));
+    const coupon = code ? await store.getCoupon(code) : null;
+    if (!coupon) {
+      await store.loginFailed(key);
+      return { error: 'Ese cupón no existe. Revisa que esté bien escrito.', code: 'coupon' };
+    }
+    const usage = coupon.maxUses || coupon.perPlayer ? await store.couponUsage(coupon.code, payer) : null;
+    const problem = couponProblem(coupon, { subtotal, usage });
+    if (problem) return { error: problem, code: 'coupon' };
+    return { coupon, discount: couponDiscount(coupon, subtotal) };
+  }
+
+  const couponInfo = (c, discount) => (c ? { code: c.code, label: couponLabel(c), discount } : null);
+
+  // --- Carrito: varios productos en un solo pago ---
+
+  /**
+   * Las líneas de una compra con su precio para el jugador que la recibe (las mejoras de rango cuestan la diferencia;
+   * lo que ya tiene sale bloqueado). Sin jugador, el precio del catálogo. Los productos repetidos se juntan.
+   * Devuelve { lines: [{ product, quantity, unit, line, from, blocked }] } o { error, code }.
+   */
+  async function priceLines(rawItems, uuid) {
+    if (!Array.isArray(rawItems) || !rawItems.length) return { error: 'Tu carrito está vacío.', code: 'empty' };
+    if (rawItems.length > 100) return { error: 'Demasiados productos.', code: 'cart' };
+    const merged = new Map();
+    for (const it of rawItems) {
+      const id = typeof it?.productId === 'string' ? it.productId : null;
+      const qty = Number.parseInt(it?.quantity ?? 1, 10);
+      if (!id) return { error: 'Producto no válido.', code: 'invalid' };
+      merged.set(id, (merged.get(id) || 0) + (Number.isInteger(qty) ? qty : Number.NaN));
+    }
+    if (merged.size > CART_MAX_LINES) return { error: `Como mucho ${CART_MAX_LINES} productos distintos por compra.`, code: 'cart' };
+    const lines = [];
+    let ranksIn = 0;
+    for (const [id, quantity] of merged) {
+      const product = productById.get(id);
+      if (!product || product.staffOnly) return { error: 'Hay un producto que ya no está a la venta: quítalo del carrito.', code: 'invalid', productId: id };
+      if (product.price === 0) return { error: `${product.name} es gratis: reclámalo con tu cuenta.`, code: 'free', productId: id };
+      if (product.coinsOnly) return { error: `${product.name} solo se compra con Fantastic Coins.`, code: 'coins', productId: id };
+      const max = product.maxQuantity || MAX_QUANTITY;
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > max) {
+        return { error: `La cantidad de ${product.name} debe estar entre 1 y ${max}.`, code: 'quantity', productId: id };
+      }
+      if (rankById.has(id) && ++ranksIn > 1) return { error: 'Solo se puede comprar un rango por compra: deja el más alto.', code: 'ranks' };
+      const q = uuid ? await quote(product, uuid) : { unit: product.price };
+      lines.push({
+        product,
+        quantity,
+        unit: q.blocked ? null : q.unit,
+        line: q.blocked ? 0 : q.unit * quantity,
+        from: q.from || null,
+        blocked: q.blocked || null,
+        blockedCode: q.code || (q.blocked ? 'rank_owned' : null),
+      });
+    }
+    return { lines };
+  }
+
+  /**
+   * Lo que se cobra de cada línea: el precio en dólares menos su parte del cupón (allocate) y, si se paga en pesos, en
+   * pesos al cambio del día (sin cupón, igual que en la compra suelta: el precio de una unidad en pesos × cantidad).
+   */
+  function chargeLines(lines, discount, rate) {
+    const usd = allocate(lines.map((l) => l.line), sum(lines.map((l) => l.line)) - discount);
+    const charged = rate ? usd.map((c, i) => (c === lines[i].line ? mxnCents(lines[i].unit, rate) * lines[i].quantity : mxnCents(c, rate))) : usd;
+    return { usd, charged };
+  }
+
+  const lineName = (l) => (l.from ? `${l.product.name} (mejora desde ${l.from.name})` : l.product.name);
+
+  // El carrito para la página de confirmación: sus productos con el estado de cada uno
+  async function cartView(cart) {
+    const children = await store.cartOrders(cart.id);
+    const sts = children.map((o) => o.status);
+    let status = cart.status;
+    if (cart.status === 'paid') {
+      status = sts.length && sts.every((x) => x === 'delivered') ? 'delivered' : sts.some((x) => x === 'delivery_failed') ? 'delivery_failed' : 'queued';
+    }
+    const views = children.map(orderView);
+    return {
+      id: cart.id,
+      cart: true,
+      status,
+      username: cart.username,
+      product: `${views.length} productos`,
+      quantity: 1,
+      amount: cart.amount,
+      currency: cart.currency,
+      subtotal: cart.subtotal,
+      discount: cart.discount,
+      coupon: cart.coupon ? { code: cart.coupon, discount: cart.discount } : null,
+      items: views.map((v) => ({ id: v.id, product: v.product, image: v.image, quantity: v.quantity, amount: v.amount, currency: v.currency, status: v.status, refunded: v.refunded, upgradeFrom: v.upgradeFrom })),
+      refunded: cart.refunded || null,
+      createdAt: cart.createdAt,
+      discord: views.find((v) => v.discord)?.discord || null,
+      gift: cart.gift ? { from: cart.gift.fromName, message: cart.gift.message || null } : null,
+    };
+  }
+
+  // Un pedido o un carrito (el pago): los avisos de Stripe, PayPal y Mercado Pago llevan uno de los dos
+  async function loadPayable(id) {
+    if (!id || !ORDER_ID_RE.test(id)) return null;
+    return (await store.getOrder(id)) || (id.startsWith('CART') ? await store.getCart(id) : null);
+  }
+  const settled = (local) => CLAIMED.includes(local.status) || local.status === 'paid';
+  const setPay = (local, fields) => (local.isCart ? store.updateCart(local.id, fields) : store.updateOrder(local.id, fields));
+  const complete = (local, ctx, paymentIntent) => (local.isCart ? fulfillCart(local, ctx, paymentIntent) : fulfill(local, ctx, paymentIntent));
 
   // Icono de un objeto de la tienda de monedas: los del TF Client tienen miniatura en la web.
   const setIds = [...new Set(products.map((p) => p.set).filter(Boolean))].sort((a, b) => b.length - a.length);
@@ -1136,20 +1321,30 @@ export function createApp(env) {
       const q = await quote(product, player.uuid);
       if (q.blocked) return json({ error: q.blocked, code: q.code || 'rank_owned' }, 409);
 
+      // (3 nov 2026) Cupón de descuento: sale del precio en dólares; el que paga es quien regala (en un regalo)
+      const applied = await applyCoupon(req, body.coupon, { subtotal: q.unit * quantity, payer: gift ? String(buyer.uuid).toLowerCase() : player.uuid });
+      if (applied.error) return json({ error: applied.error, code: applied.code }, applied.code === 'coupon_locked' ? 429 : 400);
+      const discount = applied.discount;
+
       const id = orderId();
       const base = PUBLIC_URL || url.origin;
-      const amount = q.unit * quantity;
+      // Con cupón se cobra una sola línea con el total ya descontado (cantidad 1, «×N» en el nombre); sin él, como siempre
+      const amount = q.unit * quantity - discount;
       // Si el que compra tiene sesión con Discord conectado, el anuncio y el rol van a su Discord. En un regalo, no: el
       // rol es del que lo recibe (si tiene su Discord conectado a su cuenta).
       const account = !gift && buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
       const giftInfo = gift ? { fromUuid: String(buyer.uuid).toLowerCase(), fromName: giverName, message: cleanGiftMessage(body.message) || null } : null;
       const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
-      const name = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
+      const baseName = q.from ? `${product.name} (mejora desde ${q.from.name})` : product.name;
+      const name = discount ? `${baseName}${quantity > 1 ? ` ×${quantity}` : ''} · cupón ${applied.coupon.code}` : baseName;
       // Con Mercado Pago se cobra en pesos (su precio redondeado); lo demás, en la moneda de la tienda
       // (31 oct 2026) con tarjeta desde México, también en pesos (las tarjetas mexicanas que no aceptan dólares)
       const pesos = method === 'mercadopago' || (method === 'stripe' && cardInPesos(req));
-      const mxUnit = pesos ? mxnCents(q.unit, await mpRate()) : 0;
-      const charged = pesos ? { amount: mxUnit * quantity, currency: MP_CURRENCY } : { amount, currency: CURRENCY };
+      const rate = pesos ? await mpRate() : 0;
+      const lineQty = discount ? 1 : quantity;
+      const lineUsd = discount ? amount : q.unit;
+      const mxUnit = pesos ? mxnCents(lineUsd, rate) : 0;
+      const charged = pesos ? { amount: mxUnit * lineQty, currency: MP_CURRENCY } : { amount, currency: CURRENCY };
       try {
         let checkout;
         if (method === 'mercadopago') {
@@ -1159,7 +1354,7 @@ export function createApp(env) {
             title: name,
             description: `${forWhom} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
             pictureUrl: https && paypalImages[product.image] ? `${base}/${paypalImages[product.image]}` : undefined,
-            quantity,
+            quantity: lineQty,
             unitPrice: mxUnit / 100,
             currency: MP_CURRENCY,
             successUrl: `${base}/success?order=${id}`,
@@ -1178,8 +1373,8 @@ export function createApp(env) {
             customId: id,
             item: {
               name,
-              quantity,
-              unitAmount: q.unit,
+              quantity: lineQty,
+              unitAmount: lineUsd,
               description: `${forWhom}. ${product.description || ''}`.trim(),
               sku: product.id,
               imageUrl: base.startsWith('https://') && paypalImages[product.image] ? `${base}/${paypalImages[product.image]}` : undefined,
@@ -1196,14 +1391,21 @@ export function createApp(env) {
           checkout = await stripe.createCheckoutSession({
             orderId: id,
             currency: charged.currency,
-            unitAmount: pesos ? mxUnit : q.unit,
-            quantity,
+            unitAmount: pesos ? mxUnit : lineUsd,
+            quantity: lineQty,
             name,
             description: `${forWhom} en ${SERVER_NAME}. ${product.description || ''}`.trim(),
             image: base.startsWith('https://') && product.image ? `${base}/${product.image.replace(/^\//, '')}` : undefined,
             successUrl: `${base}/success?order=${id}`,
             cancelUrl: `${base}/tienda?cancel=${id}`,
-            metadata: { order_id: id, product_id: product.id, player: player.name, uuid: player.uuid, ...(gift ? { gift_from: giverName, gift_from_uuid: giftInfo.fromUuid } : {}) },
+            metadata: {
+              order_id: id,
+              product_id: product.id,
+              player: player.name,
+              uuid: player.uuid,
+              ...(gift ? { gift_from: giverName, gift_from_uuid: giftInfo.fromUuid } : {}),
+              ...(discount ? { coupon: applied.coupon.code } : {}),
+            },
           });
         }
         await store.createOrder({
@@ -1223,6 +1425,8 @@ export function createApp(env) {
           termsVersion: TERMS_VERSION,
           method,
           gift: giftInfo,
+          coupon: applied.coupon?.code || null,
+          discount,
         });
         await recordTerms(
           req,
@@ -1233,6 +1437,267 @@ export function createApp(env) {
         return json({ id, url: checkout.url });
       } catch (err) {
         log.error(`Error creando el pago en ${method === 'paypal' ? 'PayPal' : method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}:`, err.message);
+        return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
+      }
+    },
+
+    // --- Carrito (3 nov 2026, el dueño: «agrega en la tienda la opción del carrito, para que paguen un solo pago al
+    // comprar varios productos») ---
+    // El precio de lo que hay en el carrito (o de un solo producto) para el jugador que lo recibe, con el cupón: lo que
+    // enseña la tienda antes de pagar. El precio de verdad lo vuelve a calcular /api/cart/checkout (o /api/checkout).
+    'POST /api/cart/quote': async (req) => {
+      const body = (await readJson(req)) || {};
+      const gift = body.gift === true;
+      const player = typeof body.username === 'string' && USERNAME_RE.test(body.username) ? await store.findPlayer(body.username) : null;
+      const priced = await priceLines(body.items, player?.uuid);
+      if (priced.error) return json({ error: priced.error, code: priced.code, productId: priced.productId || null }, 400);
+      const { lines } = priced;
+      const subtotal = sum(lines.map((l) => l.line));
+      let payer = player?.uuid || null;
+      if (gift) payer = (await currentUser(req))?.uuid?.toLowerCase() || null;
+      let coupon = null;
+      let couponError = null;
+      let discount = 0;
+      // (con algo bloqueado, el cupón se mira sobre lo demás: el carrito dice qué quitar y el cupón sigue puesto)
+      if (body.coupon) {
+        const applied = await applyCoupon(req, body.coupon, { subtotal, payer });
+        if (applied.error) couponError = applied.error;
+        else {
+          discount = applied.discount;
+          coupon = couponInfo(applied.coupon, discount);
+        }
+      }
+      // En pesos: con Mercado Pago, y con tarjeta desde México
+      const rate = mp || (stripe && cardInPesos(req)) ? await mpRate() : null;
+      const ok = lines.every((l) => !l.blocked);
+      const mxn = rate && ok ? sum(chargeLines(lines, discount, rate).charged) : null;
+      return json({
+        lines: lines.map((l) => ({
+          productId: l.product.id,
+          name: l.product.name,
+          image: l.product.image || null,
+          category: l.product.category,
+          quantity: l.quantity,
+          maxQuantity: l.product.maxQuantity || MAX_QUANTITY,
+          unit: l.unit,
+          line: l.line,
+          upgradeFrom: l.from?.name || null,
+          blocked: l.blocked,
+        })),
+        subtotal,
+        discount,
+        total: subtotal - discount,
+        coupon,
+        couponError,
+        mxn,
+        player: player ? { name: player.name, uuid: player.uuid } : null,
+      });
+    },
+
+    // Pagar el carrito: un solo pago (Stripe, PayPal o Mercado Pago) con todos sus productos. Cada producto es un pedido
+    // (con cart_id) que se entrega y se reembolsa como cualquier otro; el carrito es el pago.
+    'POST /api/cart/checkout': async (req, { url }) => {
+      const body = (await readJson(req)) || {};
+      const method = body.method === 'paypal' ? 'paypal' : body.method === 'mercadopago' ? 'mercadopago' : 'stripe';
+      if (method === 'stripe' && !stripe) {
+        return json({ error: paypal || mp ? 'El pago con tarjeta no está disponible ahora mismo. Usa otro método.' : 'Los pagos no están configurados todavía.' }, 503);
+      }
+      if (method === 'paypal' && !paypal) return json({ error: 'El pago con PayPal no está disponible ahora mismo.' }, 503);
+      if (method === 'mercadopago' && !mp) return json({ error: 'El pago con Mercado Pago no está disponible ahora mismo.' }, 503);
+      if (typeof body.username !== 'string' || !USERNAME_RE.test(body.username)) {
+        return json({ error: 'Nombre de usuario de Minecraft no válido (3-16 letras, números o _).' }, 400);
+      }
+      if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
+
+      const gift = body.gift === true;
+      const buyer = await currentUser(req);
+      if (gift && !buyer) return json({ error: 'Inicia sesión para regalar: así sabrá quién se lo regala.', code: 'login' }, 401);
+      const giverName = gift ? (await store.playerByUuid(buyer.uuid))?.name || buyer.name : null;
+      const player = await store.findPlayer(body.username);
+      if (!player) {
+        return json(
+          { error: `No encontramos a ${body.username} en ${SERVER_NAME}. Entra al servidor al menos una vez con ese nombre y vuelve a intentarlo.`, code: 'unknown_player' },
+          404,
+        );
+      }
+      if (body.uuid && String(body.uuid).toLowerCase() !== player.uuid) {
+        return json({ error: 'El jugador ha cambiado. Vuelve a comprobar el nombre.', code: 'player_changed' }, 409);
+      }
+      if (gift && player.uuid === String(buyer.uuid).toLowerCase()) {
+        return json({ error: 'Ese eres tú: para comprártelo a ti, elige «Para mí».', code: 'gift_self' }, 400);
+      }
+
+      const priced = await priceLines(body.items, player.uuid);
+      if (priced.error) return json({ error: priced.error, code: priced.code, productId: priced.productId || null }, 400);
+      const { lines } = priced;
+      const stuck = lines.find((l) => l.blocked);
+      if (stuck) return json({ error: `${stuck.product.name}: ${stuck.blocked}`, code: stuck.blockedCode, productId: stuck.product.id }, 409);
+      const subtotal = sum(lines.map((l) => l.line));
+      const payer = gift ? String(buyer.uuid).toLowerCase() : player.uuid;
+      const applied = await applyCoupon(req, body.coupon, { subtotal, payer });
+      if (applied.error) return json({ error: applied.error, code: applied.code }, applied.code === 'coupon_locked' ? 429 : 400);
+      const discount = applied.discount;
+      const coupon = applied.coupon;
+
+      const pesos = method === 'mercadopago' || (method === 'stripe' && cardInPesos(req));
+      const rate = pesos ? await mpRate() : null;
+      const { usd, charged } = chargeLines(lines, discount, rate);
+      const currency = pesos ? MP_CURRENCY : CURRENCY;
+      const amount = sum(charged);
+      const id = orderId('CART');
+      const base = PUBLIC_URL || url.origin;
+      const https = base.startsWith('https://');
+      const account = !gift && buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
+      const giftInfo = gift ? { fromUuid: String(buyer.uuid).toLowerCase(), fromName: giverName, message: cleanGiftMessage(body.message) || null } : null;
+      const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
+      const count = sum(lines.map((l) => l.quantity));
+      const title = `Carrito de ${SERVER_NAME}: ${count} ${count === 1 ? 'producto' : 'productos'}`;
+      // Las líneas del pago: la de siempre (precio × cantidad) si no lleva parte del cupón; si la lleva, una sola con su
+      // total ya descontado («×N» en el nombre)
+      const payLines = lines.map((l, i) => {
+        const whole = usd[i] === l.line;
+        const qty = whole ? l.quantity : 1;
+        const unitCharged = whole ? charged[i] / l.quantity : charged[i];
+        const unitUsd = whole ? l.unit : usd[i];
+        const name = `${lineName(l)}${qty === 1 && l.quantity > 1 ? ` ×${l.quantity}` : ''}${whole ? '' : ` · cupón ${coupon.code}`}`;
+        return {
+          name,
+          quantity: qty,
+          unitCharged,
+          unitUsd,
+          description: `${forWhom} en ${SERVER_NAME}. ${l.product.description || ''}`.trim(),
+          product: l.product,
+        };
+      });
+      const items = lines.map((l, i) => ({
+        orderId: cartOrderId(id, i),
+        productId: l.product.id,
+        quantity: l.quantity,
+        unit: l.unit,
+        line: l.line,
+        charged: charged[i],
+        rankFrom: l.from?.id || null,
+      }));
+      try {
+        let checkout;
+        if (method === 'mercadopago') {
+          const pref = await mp.createPreference({
+            orderId: id,
+            title,
+            currency: MP_CURRENCY,
+            items: payLines.map((pl, i) => ({
+              id: items[i].orderId,
+              title: pl.name,
+              description: pl.description,
+              pictureUrl: https && paypalImages[pl.product.image] ? `${base}/${paypalImages[pl.product.image]}` : undefined,
+              quantity: pl.quantity,
+              unitPrice: pl.unitCharged / 100,
+            })),
+            successUrl: `${base}/success?order=${id}`,
+            failureUrl: `${base}/tienda?cancel=${id}`,
+            pendingUrl: `${base}/success?order=${id}`,
+            notificationUrl: https ? `${base}/webhook/mercadopago` : undefined,
+            statement: 'TIERRASFANTASTICAS',
+          });
+          checkout = { id: pref.id, url: pref.init_point };
+          if (!checkout.url) throw new Error('Mercado Pago no devolvió el enlace de pago');
+        } else if (method === 'paypal') {
+          const created = await paypal.createOrder({
+            amount,
+            currency: CURRENCY,
+            description: `${forWhom} en ${SERVER_NAME}: ${count} ${count === 1 ? 'producto' : 'productos'}`.slice(0, 127),
+            customId: id,
+            items: payLines.map((pl) => ({
+              name: pl.name,
+              quantity: pl.quantity,
+              unitAmount: pl.unitUsd,
+              description: `${forWhom}. ${pl.product.description || ''}`.trim(),
+              sku: pl.product.id,
+              imageUrl: https && paypalImages[pl.product.image] ? `${base}/${paypalImages[pl.product.image]}` : undefined,
+              url: https ? `${base}/tienda` : undefined,
+            })),
+            brandName: SERVER_NAME,
+            returnUrl: `${base}/success?order=${id}`,
+            cancelUrl: `${base}/tienda?cancel=${id}`,
+            requestId: `create-${id}`,
+          });
+          checkout = { id: created.id, url: PayPal.approveUrl(created) };
+          if (!checkout.url) throw new Error('PayPal no devolvió el enlace de pago');
+        } else {
+          checkout = await stripe.createCheckoutSession({
+            orderId: id,
+            currency,
+            name: title,
+            lines: payLines.map((pl) => ({
+              name: pl.name,
+              description: pl.description,
+              image: https && pl.product.image ? `${base}/${pl.product.image.replace(/^\//, '')}` : undefined,
+              unitAmount: pl.unitCharged,
+              quantity: pl.quantity,
+            })),
+            successUrl: `${base}/success?order=${id}`,
+            cancelUrl: `${base}/tienda?cancel=${id}`,
+            metadata: {
+              order_id: id,
+              cart: 'si',
+              products: lines.map((l) => `${l.product.id}${l.quantity > 1 ? `x${l.quantity}` : ''}`).join(',').slice(0, 500),
+              player: player.name,
+              uuid: player.uuid,
+              ...(gift ? { gift_from: giverName, gift_from_uuid: giftInfo.fromUuid } : {}),
+              ...(coupon ? { coupon: coupon.code } : {}),
+            },
+          });
+        }
+        const orders = lines.map((l, i) => ({
+          id: items[i].orderId,
+          status: 'pending',
+          username: player.name,
+          uuid: player.uuid,
+          productId: l.product.id,
+          quantity: l.quantity,
+          amount: charged[i],
+          currency,
+          discord: account,
+          discordId: account?.id,
+          rankFrom: l.from?.id,
+          termsVersion: TERMS_VERSION,
+          method,
+          gift: giftInfo,
+          cartId: id,
+          coupon: coupon?.code || null,
+          discount: l.line - usd[i],
+        }));
+        await store.createCart(
+          {
+            id,
+            status: 'pending',
+            username: player.name,
+            uuid: player.uuid,
+            payer,
+            amount,
+            currency,
+            subtotal,
+            discount,
+            coupon: coupon?.code || null,
+            method,
+            sessionId: checkout.id,
+            items,
+            gift: giftInfo,
+            discord: account,
+            discordId: account?.id,
+            termsVersion: TERMS_VERSION,
+          },
+          orders,
+        );
+        await recordTerms(
+          req,
+          gift
+            ? { uuid: giftInfo.fromUuid, username: giverName, context: 'regalo', orderId: id }
+            : { uuid: player.uuid, username: player.name, context: 'compra', orderId: id },
+        );
+        return json({ id, url: checkout.url });
+      } catch (err) {
+        log.error(`Error creando el pago del carrito en ${method === 'paypal' ? 'PayPal' : method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}:`, err.message);
         return json({ error: 'No se pudo iniciar el pago. Inténtalo de nuevo.' }, 502);
       }
     },
@@ -1259,6 +1724,9 @@ export function createApp(env) {
           createdAt: o.createdAt,
           refundable: CLAIMED.includes(o.status) && !o.refunded,
           disputable: o.amount > 0 && ['queued', ...CLAIMED].includes(o.status),
+          // (3 nov 2026) pagado junto con otros en un carrito, y el cupón que llevó (descuento en céntimos de dólar)
+          cartId: o.cartId || null,
+          coupon: o.coupon ? { code: o.coupon, discount: o.discount || 0 } : null,
         })),
       });
     },
@@ -1351,6 +1819,51 @@ export function createApp(env) {
       await handleReversal({ order, full: true, dispute: false, manual: true }, ctx);
       log.warn(`Pedido ${order.id} (${order.username}): reembolsado a mano desde el panel de staff`);
       return json({ ok: true, order: (await store.getOrder(order.id))?.refunded || 'reembolsado' });
+    },
+
+    // --- Cupones de descuento (3 nov 2026, el dueño: «dame la posibilidad de crear cupones de descuento, tanto en
+    // porcentaje como en valores enteros») ---
+    'GET /api/staff/coupons': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const now = Date.now();
+      const coupons = (await store.listCoupons()).map((c) => ({
+        ...c,
+        label: couponLabel(c),
+        expired: Boolean(c.expiresAt && Date.parse(c.expiresAt) <= now),
+        exhausted: Boolean(c.maxUses && c.used >= c.maxUses),
+      }));
+      return json({ coupons, minTotal: COUPON_MIN_TOTAL });
+    },
+
+    'POST /api/staff/coupons': async (req) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const made = couponFromInput(await readJson(req));
+      if (made.error) return json({ error: made.error }, 400);
+      if (!(await store.createCoupon(made.coupon))) return json({ error: `Ya hay un cupón ${made.coupon.code}. Elige otro código.` }, 409);
+      log.warn(`Cupón creado desde el panel de staff: ${made.coupon.code} (${couponLabel(made.coupon)})`);
+      return json({ ok: true, coupon: await store.getCoupon(made.coupon.code) });
+    },
+
+    // Pausar o volver a activar un cupón ({ active: true|false })
+    'POST /api/staff/coupons/:code': async (req, { params }) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const body = (await readJson(req)) || {};
+      if (typeof body.active !== 'boolean') return json({ error: 'Petición no válida.' }, 400);
+      const code = normalizeCode(params.code);
+      if (!code || !(await store.setCouponActive(code, body.active))) return json({ error: 'Ese cupón no existe.' }, 404);
+      return json({ ok: true, coupon: await store.getCoupon(code) });
+    },
+
+    'DELETE /api/staff/coupons/:code': async (req, { params }) => {
+      const denied = await staffDenied(req);
+      if (denied) return denied;
+      const code = normalizeCode(params.code);
+      if (!code || !(await store.deleteCoupon(code))) return json({ error: 'Ese cupón no existe.' }, 404);
+      log.warn(`Cupón borrado desde el panel de staff: ${code}`);
+      return json({ ok: true });
     },
 
     // Regalos gratis (precio 0): sin Stripe, con la cuenta iniciada y una sola vez por jugador.
@@ -1474,9 +1987,9 @@ export function createApp(env) {
 
     // El recibo en PDF de una compra pagada con dinero (la página del pedido lo descarga sola al confirmarse el pago)
     'GET /api/order/:id/receipt': async (req, { params }) => {
-      const order = ORDER_ID_RE.test(params.id) ? await store.getOrder(params.id) : null;
-      if (!order || !order.amount || !CLAIMED.includes(order.status)) return json({ error: 'Recibo no disponible.' }, 404);
-      const { pdf } = await receiptFor(order, false);
+      const order = await loadPayable(params.id);
+      if (!order || !order.amount || !settled(order)) return json({ error: 'Recibo no disponible.' }, 404);
+      const { pdf } = order.isCart ? await cartReceiptFor(order, false) : await receiptFor(order, false);
       return new Response(pdf, {
         headers: {
           'Content-Type': 'application/pdf',
@@ -1487,9 +2000,9 @@ export function createApp(env) {
     },
 
     'GET /api/order/:id': async (req, { params }) => {
-      const order = ORDER_ID_RE.test(params.id) ? await store.getOrder(params.id) : null;
+      const order = await loadPayable(params.id);
       if (!order) return json({ error: 'Pedido no encontrado.' }, 404);
-      return json(orderView(order));
+      return json(order.isCart ? await cartView(order) : orderView(order));
     },
 
     // 2) Webhook de Stripe: la confirmación del pago que de verdad cuenta (firmada por Stripe).
@@ -1552,13 +2065,13 @@ export function createApp(env) {
         const r = event.resource || {};
         switch (event.event_type) {
           case 'CHECKOUT.ORDER.APPROVED': {
-            const local = r.id ? await store.findOrderBySession(r.id) : null;
+            const local = r.id ? (await store.findOrderBySession(r.id)) || (await store.findCartBySession(r.id)) : null;
             if (local) await capturePayPal(local, ctx);
             break;
           }
           case 'PAYMENT.CAPTURE.COMPLETED':
           case 'PAYMENT.CAPTURE.DENIED': {
-            const local = r.custom_id && ORDER_ID_RE.test(r.custom_id) ? await store.getOrder(r.custom_id) : null;
+            const local = await loadPayable(r.custom_id);
             if (local) await handlePayPalCapture(local, r, ctx);
             break;
           }
@@ -1615,8 +2128,7 @@ export function createApp(env) {
       if (type !== 'payment' || !/^\d+$/.test(dataId)) return json({ received: true });
       try {
         const payment = await mp.getPayment(dataId);
-        const ref = payment.external_reference;
-        const local = ref && ORDER_ID_RE.test(ref) ? await store.getOrder(ref) : null;
+        const local = await loadPayable(payment.external_reference);
         if (local) await handleMpPayments(local, [payment], ctx);
       } catch (err) {
         if (err.status === 404) return json({ received: true, unknown: true }); // aviso de prueba (pago inventado)
@@ -1628,7 +2140,7 @@ export function createApp(env) {
 
     // 3) Respaldo: la página de confirmación pide a Stripe el estado del pago por si el webhook tarda.
     'POST /api/order/:id/sync': async (req, ctx) => {
-      const order = ORDER_ID_RE.test(ctx.params.id) ? await store.getOrder(ctx.params.id) : null;
+      const order = await loadPayable(ctx.params.id);
       if (!order) return json({ error: 'Pedido no encontrado.' }, 404);
       if (order.method === 'mercadopago' && mp && ['pending', 'awaiting_payment'].includes(order.status)) {
         try {
@@ -1649,7 +2161,8 @@ export function createApp(env) {
           log.warn(`No se pudo consultar el pago de ${order.id}:`, err.message);
         }
       }
-      return json(orderView(await store.getOrder(order.id)));
+      const fresh = await loadPayable(order.id);
+      return json(fresh.isCart ? await cartView(fresh) : orderView(fresh));
     },
 
     // --- Puente con el servidor de Minecraft (mod TF Client instalado en el servidor) ---
@@ -1833,20 +2346,21 @@ export function createApp(env) {
   // Un pago de Stripe terminó (o caducó): valida lo cobrado contra el pedido y lo pone en la cola de entrega.
   async function handleSession(checkout, ctx, type) {
     const id = checkout.client_reference_id || checkout.metadata?.order_id;
-    const local = id && ORDER_ID_RE.test(id) ? await store.getOrder(id) : null;
+    // (3 nov 2026) un pedido suelto o un carrito (CART…)
+    const local = await loadPayable(id);
     if (!local) return null;
-    if (CLAIMED.includes(local.status)) return local.status; // Ya pagado y procesado.
+    if (settled(local)) return local.status; // Ya pagado y procesado.
     if (local.sessionId && checkout.id && checkout.id !== local.sessionId) {
       log.error(`El pago ${checkout.id} no es el del pedido ${id}`);
       return local.status;
     }
 
     if (type === 'checkout.session.expired' || checkout.status === 'expired') {
-      if (local.status === 'pending') await store.updateOrder(id, { status: 'expired' });
+      if (local.status === 'pending') await setPay(local, { status: 'expired' });
       return 'expired';
     }
     if (type === 'checkout.session.async_payment_failed') {
-      await store.updateOrder(id, { status: 'failed' });
+      await setPay(local, { status: 'failed' });
       return 'failed';
     }
     if (checkout.status !== 'complete') return local.status;
@@ -1854,7 +2368,7 @@ export function createApp(env) {
     const paymentIntent = typeof checkout.payment_intent === 'string' ? checkout.payment_intent : checkout.payment_intent?.id;
     if (checkout.payment_status === 'unpaid') {
       // Pagos que tardan en confirmarse (transferencias, etc.): Stripe avisará con async_payment_succeeded.
-      await store.updateOrder(id, { status: 'awaiting_payment', paymentIntent });
+      await setPay(local, { status: 'awaiting_payment', paymentIntent });
       return 'awaiting_payment';
     }
     if (checkout.payment_status !== 'paid') return local.status;
@@ -1862,11 +2376,11 @@ export function createApp(env) {
     const expected = toStripeAmount(local.amount, local.currency);
     if (checkout.amount_total !== expected || String(checkout.currency).toUpperCase() !== local.currency) {
       log.error(`Importe incorrecto en ${id}: esperado ${expected} ${local.currency}, cobrado ${checkout.amount_total} ${checkout.currency}`);
-      await store.updateOrder(id, { status: 'error', error: 'Importe no coincide', paymentIntent });
+      await setPay(local, { status: 'error', error: 'Importe no coincide', paymentIntent });
       return 'error';
     }
 
-    return fulfill(local, ctx, paymentIntent);
+    return complete(local, ctx, paymentIntent);
   }
 
   // PayPal: el comprador aprobó el pago en PayPal (vuelve a /success o avisa el webhook): se cobra y se entrega.
@@ -1887,28 +2401,28 @@ export function createApp(env) {
   }
 
   async function handlePayPalCapture(local, capture, ctx) {
-    if (CLAIMED.includes(local.status)) return local.status; // Ya pagado y procesado.
+    if (settled(local)) return local.status; // Ya pagado y procesado.
     if (local.method !== 'paypal' || (capture.custom_id && capture.custom_id !== local.id)) {
       log.error(`El cobro de PayPal ${capture.id} no es del pedido ${local.id}`);
       return local.status;
     }
     if (capture.status === 'DECLINED' || capture.status === 'FAILED') {
-      await store.updateOrder(local.id, { status: 'failed' });
+      await setPay(local, { status: 'failed' });
       return 'failed';
     }
     if (capture.status === 'PENDING') {
       // PayPal lo está revisando: avisará con PAYMENT.CAPTURE.COMPLETED.
-      await store.updateOrder(local.id, { status: 'awaiting_payment', paymentIntent: capture.id });
+      await setPay(local, { status: 'awaiting_payment', paymentIntent: capture.id });
       return 'awaiting_payment';
     }
     if (capture.status !== 'COMPLETED') return local.status;
     const expected = formatAmount(local.amount, local.currency);
     if (capture.amount?.value !== expected || String(capture.amount?.currency_code).toUpperCase() !== local.currency) {
       log.error(`Importe incorrecto en ${local.id}: esperado ${expected} ${local.currency}, cobrado ${capture.amount?.value} ${capture.amount?.currency_code}`);
-      await store.updateOrder(local.id, { status: 'error', error: 'Importe no coincide', paymentIntent: capture.id });
+      await setPay(local, { status: 'error', error: 'Importe no coincide', paymentIntent: capture.id });
       return 'error';
     }
-    return fulfill(local, ctx, capture.id);
+    return complete(local, ctx, capture.id);
   }
 
   /**
@@ -1922,23 +2436,23 @@ export function createApp(env) {
     for (const p of mine) {
       if (p.status === 'refunded' || p.status === 'charged_back') {
         await handleReversal({ paymentIntent: String(p.id), full: true, dispute: p.status === 'charged_back' }, ctx);
-        return (await store.getOrder(local.id))?.status;
+        return (await loadPayable(local.id))?.status;
       }
     }
-    if (CLAIMED.includes(local.status)) return local.status; // Ya pagado y procesado.
+    if (settled(local)) return local.status; // Ya pagado y procesado.
     const approved = mine.find((p) => p.status === 'approved');
     if (approved) {
       const paid = Math.round(Number(approved.transaction_amount) * 100);
       if (paid !== local.amount || String(approved.currency_id).toUpperCase() !== local.currency) {
         log.error(`Importe incorrecto en ${local.id}: esperado ${local.amount / 100} ${local.currency}, cobrado ${approved.transaction_amount} ${approved.currency_id}`);
-        await store.updateOrder(local.id, { status: 'error', error: 'Importe no coincide', paymentIntent: String(approved.id) });
+        await setPay(local, { status: 'error', error: 'Importe no coincide', paymentIntent: String(approved.id) });
         return 'error';
       }
-      return fulfill(local, ctx, String(approved.id));
+      return complete(local, ctx, String(approved.id));
     }
     const waiting = mine.find((p) => ['pending', 'in_process', 'authorized', 'in_mediation'].includes(p.status));
     if (waiting && local.status === 'pending') {
-      await store.updateOrder(local.id, { status: 'awaiting_payment', paymentIntent: String(waiting.id) });
+      await setPay(local, { status: 'awaiting_payment', paymentIntent: String(waiting.id) });
       return 'awaiting_payment';
     }
     return local.status;
@@ -1967,7 +2481,8 @@ export function createApp(env) {
   }
 
   // Pedido pagado (o regalo reclamado): a la cola del puente, rango, rol y anuncio en Discord.
-  async function fulfill(local, ctx, paymentIntent) {
+  // quiet: un producto de un carrito (el anuncio de Discord y el recibo salen una vez para todo el carrito)
+  async function fulfill(local, ctx, paymentIntent, { quiet = false } = {}) {
     const id = local.id;
     const product = productById.get(local.productId);
     const rank = rankById.get(product.id);
@@ -2017,9 +2532,56 @@ export function createApp(env) {
     log.log(`Pedido ${id} ${product.price === 0 ? 'reclamado (gratis)' : 'pagado'}: ${product.name} x${local.quantity} para ${local.username} (${local.uuid}), en cola del puente`);
 
     // En Discord: rol y anuncio. Un fallo aquí no afecta a la entrega en el juego.
-    await deliverDiscord(id, product, ctx.discord);
-    await mailReceipt(id);
+    await deliverDiscord(id, product, ctx.discord, { announce: !quiet });
+    if (!quiet) await mailReceipt(id);
     return 'queued';
+  }
+
+  // Carrito pagado: cada producto, a la cola del puente como un pedido normal (con su rango, su rol de Discord…), y
+  // luego un solo anuncio y un solo recibo. Se puede repetir sin entregar dos veces (cada pedido entra una vez en la
+  // cola, y el carrito se marca pagado una vez).
+  async function fulfillCart(cart, ctx, paymentIntent) {
+    for (const child of await store.cartOrders(cart.id)) {
+      if (CLAIMED.includes(child.status) || child.status === 'reiniciado') continue;
+      await fulfill(child, ctx, paymentIntent, { quiet: true });
+    }
+    if (await store.markCartPaid(cart.id, paymentIntent)) {
+      log.log(`Carrito ${cart.id} pagado: ${cart.items.length} productos para ${cart.username}${cart.coupon ? ` (cupón ${cart.coupon})` : ''}`);
+      await announceCart(cart.id, ctx.discord);
+      await mailCartReceipt(cart.id);
+    }
+    return 'queued';
+  }
+
+  // Un solo anuncio en Discord con todo lo del carrito
+  async function announceCart(cartId, discord) {
+    try {
+      const cart = await store.getCart(cartId);
+      const children = await store.cartOrders(cartId);
+      if (!cart || !children.length) return;
+      let linked = children.find((o) => o.discord?.id)?.discord || null;
+      if (!linked && cart.uuid) {
+        const account = await store.accountByUuid(cart.uuid);
+        if (account) linked = { id: account.discordId, username: account.username };
+      }
+      const who = linked ? `<@${linked.id}> (**${cart.username}**)` : `**${cart.username}**`;
+      const names = children.map((o) => `**${productById.get(o.productId)?.name || o.productId}**${o.quantity > 1 ? ` ×${o.quantity}` : ''}`);
+      const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} y ${names.at(-1)}` : names[0];
+      const rankOrder = children.find((o) => rankById.has(o.productId));
+      const rank = rankOrder ? rankById.get(rankOrder.productId) : null;
+      const first = productById.get(children[0].productId);
+      await discord.announce({
+        embed: {
+          title: rank ? `👑 ¡${cart.username} ahora es ${rank.rank.prefix}!` : cart.gift ? '🎁 ¡Un regalo en la tienda!' : '🎉 ¡Nueva compra en la tienda!',
+          description: `${cart.gift ? `**${cart.gift.fromName}** le ha regalado a ${who}` : `${who} ha conseguido`} ${list}. ¡Gracias por apoyar ${SERVER_NAME}!`,
+          color: Number.parseInt((rank?.rank.hex || first?.colors?.[1] || '#f4c95d').slice(1), 16),
+          thumbnail: { url: head(cart.username) },
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
+      log.warn('No se pudo anunciar la compra del carrito en Discord:', err.message);
+    }
   }
 
   // Reembolsos y disputas. Con el reembolso completo (o una disputa) se retira del servidor todo lo de ese pedido: el mod
@@ -2039,8 +2601,13 @@ export function createApp(env) {
     return null;
   }
 
-  // El expediente de un pedido para responder una disputa (receipt.js): los hechos, con lo que hay en la web
+  // El expediente de un pedido para responder una disputa (receipt.js): los hechos, con lo que hay en la web. Un
+  // pedido de un carrito: el del carrito entero (el pago que se disputa es el del carrito).
   async function disputeCase(order, late) {
+    if (order.cartId) {
+      const cart = await store.getCart(order.cartId);
+      if (cart) return cartDisputeCase(cart, late);
+    }
     const acceptance = await store.termsForOrder(order.id);
     const payerUuid = order.gift?.fromUuid || order.uuid;
     const player = order.uuid ? await store.playerByUuid(order.uuid) : null;
@@ -2051,12 +2618,112 @@ export function createApp(env) {
     return facts;
   }
 
+  async function cartDisputeCase(cart, late) {
+    const children = await store.cartOrders(cart.id);
+    const order = cartAsOrder(cart, children);
+    const acceptance = await store.termsForOrder(cart.id);
+    const payerUuid = cart.gift?.fromUuid || cart.uuid;
+    const player = cart.uuid ? await store.playerByUuid(cart.uuid) : null;
+    const delivery = children.length ? await store.deliveryOf(children[0].id) : null;
+    const history = payerUuid
+      ? (await store.ordersFor({ uuid: payerUuid })).filter((o) => o.cartId !== cart.id).map((o) => ({ ...o, productName: productById.get(o.productId)?.name }))
+      : [];
+    const facts = disputeFacts({ order, productName: cartProducts(children), acceptance, player, delivery, history });
+    if (late !== undefined) facts.inWindow = !late;
+    return facts;
+  }
+
+  // (3 nov 2026) Reembolso o disputa del pago de un carrito. Completo (o disputa): cada producto se retira del servidor
+  // como un pedido reembolsado. Parcial: solo se apunta en el carrito (el staff retira desde /staff los productos que
+  // devolvió). La sanción por un reembolso injustificado y el correo al dueño salen una vez para todo el carrito.
+  async function cartReversal(cartId, { full, dispute, disputeId }, ctx) {
+    const cart = await store.getCart(cartId);
+    if (!cart) return;
+    const what = dispute ? 'disputa' : full ? 'reembolsado' : 'reembolso parcial';
+    log.warn(`Carrito ${cart.id} (${cart.username}): ${what}`);
+    if (!keepsLabel(cart.refunded)) await store.updateCart(cart.id, { refunded: what });
+    const children = await store.cartOrders(cart.id);
+    const delivered = children.filter((o) => CLAIMED.includes(o.status));
+    if (full) {
+      for (const child of children) {
+        if (!keepsLabel(child.refunded)) await store.updateOrder(child.id, { refunded: what });
+        if (CLAIMED.includes(child.status)) await revoke(child, ctx);
+      }
+    }
+
+    const asOrder = cartAsOrder(cart, children);
+    const policy = refundPolicyFor(asOrder);
+    const since = asOrder.deliveredAt || asOrder.paidAt || asOrder.createdAt;
+    const hours = Math.max(0, Math.floor((Date.now() - Date.parse(since)) / 3600000));
+    const days = businessDaysSince(since);
+    const late = policy.id === '24h' ? hours >= 24 : days > 5;
+    const elapsed = policy.id === '24h' ? `${hours} horas` : `${days} días hábiles`;
+    const payer = cart.gift ? (await store.playerByUuid(cart.gift.fromUuid))?.name || cart.gift.fromName : cart.username;
+    let penalty = false;
+    if (dispute && late && delivered.length) {
+      // La sanción va en la entrega de uno de sus pedidos (el puente solo manda entregas de pedidos que existen)
+      penalty = await store.queuePenalty(delivered[0], [
+        `tempbanip ${cart.gift ? payer : '{player}'} ${policy.ban} Reembolso injustificado del pedido ${cart.id} (Términos de ${SERVER_NAME}: sin reembolsos pasadas ${policy.windowText} desde la entrega)`,
+      ]);
+      if (penalty) {
+        const label = `${what} fuera de plazo · baneo de IP de ${policy.banText}`;
+        await store.updateCart(cart.id, { refunded: label });
+        for (const child of children) await store.updateOrder(child.id, { refunded: label });
+        log.warn(`Carrito ${cart.id}: baneo de IP de ${policy.banText} en cola para ${payer}`);
+      }
+    }
+
+    let facts = null;
+    if (dispute && cart.amount > 0) {
+      try {
+        facts = await cartDisputeCase(cart, late);
+        if (disputeId && stripe && cart.method !== 'paypal') {
+          await stripe.updateDisputeEvidence(disputeId, stripeEvidence(facts));
+          log.log(`Carrito ${cart.id}: pruebas de la disputa ${disputeId} rellenadas en Stripe (sin enviar)`);
+        }
+      } catch (err) {
+        log.error(`Carrito ${cart.id}: no se pudieron preparar las pruebas de la disputa:`, err);
+      }
+    }
+
+    if (mailer.enabled) {
+      const { pdf, rows } = await cartReceiptFor((await store.getCart(cart.id)) || cart, true);
+      const verdict = dispute
+        ? late
+          ? `Disputa abierta ${elapsed} después de la entrega (fuera del plazo de ${policy.windowText}): reembolso injustificado.${penalty ? ` Se puso en cola el baneo de IP de ${policy.banText} para ${payer}.` : ''}`
+          : `Disputa abierta ${elapsed} después de la entrega (dentro del plazo de ${policy.windowText}): según los Términos se trata como una cancelación.`
+        : `${full ? 'Reembolso completo' : 'Reembolso parcial'} hecho desde ${cart.method === 'paypal' ? 'PayPal' : cart.method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}, ${elapsed} después de la entrega.`;
+      const after = full
+        ? ` Se retira del servidor todo lo del carrito (${children.length} productos).`
+        : ' Es parcial: no se retiró nada; si devolviste algún producto, retíralo en el panel de staff con «Reembolsar».';
+      const intro = `${what[0].toUpperCase()}${what.slice(1)} del carrito ${cart.id} (${cart.username}). ${verdict}${after}`;
+      const attachments = [{ filename: `recibo-${cart.id}.pdf`, content: toBase64(pdf) }];
+      if (facts) attachments.push({ filename: `disputa-${cart.id}.pdf`, content: toBase64(disputePdf(facts)) });
+      await mailer.send({
+        subject: `${dispute ? 'DISPUTA' : 'Reembolso'} · pedido ${cart.id} · ${cart.username}`,
+        text: `${intro}\n\n${fieldsText(rows)}\n\n${policy.lines.join('\n')}`,
+        html: mailHtml(dispute ? 'Disputa de un pago' : 'Reembolso de un pago', intro, rows, policy.lines.join(' ')),
+        attachments,
+      });
+    }
+  }
+
+  // Un aviso repetido (el mismo reembolso o la misma disputa) no le quita a la etiqueta lo que ya dice: que se retiró del
+  // servidor o que fue fuera de plazo con su baneo
+  const keepsLabel = (label) => Boolean(label && /retirado|fuera de plazo/.test(label));
+
   async function handleReversal({ paymentIntent, full, dispute, order: given = null, manual = false, disputeId = null }, ctx) {
     const order = given || (paymentIntent ? await store.findOrderByPaymentIntent(paymentIntent) : null);
-    if (!order) return;
+    // (3 nov 2026) el pago de un carrito: se trata entero (si lo retira el staff a mano, solo ese producto)
+    if (!given && order?.cartId) return cartReversal(order.cartId, { full, dispute, disputeId }, ctx);
+    if (!order) {
+      const cart = paymentIntent ? await store.findCartByPaymentIntent(paymentIntent) : null;
+      if (cart) await cartReversal(cart.id, { full, dispute, disputeId }, ctx);
+      return;
+    }
     const what = dispute ? 'disputa' : full ? 'reembolsado' : 'reembolso parcial';
     log.warn(`Pedido ${order.id} (${order.username}): ${what}`);
-    if (!order.refunded || !order.refunded.includes('retirado')) await store.updateOrder(order.id, { refunded: what });
+    if (!keepsLabel(order.refunded)) await store.updateOrder(order.id, { refunded: what });
     if (full && CLAIMED.includes(order.status)) await revoke(order, ctx, { manual });
 
     // Reembolso injustificado (Términos, «Cancelaciones y reembolsos»): una disputa o contracargo pasado el plazo de los
@@ -2183,7 +2850,7 @@ export function createApp(env) {
     }
   }
 
-  async function deliverDiscord(orderId, product, discord) {
+  async function deliverDiscord(orderId, product, discord, { announce = true } = {}) {
     const order = await store.getOrder(orderId);
     // Si compró sin iniciar sesión, usamos la cuenta de Discord vinculada a su jugador.
     let linked = order.discord;
@@ -2213,6 +2880,7 @@ export function createApp(env) {
       await store.updateOrder(orderId, { discord: { id: linked.id, username: linked.username } });
     }
 
+    if (!announce) return;
     try {
       const who = linked ? `<@${linked.id}> (**${order.username}**)` : `**${order.username}**`;
       const rank = rankById.get(product.id);

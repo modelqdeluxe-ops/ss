@@ -1,6 +1,6 @@
 # Traspaso — Tierras Fantásticas (léelo entero antes de tocar nada)
 
-Última actualización: **22 de octubre de 2026** (web: Atardecer con contraste medido —`tools/contrast_audit.py`—, botones con jerarquía y escenarios caramelo; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
+Última actualización: **3 de noviembre de 2026** (web: carrito con un solo pago y cupones de descuento en `/staff`; antes, 22 oct: web: Atardecer con contraste medido —`tools/contrast_audit.py`—, botones con jerarquía y escenarios caramelo; TF Client **1.3.90**: isla ×1,5 con la grieta en el centro, cielo sin muaré y más animado, alas de Caelthar; 1.3.89: grieta del Void normal y madre, santuario nuevo, Void con shaders, llamas de Ignevar; 1.3.88: The Void —dimensión con la isla del dueño, cielo con agujero negro, el caballero de luz Aurelion y su viaje—, grieta 3.0 con shaders, Ignevar vuela otra vez, el Contemplador no sube al jugador; 1.3.87: grieta y cielo 2.0 —más grande, desaparece en la pelea, cielo sin píxeles con sol negro y fugaces nuevas, música siniestra—, sin supersalto de Astwood, `freeze` como MythicMobs, el Mamut ya no aparece y desaparece; 1.3.86: la grieta del vacío, el cielo de nebulosas y estrellas fugaces junto a una grieta, sonidos propios y rayos de la muerte que respetan los bloques; 1.3.85: los jefes ya no andan de lado —el cuerpo es la dirección en la que los mueve Minecraft— y no sueltan al jugador que lanzan fuera de la arena; 1.3.84: prueba de los jefes en el juego de verdad en GitHub Actions y lo que encontró —grietas que se reiniciaban, jefes de espaldas, la correa que soltaba al jugador, jefes volando lejos—; 1.3.83: alcance de los golpes, sin objetos, barra al morir, música y muerte épica; web: tienda rediseñada). Repo `modelqdeluxe-ops/ss`. Rama de trabajo:
 `claude/intelligent-cray-63dqai` (se rehace desde `main` tras cada fusión); lo publicado está en `main`. Este documento
 es para que otra IA (o persona) siga exactamente donde se quedó: qué es el proyecto, qué reglas puso el dueño, **qué
 estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el puente con Minecraft y cómo publicar.
@@ -12,6 +12,33 @@ estábamos haciendo ahora mismo**, cómo funciona Cloudflare/Stripe/Discord/el p
 > **Para la siguiente IA: lee primero [`SIGUIENTE-IA.md`](SIGUIENTE-IA.md)** (qué hacemos, reglas, el procedimiento
 > exacto con la prueba en el juego en GitHub Actions, cómo publicar y lo que queda). Lo último está en el CHECKPOINT
 > de la 1.3.99, más abajo.
+
+### Web (3 nov 2026): CARRITO (un solo pago) y CUPONES DE DESCUENTO en el panel de staff (hecho)
+Pedido literal del dueño: «agrega en la tienda la opción del carrito, para que paguen 1 solo pago al comprar varios
+productos, y en el panel de staff dame la posibilidad de crear cupones de descuento, tanto en porcentaje como en
+valores enteros; todo funcional, nada de errores». No había trabajo previo en ninguna rama: se hizo entero.
+- **Carrito**: botón del carrito junto a cada «Comprar» (crates, rangos, protecciones, VFX; en el probador 3D y en
+  el escaparate de rangos «Al carrito»), «o Añadir al carrito» en la ventana de compra, botón flotante lima con
+  cuántos lleva y cuánto suman, y la ventana de pago en «modo carrito» (`openCart` en app.js: líneas con cantidad y
+  quitar, regalo, cupón, Stripe/PayPal/Mercado Pago). Backend: `POST /api/cart/quote` y `POST /api/cart/checkout`;
+  tabla `carts` (el pago) y cada producto un pedido normal con `cart_id`. `loadPayable`, `settled`, `setPay` y
+  `complete` en `src/app.js` hacen que los webhooks, `/sync`, el recibo y `/api/order/:id` sirvan igual para un
+  pedido que para un carrito; `fulfillCart` entrega cada producto (`fulfill(..., { quiet: true })`) y saca un solo
+  anuncio y un solo recibo; `cartReversal` retira todo con un reembolso completo o una disputa (una sanción).
+- **Cupones**: bloque «Cupones de descuento» en `/staff` (crear, copiar, pausar/activar, borrar; usos, apartados,
+  caducidad). Lógica pura en `src/coupons.js` (validar, descuento, reparto `allocate`); tabla `coupons`; columnas
+  `orders.coupon/discount`. Mínimo 1,00 USD con cupón. Campo «¿Tienes un cupón de descuento?» en la ventana de pago
+  (compra suelta y carrito).
+- Arreglos de paso: un aviso repetido de la misma disputa ya no cambia la etiqueta «fuera de plazo · baneo» por
+  «disputa» (`keepsLabel`); el texto legal de la ventana de pago a `--muted` (3,8:1 → 6,2:1) y la pastilla del rango
+  del jugador oscurecida con `color-mix` (1,4:1 → legible).
+- Comprobado: 71 pruebas (`npm test`, 8 nuevas de carrito y cupones con Stripe, PayPal, Mercado Pago, regalo,
+  reembolsos y disputa), `wrangler deploy --dry-run`, y en Chromium con la vista previa (`PREVIEW_STAFF=<clave> node
+  tools/preview.mjs`, trae los cupones VERANO10 y FIJO5): carrito de 4 productos, cupón aplicado e inválido, rango que
+  ya tiene bloqueado, pago (petición capturada) y la confirmación; contraste medido de todo lo nuevo (6–17:1) y sin
+  botones cortados de 360 a 1100 px (en tarjetas estrechas «Comprar» va arriba y regalo/carrito debajo: container
+  query de 215 px).
+- Documentado en `tierras-fantasticas/README.md` («Carrito» y «Cupones de descuento»).
 
 ### Web (22 oct 2026, 5.ª ronda): COMPRAR COMO REGALO, garantías fuera de la cabecera, pestañas con color (hecho y publicado)
 - **Regalo**: botón rosa con un regalo (`.btn-gift`, `data-gift`) junto a cada «Comprar» (tarjetas, crates, visor 3D,

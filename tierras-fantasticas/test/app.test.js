@@ -37,8 +37,11 @@ function startFakeStripe() {
     if (req.url === '/v1/checkout/sessions' && req.method === 'POST') {
       const form = new URLSearchParams(raw);
       const id = `cs_test_${nextSession++}`;
-      const unit = Number(form.get('line_items[0][price_data][unit_amount]'));
-      const quantity = Number(form.get('line_items[0][quantity]'));
+      // El total: la suma de todas las líneas (el carrito lleva varias)
+      let total = 0;
+      for (let i = 0; form.has(`line_items[${i}][quantity]`); i++) {
+        total += Number(form.get(`line_items[${i}][price_data][unit_amount]`)) * Number(form.get(`line_items[${i}][quantity]`));
+      }
       const session = {
         id,
         object: 'checkout.session',
@@ -47,7 +50,7 @@ function startFakeStripe() {
         payment_status: 'unpaid',
         payment_intent: null,
         client_reference_id: form.get('client_reference_id'),
-        amount_total: unit * quantity,
+        amount_total: total,
         currency: form.get('line_items[0][price_data][currency]'),
         metadata: { order_id: form.get('metadata[order_id]'), uuid: form.get('metadata[uuid]') },
         form: Object.fromEntries(form),
@@ -2036,4 +2039,399 @@ test('Tarjeta desde México: cobra en pesos (Carnet y débito mexicanos no acept
   const { id: id2 } = await (await buy({ 'CF-IPCountry': 'AR' })).json();
   assert.strictEqual(sessionOf(id2).currency, 'usd');
   assert.strictEqual(sessionOf(id2).amount_total, usd);
+});
+
+// --- Carrito y cupones (3 nov 2026) ---
+const staffCall = (path, { key = 'clave-del-staff', ip = '198.51.100.9', body, method = body ? 'POST' : 'GET' } = {}) =>
+  call(path, {
+    method,
+    headers: { 'CF-Connecting-IP': ip, 'Content-Type': 'application/json', ...(key ? { Authorization: `Bearer ${key}` } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+const newCoupon = async (body) => {
+  const res = await staffCall('/api/staff/coupons', { body });
+  return { status: res.status, data: await res.json() };
+};
+const priceOf = (id) => products.find((p) => p.id === id).price;
+const quoteCart = async (body, headers = {}) => {
+  const res = await call('/api/cart/quote', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
+  return { status: res.status, data: await res.json() };
+};
+const cartCheckout = async (body, { cookie, headers = {} } = {}) => {
+  const res = await call('/api/cart/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}), ...headers },
+    body: JSON.stringify({ acceptTerms: true, ...body }),
+  });
+  return { status: res.status, data: await res.json() };
+};
+
+test('cupones: el staff los crea (porcentaje o cantidad fija), los pausa y los borra; la tienda los comprueba', async () => {
+  // Sin la clave, nada
+  assert.strictEqual((await staffCall('/api/staff/coupons', { key: null })).status, 401);
+  assert.strictEqual((await staffCall('/api/staff/coupons', { key: null, body: { code: 'NADA1', kind: 'percent', value: 10 } })).status, 401);
+  // Lo que no vale
+  for (const bad of [
+    { code: 'a', kind: 'percent', value: 10 },
+    { code: 'CON ESPACIO', kind: 'percent', value: 10 },
+    { code: 'SINTIPO', kind: 'otro', value: 10 },
+    { code: 'CERO', kind: 'percent', value: 0 },
+    { code: 'CIEN', kind: 'percent', value: 100 },
+    { code: 'MEDIO', kind: 'percent', value: 10.5 },
+    { code: 'NADA', kind: 'amount', value: '0' },
+    { code: 'LETRAS', kind: 'amount', value: 'cinco' },
+    { code: 'VIEJO', kind: 'percent', value: 10, expiresAt: '2001-01-01' },
+    { code: 'USOS', kind: 'percent', value: 10, maxUses: 0 },
+  ]) {
+    const r = await newCoupon(bad);
+    assert.strictEqual(r.status, 400, `${bad.code} no debería valer`);
+    assert.ok(r.data.error);
+  }
+  const pct = await newCoupon({ code: 'verano10', kind: 'percent', value: '10', note: 'Promo de verano' });
+  assert.strictEqual(pct.status, 200, pct.data.error);
+  assert.strictEqual(pct.data.coupon.code, 'VERANO10');
+  const fijo = await newCoupon({ code: 'FIJO-2', kind: 'amount', value: '2,50', expiresAt: '2099-12-31' });
+  assert.strictEqual(fijo.status, 200, fijo.data.error);
+  assert.strictEqual(fijo.data.coupon.value, 250);
+  assert.match(fijo.data.coupon.expiresAt, /^2100-01-01T05:59:59/);
+  assert.strictEqual((await newCoupon({ code: 'VERANO10', kind: 'amount', value: 1 })).status, 409, 'no se repite el código');
+  const { coupons } = await (await staffCall('/api/staff/coupons')).json();
+  const byCode = (c) => coupons.find((x) => x.code === c);
+  assert.strictEqual(byCode('VERANO10').label, '10 %');
+  assert.strictEqual(byCode('FIJO-2').label, '2,50 USD');
+  assert.strictEqual(byCode('VERANO10').used, 0);
+  assert.strictEqual(byCode('VERANO10').note, 'Promo de verano');
+
+  // La tienda: el precio con el cupón (en minúsculas también vale)
+  await seen('Cupon_MC');
+  const crate = priceOf('crate-valentine');
+  let q = await quoteCart({ items: [{ productId: 'crate-valentine', quantity: 1 }], username: 'Cupon_MC', coupon: 'verano10' });
+  assert.strictEqual(q.status, 200);
+  assert.deepStrictEqual([q.data.subtotal, q.data.discount, q.data.total], [crate, Math.round(crate / 10), crate - Math.round(crate / 10)]);
+  assert.strictEqual(q.data.coupon.code, 'VERANO10');
+  q = await quoteCart({ items: [{ productId: 'crate-valentine' }], username: 'Cupon_MC', coupon: 'FIJO-2' });
+  assert.strictEqual(q.data.total, crate - 250);
+  // Un descuento fijo mayor que la compra deja el mínimo (1,00 USD), nunca 0
+  const grande = await newCoupon({ code: 'GRANDE', kind: 'amount', value: 50 });
+  assert.strictEqual(grande.status, 200);
+  q = await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'grande' });
+  assert.deepStrictEqual([q.data.discount, q.data.total], [crate - 100, 100]);
+
+  // Pausado no vale; activado otra vez, sí
+  assert.strictEqual((await staffCall('/api/staff/coupons/VERANO10', { body: { active: false } })).status, 200);
+  q = await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'VERANO10' });
+  assert.match(q.data.couponError, /pausado/);
+  assert.strictEqual(q.data.discount, 0);
+  assert.strictEqual((await staffCall('/api/staff/coupons/VERANO10', { body: { active: true } })).status, 200);
+  assert.strictEqual((await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'VERANO10' })).data.couponError, null);
+  // Compra mínima
+  assert.strictEqual((await newCoupon({ code: 'MIN20', kind: 'percent', value: 20, minTotal: '20' })).status, 200);
+  q = await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'MIN20' });
+  assert.match(q.data.couponError, /20\.00 USD o más/);
+
+  // Borrar
+  assert.strictEqual((await staffCall('/api/staff/coupons/GRANDE', { method: 'DELETE' })).status, 200);
+  assert.strictEqual((await staffCall('/api/staff/coupons/GRANDE', { method: 'DELETE' })).status, 404);
+  assert.match((await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'GRANDE' })).data.couponError, /no existe/);
+
+  // A quien prueba muchos códigos que no existen se le frena (otra IP sigue pudiendo)
+  const ip = { 'CF-Connecting-IP': '192.0.2.77' };
+  for (let i = 0; i < 8; i++) await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: `NOEXISTE${i}` }, ip);
+  assert.match((await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'VERANO10' }, ip)).data.couponError, /demasiados/i);
+  assert.strictEqual((await quoteCart({ items: [{ productId: 'crate-valentine' }], coupon: 'VERANO10' })).data.couponError, null);
+});
+
+test('comprar un producto con cupón: se cobra el total descontado, el cupón queda en el pedido y «uno por jugador» se cumple', async () => {
+  await seen('Uno_Cupon');
+  assert.strictEqual((await newCoupon({ code: 'SOLOUNO', kind: 'percent', value: 25, perPlayer: true, maxUses: 5 })).status, 200);
+  const unit = priceOf('proteccion-250x250');
+  const id = await checkout({ productId: 'proteccion-250x250', username: 'Uno_Cupon', quantity: 3, coupon: 'soloUno' });
+  const session = sessionOf(id);
+  const discount = Math.round((unit * 3) / 4);
+  assert.strictEqual(session.amount_total, unit * 3 - discount);
+  assert.strictEqual(session.form['line_items[0][quantity]'], '1', 'una línea con el total ya descontado');
+  assert.match(session.form['line_items[0][price_data][product_data][name]'], /×3 · cupón SOLOUNO/);
+  assert.strictEqual(session.metadata.order_id, id);
+  const order = await pay(id);
+  assert.strictEqual(order.status, 'queued');
+  assert.deepStrictEqual(order.coupon, { code: 'SOLOUNO', discount });
+  assert.strictEqual(order.amount, unit * 3 - discount);
+  // El mismo jugador ya no puede volver a usarlo; otro sí
+  const again = await post('/api/checkout', { acceptTerms: true, productId: 'proteccion-250x250', username: 'Uno_Cupon', coupon: 'SOLOUNO' });
+  assert.strictEqual(again.status, 400);
+  assert.match((await again.json()).error, /un solo uso por jugador/);
+  await seen('Otro_Cupon');
+  await checkout({ productId: 'proteccion-250x250', username: 'Otro_Cupon', coupon: 'SOLOUNO' });
+  const { coupons } = await (await staffCall('/api/staff/coupons')).json();
+  const c = coupons.find((x) => x.code === 'SOLOUNO');
+  assert.deepStrictEqual([c.used, c.reserved], [1, 1], 'uno pagado y uno empezado (apartado)');
+  // Un cupón que no existe no deja pagar (no se cobra sin el descuento a escondidas)
+  const bad = await post('/api/checkout', { acceptTerms: true, productId: 'proteccion-250x250', username: 'Otro_Cupon', coupon: 'NO-EXISTE' });
+  assert.strictEqual(bad.status, 400);
+  // El recibo dice el cupón
+  await serverDelivers('Uno_Cupon');
+  const pdf = Buffer.from(await (await get(`/api/order/${id}/receipt`)).arrayBuffer()).toString('latin1');
+  assert.match(pdf, /SOLOUNO/);
+  // Usos máximos: con los 5 usados (o apartados), ya no vale
+  assert.strictEqual((await newCoupon({ code: 'DOSUSOS', kind: 'amount', value: 1, maxUses: 2 })).status, 200);
+  await seen('Usos_A', 'Usos_B', 'Usos_C');
+  await checkout({ productId: 'crate-oni', username: 'Usos_A', coupon: 'DOSUSOS' });
+  await checkout({ productId: 'crate-oni', username: 'Usos_B', coupon: 'DOSUSOS' });
+  const full = await post('/api/checkout', { acceptTerms: true, productId: 'crate-oni', username: 'Usos_C', coupon: 'DOSUSOS' });
+  assert.strictEqual(full.status, 400);
+  assert.match((await full.json()).error, /todas las veces/);
+});
+
+test('carrito: varios productos en UN solo pago de Stripe con cupón; cada uno se entrega, se ve y se reembolsa', async () => {
+  received.length = 0;
+  mails.length = 0;
+  announcements.length = 0;
+  await seen('Carrito_MC');
+  const uuid = uuidOf('Carrito_MC');
+  const items = [
+    { productId: 'crate-valentine', quantity: 1 },
+    { productId: 'proteccion-250x250', quantity: 2 },
+    { productId: 'rango-mortal', quantity: 1 },
+    { productId: 'proteccion-250x250', quantity: 1 },
+  ];
+  const subtotal = priceOf('crate-valentine') + priceOf('proteccion-250x250') * 3 + priceOf('rango-mortal');
+  const q = await quoteCart({ items, username: 'Carrito_MC', coupon: 'VERANO10' });
+  assert.strictEqual(q.status, 200);
+  assert.strictEqual(q.data.lines.length, 3, 'los repetidos se juntan');
+  assert.strictEqual(q.data.lines.find((l) => l.productId === 'proteccion-250x250').quantity, 3);
+  assert.deepStrictEqual([q.data.subtotal, q.data.discount], [subtotal, Math.round(subtotal / 10)]);
+  assert.strictEqual(q.data.player.uuid, uuid);
+
+  // Sin términos o sin jugador conocido, no
+  assert.strictEqual((await cartCheckout({ items, username: 'Carrito_MC', acceptTerms: false })).status, 400);
+  assert.strictEqual((await cartCheckout({ items, username: 'Nadie_Carro' })).status, 404);
+
+  const { status, data } = await cartCheckout({ items, username: 'carrito_mc', coupon: 'VERANO10' });
+  assert.strictEqual(status, 200, data.error);
+  const cartId = data.id;
+  assert.match(cartId, /^CART[A-Z0-9]{16}$/);
+  assert.match(data.url, /^https:\/\/checkout\.stripe\.test\//);
+  const session = sessionOf(cartId);
+  const total = subtotal - Math.round(subtotal / 10);
+  assert.strictEqual(session.amount_total, total, 'un solo pago con el total descontado');
+  assert.ok(session.form['line_items[2][quantity]'] && !session.form['line_items[3][quantity]'], 'tres líneas');
+  assert.strictEqual(session.form['metadata[coupon]'], 'VERANO10');
+  assert.strictEqual(session.form.success_url, `http://tienda.test/success?order=${cartId}`);
+
+  let view = await (await get(`/api/order/${cartId}`)).json();
+  assert.strictEqual(view.cart, true);
+  assert.strictEqual(view.status, 'pending');
+  assert.strictEqual(view.items.length, 3);
+  assert.strictEqual(view.amount, total);
+  assert.strictEqual(view.items.reduce((a, it) => a + it.amount, 0), total, 'la suma de los pedidos es lo cobrado');
+  // Sin pagar no sale en el panel ni se entrega
+  assert.ok(!(await (await staffCall('/api/staff/orders')).json()).orders.some((o) => o.cartId === cartId));
+
+  // Pagado: cada producto a la cola; el aviso repetido no entrega dos veces
+  view = await pay(cartId);
+  assert.strictEqual(view.status, 'queued');
+  assert.ok(view.items.every((it) => it.status === 'queued'));
+  await pay(cartId);
+  assert.strictEqual((await (await post(`/api/order/${cartId}/sync`)).json()).status, 'queued');
+  assert.strictEqual(announcements.length, 1, 'un solo anuncio para todo el carrito');
+  assert.match(announcements[0].embeds[0].description, /Rango Mortal/);
+  assert.strictEqual(mails.filter((m) => m.subject.startsWith(`Recibo ${cartId}`)).length, 1, 'un solo recibo');
+  assert.strictEqual(mails.filter((m) => m.subject.startsWith('Recibo ') && !m.subject.startsWith(`Recibo ${cartId}`)).length, 0);
+  assert.strictEqual(mails.filter((m) => /Firma de los Términos/.test(m.subject)).length, 1);
+
+  const delivered = await serverDelivers('Carrito_MC');
+  assert.strictEqual(delivered.length, 3);
+  const expected = [
+    ...cmdsOf('crate-valentine', 'Carrito_MC'),
+    ...[1, 2, 3].flatMap(() => cmdsOf('proteccion-250x250', 'Carrito_MC')),
+    ...cmdsOf('rango-mortal', 'Carrito_MC'),
+  ];
+  assert.deepStrictEqual([...received].sort(), [...expected].sort());
+  assert.strictEqual((await (await get('/api/player/Carrito_MC')).json()).rank.id, 'rango-mortal');
+  view = await (await get(`/api/order/${cartId}`)).json();
+  assert.strictEqual(view.status, 'delivered');
+  assert.deepStrictEqual(view.coupon, { code: 'VERANO10', discount: Math.round(subtotal / 10) });
+
+  // El recibo del carrito: todos los productos y el cupón
+  const receipt = await get(`/api/order/${cartId}/receipt`);
+  assert.strictEqual(receipt.status, 200);
+  assert.strictEqual(receipt.headers.get('Content-Type'), 'application/pdf');
+  const pdf = Buffer.from(await receipt.arrayBuffer()).toString('latin1');
+  assert.match(pdf, /VERANO10/);
+  // En el panel: cada producto con su carrito y su cupón; el cupón cuenta un uso (el carrito es un pago)
+  const { orders } = await (await staffCall('/api/staff/orders')).json();
+  const rows = orders.filter((o) => o.cartId === cartId);
+  assert.strictEqual(rows.length, 3);
+  assert.ok(rows.every((o) => o.refundable && o.coupon?.code === 'VERANO10'));
+  const used = (await (await staffCall('/api/staff/coupons')).json()).coupons.find((c) => c.code === 'VERANO10').used;
+  assert.strictEqual(used, 1);
+  // Y en «Mis compras» del jugador, cada uno
+  const cookie = await register('Carrito_MC');
+  const mine = (await (await get('/api/account/orders', { Cookie: cookie })).json()).orders.filter((o) => o.cartId === cartId);
+  assert.strictEqual(mine.length, 3);
+
+  // El staff reembolsa solo uno de los productos: solo ese se retira
+  const crateRow = rows.find((o) => o.product === products.find((p) => p.id === 'crate-valentine').name);
+  assert.strictEqual((await staffCall('/api/staff/refund', { body: { id: crateRow.id } })).status, 200);
+  let pending = (await (await poll([])).json()).deliveries;
+  assert.deepStrictEqual(pending.map((d) => d.order), [crateRow.id]);
+  await poll([], pending.map((d) => ({ id: d.id, ok: true })));
+
+  // Reembolso completo del pago en Stripe: se retira todo lo demás (y lo ya retirado no se repite)
+  await signedEvent({ type: 'charge.refunded', data: { object: { id: 'ch_cart', payment_intent: sessionOf(cartId).payment_intent, refunded: true } } });
+  // (las protecciones se dan con «give» y no se pueden quitar del servidor: solo queda apuntado el reembolso)
+  pending = (await (await poll([])).json()).deliveries;
+  assert.strictEqual(pending.length, 1);
+  assert.ok(pending.every((d) => d.kind === 'revocacion' && d.uuid === uuid));
+  assert.ok(pending[0].commands.includes('lp user {uuid} parent remove mortal'));
+  assert.strictEqual((await (await get('/api/player/Carrito_MC')).json()).rank, null);
+  view = await (await get(`/api/order/${cartId}`)).json();
+  assert.strictEqual(view.refunded, 'reembolsado');
+  assert.ok(view.items.every((it) => it.refunded));
+  assert.ok(mails.some((m) => m.subject === `Reembolso · pedido ${cartId} · Carrito_MC`));
+});
+
+test('carrito: lo que no se puede juntar (dos rangos, lo de monedas, lo gratis, lo que ya tiene) y el carrito vacío', async () => {
+  await seen('Carro_Malo');
+  const bad = async (items, code) => {
+    const r = await cartCheckout({ items, username: 'Carro_Malo' });
+    assert.strictEqual(r.status, code === 'rank_owned' || code === 'owned' ? 409 : 400, JSON.stringify(r.data));
+    assert.strictEqual(r.data.code, code);
+    return r.data;
+  };
+  await bad([], 'empty');
+  await bad([{ productId: 'rango-mortal' }, { productId: 'rango-magico' }], 'ranks');
+  await bad([{ productId: 'no-existe' }], 'invalid');
+  await bad([{ productId: 'especial-nitro' }], 'invalid');
+  const coins = products.find((p) => p.coinsOnly);
+  await bad([{ productId: coins.id }], 'coins');
+  const free = products.find((p) => p.price === 0 && !p.staffOnly);
+  await bad([{ productId: free.id }], 'free');
+  await bad([{ productId: 'crate-oni', quantity: 2 }], 'quantity');
+  await bad([{ productId: 'proteccion-250x250', quantity: 3 }, { productId: 'proteccion-250x250', quantity: 3 }], 'quantity');
+  await bad(Array.from({ length: 21 }, (_, i) => ({ productId: products.filter((p) => p.category === 'crates')[i].id })), 'cart');
+  // Ya tiene ese rango: el carrito dice cuál y por qué
+  const id = await checkout({ productId: 'rango-inmortal', username: 'Carro_Malo' });
+  await pay(id);
+  const q = await quoteCart({ items: [{ productId: 'crate-oni' }, { productId: 'rango-mortal' }], username: 'Carro_Malo' });
+  assert.strictEqual(q.status, 200);
+  assert.match(q.data.lines.find((l) => l.productId === 'rango-mortal').blocked, /Solo puedes mejorar/);
+  const r = await bad([{ productId: 'crate-oni' }, { productId: 'rango-mortal' }], 'rank_owned');
+  assert.strictEqual(r.productId, 'rango-mortal');
+  // La mejora de rango en el carrito paga la diferencia
+  const up = await quoteCart({ items: [{ productId: 'rango-magico' }], username: 'Carro_Malo' });
+  assert.strictEqual(up.data.lines[0].unit, priceOf('rango-magico') - priceOf('rango-inmortal'));
+  assert.match(up.data.lines[0].upgradeFrom, /Inmortal/);
+});
+
+test('carrito con PayPal (y como regalo) y con Mercado Pago en pesos: un pago, todo entregado', async () => {
+  received.length = 0;
+  await seen('Carro_Pp', 'Carro_Mp');
+  const cookie = await register('Regala_Carro');
+  const items = [{ productId: 'crate-oni' }, { productId: 'proteccion-250x250', quantity: 2 }];
+  const subtotal = priceOf('crate-oni') + priceOf('proteccion-250x250') * 2;
+  // Regalo con cupón: el que paga es quien regala
+  const { status, data } = await cartCheckout({ items, username: 'Carro_Pp', method: 'paypal', gift: true, message: '¡Para ti!', coupon: 'FIJO-2' }, { cookie });
+  assert.strictEqual(status, 200, data.error);
+  const ppOrder = [...paypalOrders.values()].find((o) => o.purchase_units[0].custom_id === data.id);
+  const unit = ppOrder.purchase_units[0];
+  assert.strictEqual(unit.amount.value, ((subtotal - 250) / 100).toFixed(2));
+  assert.strictEqual(unit.items.length, 2);
+  const itemsTotal = unit.items.reduce((a, it) => a + Math.round(Number(it.unit_amount.value) * 100) * Number(it.quantity), 0);
+  assert.strictEqual(itemsTotal, subtotal - 250, 'las líneas suman el total');
+  assert.strictEqual(unit.amount.breakdown.item_total.value, unit.amount.value);
+  ppOrder.approved = true;
+  const view = await (await post(`/api/order/${data.id}/sync`)).json();
+  assert.strictEqual(view.status, 'queued');
+  assert.deepStrictEqual(view.gift, { from: 'Regala_Carro', message: '¡Para ti!' });
+  // El aviso de PayPal del mismo cobro no entrega dos veces
+  await paypalWebhook({ event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: unit.payments.captures[0] });
+  const delivered = await serverDelivers('Carro_Pp');
+  assert.strictEqual(delivered.length, 2);
+  assert.ok(received.some((c) => c.startsWith('tellraw Carro_Pp') && c.includes('Regala_Carro te ha regalado')));
+  // El que regala lo ve en sus compras
+  const mine = (await (await get('/api/account/orders', { Cookie: cookie })).json()).orders.filter((o) => o.cartId === data.id);
+  assert.strictEqual(mine.length, 2);
+
+  // Mercado Pago: en pesos, cada producto al cambio del día; la suma es lo cobrado
+  const mp = await cartCheckout({ items, username: 'Carro_Mp', method: 'mercadopago' });
+  assert.strictEqual(mp.status, 200, mp.data.error);
+  const pref = [...mpPrefs.values()].find((p) => p.external_reference === mp.data.id);
+  assert.strictEqual(pref.items.length, 2);
+  assert.ok(pref.items.every((it) => it.currency_id === 'MXN'));
+  const mxn = Math.ceil(priceOf('crate-oni') * 18.68 - 1e-9) + Math.ceil(priceOf('proteccion-250x250') * 18.68 - 1e-9) * 2;
+  const prefTotal = pref.items.reduce((a, it) => a + Math.round(it.unit_price * 100) * it.quantity, 0);
+  assert.strictEqual(prefTotal, mxn);
+  const q = await quoteCart({ items, username: 'Carro_Mp' });
+  assert.strictEqual(q.data.mxn, mxn, 'la tienda enseña lo mismo en pesos');
+  mpPayments.set('9101', { id: 9101, status: 'approved', external_reference: mp.data.id, transaction_amount: mxn / 100, currency_id: 'MXN' });
+  assert.strictEqual((await mpWebhook('9101')).status, 200);
+  const mpView = await (await get(`/api/order/${mp.data.id}`)).json();
+  assert.strictEqual(mpView.status, 'queued');
+  assert.strictEqual(mpView.currency, 'MXN');
+  assert.strictEqual(mpView.amount, mxn);
+  // Una disputa (contracargo) del pago del carrito lo retira todo
+  mpPayments.set('9101', { ...mpPayments.get('9101'), status: 'charged_back' });
+  assert.strictEqual((await mpWebhook('9101')).status, 200);
+  const after = await (await get(`/api/order/${mp.data.id}`)).json();
+  assert.strictEqual(after.refunded, 'disputa');
+  assert.ok(after.items.every((it) => it.refunded === 'disputa'));
+});
+
+test('carrito con Stripe que caduca o que no cuadra: no se entrega nada', async () => {
+  await seen('Carro_Caduca');
+  const items = [{ productId: 'crate-oni' }, { productId: 'crate-valentine' }];
+  const a = await cartCheckout({ items, username: 'Carro_Caduca' });
+  const s = sessionOf(a.data.id);
+  s.status = 'expired';
+  await signedEvent({ type: 'checkout.session.expired', data: { object: s } });
+  let view = await (await get(`/api/order/${a.data.id}`)).json();
+  assert.strictEqual(view.status, 'expired');
+  assert.ok(view.items.every((it) => it.status === 'expired'));
+  const b = await cartCheckout({ items, username: 'Carro_Caduca' });
+  view = await pay(b.data.id, { amount_total: 1 });
+  assert.strictEqual(view.status, 'error');
+  assert.ok(view.items.every((it) => it.status === 'error'));
+  assert.deepStrictEqual((await (await poll(['Carro_Caduca'])).json()).deliveries, []);
+  assert.strictEqual((await get(`/api/order/${b.data.id}/receipt`)).status, 404);
+});
+
+test('disputa del pago de un carrito fuera de plazo: se retira todo, UNA sanción y el expediente del carrito', async () => {
+  mails.length = 0;
+  await seen('Carro_Disputa');
+  const { data } = await cartCheckout({ items: [{ productId: 'crate-oni' }, { productId: 'rango-mortal' }], username: 'Carro_Disputa' });
+  await pay(data.id);
+  await serverDelivers('Carro_Disputa');
+  // Entregado hace 3 días
+  const old = new Date(Date.now() - 3 * 86400000).toISOString();
+  env.DB.raw.prepare('UPDATE orders SET delivered_at = ?, paid_at = ? WHERE cart_id = ?').run(old, old, data.id);
+  const dispute = { id: 'dp_carro', object: 'dispute', payment_intent: sessionOf(data.id).payment_intent };
+  await signedEvent({ type: 'charge.dispute.created', data: { object: dispute } });
+  await signedEvent({ type: 'charge.dispute.created', data: { object: dispute } });
+  const { deliveries } = await (await poll([])).json();
+  assert.strictEqual(deliveries.filter((d) => d.kind === 'penalizacion').length, 1, 'una sola sanción');
+  assert.match(deliveries.find((d) => d.kind === 'penalizacion').commands[0], new RegExp(`^tempbanip \\{player\\} 15d .*${data.id}`));
+  assert.strictEqual(deliveries.filter((d) => d.kind === 'revocacion').length, 2);
+  const view = await (await get(`/api/order/${data.id}`)).json();
+  assert.match(view.refunded, /fuera de plazo · baneo de IP de 15 días/);
+  assert.ok(disputeEvidence.has('dp_carro'), 'pruebas rellenadas en Stripe');
+  const mail = mails.find((m) => m.subject === `DISPUTA · pedido ${data.id} · Carro_Disputa`);
+  assert.ok(mail, 'el correo de la disputa');
+  assert.deepStrictEqual(mail.attachments.map((a) => a.filename), [`recibo-${data.id}.pdf`, `disputa-${data.id}.pdf`]);
+  // El expediente desde el panel (con uno de sus pedidos) es el del carrito
+  const child = view.items[0].id;
+  const pdf = await staffCall('/api/staff/dispute-pdf', { body: { id: child } });
+  assert.strictEqual(pdf.status, 200);
+  assert.match(Buffer.from(await pdf.arrayBuffer()).toString('latin1'), new RegExp(data.id));
+});
+
+test('el cupón se comprueba aunque el carrito tenga algo que el jugador ya tiene (y se descuenta de lo demás)', async () => {
+  await seen('Cupon_Bloq');
+  const id = await checkout({ productId: 'rango-mortal', username: 'Cupon_Bloq' });
+  await pay(id);
+  const q = await quoteCart({ items: [{ productId: 'crate-oni' }, { productId: 'rango-mortal' }], username: 'Cupon_Bloq', coupon: 'VERANO10' });
+  assert.strictEqual(q.status, 200);
+  assert.ok(q.data.lines.find((l) => l.productId === 'rango-mortal').blocked);
+  assert.strictEqual(q.data.coupon.code, 'VERANO10');
+  assert.deepStrictEqual([q.data.subtotal, q.data.discount], [priceOf('crate-oni'), Math.round(priceOf('crate-oni') / 10)]);
 });

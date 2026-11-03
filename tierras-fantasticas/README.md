@@ -251,6 +251,40 @@ del dueño con [Resend](https://resend.com). Todo queda además en D1 (`terms_ac
 Sin estos Secrets no se envía nada y las compras siguen igual. El jugador descarga su propio recibo en PDF al terminar
 de pagar (`GET /api/order/<id>/receipt`, solo pedidos pagados con dinero), aparte del de Stripe o PayPal.
 
+**Carrito (3 nov 2026)**: junto a cada «Comprar» (crates, rangos, protecciones y efectos VFX) hay un botón con un
+carrito, y en la ventana de compra «o Añadir al carrito y seguir comprando». El carrito se guarda en el navegador
+(`localStorage` «tf-cart») y un botón flotante (abajo a la derecha) dice cuántos productos lleva y cuánto suman; al
+tocarlo se abre la misma ventana de pago con la lista (cantidades, quitar, vaciar), «Para mí / Como regalo», el
+cupón y los métodos de pago. **Un solo pago** con Stripe, PayPal o Mercado Pago (en pesos al cambio del día) por todo:
+- `POST /api/cart/quote` da el precio de cada línea para ese jugador (mejoras de rango, lo que ya tiene bloqueado) y
+  el del cupón; `POST /api/cart/checkout` crea el pago. Lo de monedas, lo gratis y lo «solo staff» no entra; un rango
+  por compra; como mucho 20 productos distintos; los repetidos se juntan.
+- En la base de datos: el carrito es el pago (tabla `carts`, número `CART…`, con su sesión, importe, cupón y quién
+  paga) y **cada producto es un pedido normal** de `orders` con `cart_id` (número del carrito + `01`, `02`…): se
+  entrega, sale en «Mis compras» y en el panel, y el staff lo puede reembolsar suelto. El importe del carrito se
+  reparte entre sus pedidos (con su parte del cupón) y la suma es exactamente lo cobrado.
+- Al pagarse: cada producto a la cola del puente, sus roles de Discord, **un solo anuncio** con todo y **un solo
+  recibo** (PDF con todos los productos y el cupón; `GET /api/order/CART…/receipt`). La página `/success?order=CART…`
+  enseña los productos y vacía el carrito del navegador.
+- Reembolso completo o disputa del pago (Stripe, PayPal o Mercado Pago): se retira todo lo del carrito, una sola
+  sanción si es fuera de plazo y un solo correo con el expediente. Un reembolso parcial solo se apunta en el carrito
+  (el staff retira desde `/staff` los productos que devolvió).
+
+**Cupones de descuento (3 nov 2026)**: los crea el staff en `/staff` («Cupones de descuento»): código (o «Generar»),
+**porcentaje** (1–99 %) o **cantidad fija** en dólares, usos máximos (vacío = ilimitados), un solo uso por jugador,
+compra mínima, caducidad (vale todo ese día, hora de México) y una nota. Se pausan, se activan y se borran desde la
+lista, que dice cuántas veces se usó. El jugador lo escribe en la ventana de pago («¿Tienes un cupón de descuento?»),
+en la compra suelta y en el carrito; el servidor lo vuelve a comprobar al pagar.
+- El descuento sale del precio en dólares (o del de la mejora de rango) y **el total con cupón nunca baja de
+  1,00 USD** (lo mínimo que cobran las pasarelas; para dar algo gratis está «Test»). Con pesos, cada producto ya
+  descontado se pasa al cambio del día. En la página de pago va una línea con el total descontado («×N · cupón X»).
+- Usos: cada pago pagado con el cupón (un pedido suelto o un carrito) cuenta uno, también si luego se reembolsa; los
+  pagos empezados hace menos de 65 minutos (o esperando el cobro del banco) lo «apartan». «Uno por jugador» mira a
+  quien paga (en un regalo, quien regala).
+- Rutas: `GET/POST /api/staff/coupons`, `POST /api/staff/coupons/<código>` (`{ active }`) y
+  `DELETE /api/staff/coupons/<código>`, con `ADMIN_KEY`. A quien prueba 8 códigos que no existen se le frena 15 minutos.
+- El pedido guarda `coupon` y `discount` (céntimos de dólar); salen en el recibo, en el panel y en «Mis compras».
+
 **Comprar como regalo**: con la cuenta iniciada, el botón del regalo (o «Como regalo» en la ventana de pago) compra
 para otro jugador que haya entrado al servidor. El pedido es del que lo recibe (le llega con un `tellraw` de quién es
 y el mensaje); la firma de los Términos, el recibo y la sanción por reembolso injustificado son de quien paga.

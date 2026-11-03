@@ -88,8 +88,21 @@ export class PayPal {
     return data;
   }
 
-  createOrder({ amount, currency, description, customId, item, brandName, returnUrl, cancelUrl, requestId }) {
+  // (3 nov 2026) «items» cobra varios productos de una vez (el carrito); «item», uno. amount = la suma de sus líneas.
+  createOrder({ amount, currency, description, customId, item, items, brandName, returnUrl, cancelUrl, requestId }) {
     const currency_code = currency.toUpperCase();
+    const lines = (items?.length ? items : [item]).map((it) => ({
+      name: it.name.slice(0, 127),
+      // (2026-10-25, el dueño: «en PayPal sale sin descripción del producto, imagen o nada») lo que es, su imagen (PayPal
+      // solo acepta JPG/PNG/GIF: tools/paypal_images.py) y su página; PayPal los enseña al tocar el importe de arriba
+      ...(it.description ? { description: it.description.slice(0, 127) } : {}),
+      ...(it.sku ? { sku: String(it.sku).slice(0, 127) } : {}),
+      ...(safeImage(it.imageUrl) ? { image_url: safeImage(it.imageUrl) } : {}),
+      ...(safeUrl(it.url) ? { url: safeUrl(it.url) } : {}),
+      quantity: String(it.quantity),
+      unit_amount: { currency_code, value: formatAmount(it.unitAmount, currency) },
+      category: 'DIGITAL_GOODS',
+    }));
     return this.request(
       'POST',
       '/v2/checkout/orders',
@@ -104,21 +117,7 @@ export class PayPal {
               value: formatAmount(amount, currency),
               breakdown: { item_total: { currency_code, value: formatAmount(amount, currency) } },
             },
-            items: [
-              {
-                name: item.name.slice(0, 127),
-                // (2026-10-25, el dueño: «en PayPal sale sin descripción del producto, imagen o nada») lo que es, su
-                // imagen (PayPal solo acepta JPG/PNG/GIF: tools/paypal_images.py) y su página; PayPal los enseña al
-                // tocar el importe de arriba
-                ...(item.description ? { description: item.description.slice(0, 127) } : {}),
-                ...(item.sku ? { sku: String(item.sku).slice(0, 127) } : {}),
-                ...(safeImage(item.imageUrl) ? { image_url: safeImage(item.imageUrl) } : {}),
-                ...(safeUrl(item.url) ? { url: safeUrl(item.url) } : {}),
-                quantity: String(item.quantity),
-                unit_amount: { currency_code, value: formatAmount(item.unitAmount, currency) },
-                category: 'DIGITAL_GOODS',
-              },
-            ],
+            items: lines,
           },
         ],
         // Producto digital: sin dirección de envío.
