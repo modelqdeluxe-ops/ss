@@ -120,8 +120,8 @@ export function receiptRows({ order, productName, acceptance, owner = false, ite
           ...(order.gift.message ? [['Mensaje del regalo', order.gift.message]] : []),
         ]
       : []),
-    [order.gift ? 'Jugador que lo recibe' : 'Jugador de Minecraft', order.username],
-    [order.gift ? 'UUID de quien lo recibe' : 'UUID del jugador', order.uuid || '—'],
+    [order.gift ? 'Jugador que lo recibe' : items?.length ? 'Jugador que paga' : 'Jugador de Minecraft', order.username],
+    [order.gift ? 'UUID de quien lo recibe' : items?.length ? 'UUID de quien paga' : 'UUID del jugador', order.uuid || '—'],
     ...(items?.length ? [] : [['Producto', `${productName}${order.quantity > 1 ? ` ×${order.quantity}` : ''}`]]),
     ...cartRows({ order, items, cart, coupon }),
     [cart ? 'Parte de este producto' : 'Importe total pagado', `${money(order.amount, order.currency)} (${order.currency}, precio final)`],

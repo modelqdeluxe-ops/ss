@@ -1,7 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
-> **3 nov 2026 — WEB: CARRITO Y CUPONES**: carrito con un solo pago (Stripe, PayPal, Mercado Pago) y cupones de
-> descuento (porcentaje o cantidad fija) que crea el staff en `/staff`. Cómo funciona: «Carrito» y «Cupones de
+> **3 nov 2026 — WEB: CARRITO Y CUPONES**: carrito con un solo pago (Stripe, PayPal, Mercado Pago), sin topes y con
+> regalos para varios jugadores (cada línea con su destinatario), y cupones de descuento (porcentaje o cantidad fija)
+> que crea el staff en `/staff`. Cómo funciona: «Carrito» y «Cupones de
 > descuento» en `tierras-fantasticas/README.md`; lo hecho, en el CHECKPOINT de `HANDOFF.md` («Web (3 nov 2026)»).
 >
 > **1 nov 2026 — 1.3.164, AUDITORÍA DE LOS SETS NUEVOS**: alas y mochilas pegadas, sin rayas negras, cascos sin la skin

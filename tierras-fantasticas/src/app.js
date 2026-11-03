@@ -27,7 +27,7 @@ const PASSWORD_MAX = 128;
 const SESSION_DAYS = 60;
 const MAX_QUANTITY = 10;
 // (3 nov 2026) El carrito: como mucho tantos productos distintos en un mismo pago
-const CART_MAX_LINES = 20;
+const CART_MAX_LINES = 50;
 // Stripe no cobra menos de 0,50 (en USD/EUR); una mejora de rango nunca baja de aquí.
 const MIN_CHARGE = 50;
 const SESSION_COOKIE = 'tf_session';
@@ -513,14 +513,19 @@ export function createApp(env) {
       deliveredAt: done ? children.map((o) => o.deliveredAt).sort().at(-1) : null,
     };
   }
-  const productLabel = (o) => `${productById.get(o.productId)?.name || o.productId}${o.quantity > 1 ? ` ×${o.quantity}` : ''}`;
+  const productLabel = (o) => `${productById.get(o.productId)?.name || o.productId}${o.quantity > 1 ? ` ×${o.quantity}` : ''}${o.gift ? ` (regalo para ${o.username})` : ''}`;
   const cartProducts = (children) => children.map(productLabel).join(', ');
 
   async function cartReceiptFor(cart, owner) {
     const children = await store.cartOrders(cart.id);
     const acceptance = await store.termsForOrder(cart.id);
     const order = cartAsOrder(cart, children);
-    const items = children.map((o) => ({ name: productById.get(o.productId)?.name || o.productId, quantity: o.quantity, amount: o.amount, currency: o.currency }));
+    const items = children.map((o) => ({
+      name: `${productById.get(o.productId)?.name || o.productId}${o.gift ? ` (regalo para ${o.username})` : cart.gift ? '' : o.username !== cart.username ? ` (para ${o.username})` : ''}`,
+      quantity: o.quantity,
+      amount: o.amount,
+      currency: o.currency,
+    }));
     const coupon = cart.coupon ? { code: cart.coupon, subtotal: cart.subtotal, discount: cart.discount } : null;
     const args = { order, productName: cartProducts(children), acceptance, owner, items, coupon };
     return { pdf: receiptPdf(args), rows: receiptRows(args), order };
@@ -648,45 +653,116 @@ export function createApp(env) {
   // --- Carrito: varios productos en un solo pago ---
 
   /**
-   * Las líneas de una compra con su precio para el jugador que la recibe (las mejoras de rango cuestan la diferencia;
-   * lo que ya tiene sale bloqueado). Sin jugador, el precio del catálogo. Los productos repetidos se juntan.
-   * Devuelve { lines: [{ product, quantity, unit, line, from, blocked }] } o { error, code }.
+   * Las líneas de una compra. (3 nov 2026, el dueño: «quiero que añada todo lo que yo quiera… poder mandar varios
+   * regalos a 4 jugadores distintos en un solo pago») Cada línea es un producto PARA UN JUGADOR: el de «para ti» (self:
+   * el nombre que escribe quien compra) o un regalo («to», con su mensaje). El precio es el de ese jugador: lo que ya
+   * tiene sale bloqueado y las mejoras de rango cuestan la diferencia; varios rangos para el mismo jugador van de menor
+   * a mayor y cada uno es una mejora desde el anterior (como comprarlos seguidos). Lo mismo para el mismo jugador se
+   * junta (y su cantidad no pasa del máximo del producto).
+   * Devuelve { lines: [{ product, quantity, unit, line, from, blocked, blockedCode, keys, to, recipient, gift, message }] }
+   * o { error, code }. keys: las líneas del navegador («producto|destinatario») que forman esta.
    */
-  async function priceLines(rawItems, uuid) {
+  async function priceLines(rawItems, { self = null, buyerUuid = null } = {}) {
     if (!Array.isArray(rawItems) || !rawItems.length) return { error: 'Tu carrito está vacío.', code: 'empty' };
-    if (rawItems.length > 100) return { error: 'Demasiados productos.', code: 'cart' };
-    const merged = new Map();
+    if (rawItems.length > CART_MAX_LINES * 2) return { error: 'Demasiados productos.', code: 'cart' };
+    const buyer = buyerUuid ? String(buyerUuid).toLowerCase() : null;
+    const raw = [];
     for (const it of rawItems) {
       const id = typeof it?.productId === 'string' ? it.productId : null;
-      const qty = Number.parseInt(it?.quantity ?? 1, 10);
       if (!id) return { error: 'Producto no válido.', code: 'invalid' };
-      merged.set(id, (merged.get(id) || 0) + (Number.isInteger(qty) ? qty : Number.NaN));
+      const qty = Number.parseInt(it?.quantity ?? 1, 10);
+      const to = typeof it?.to === 'string' ? it.to.trim() : '';
+      if (to && !USERNAME_RE.test(to)) return { error: `«${to.slice(0, 20)}» no es un nombre de Minecraft válido.`, code: 'invalid_player' };
+      raw.push({ id, qty: Number.isInteger(qty) ? qty : Number.NaN, to, key: `${id}|${to.toLowerCase()}`, message: cleanGiftMessage(it?.message) || null });
     }
-    if (merged.size > CART_MAX_LINES) return { error: `Como mucho ${CART_MAX_LINES} productos distintos por compra.`, code: 'cart' };
-    const lines = [];
-    let ranksIn = 0;
-    for (const [id, quantity] of merged) {
-      const product = productById.get(id);
-      if (!product || product.staffOnly) return { error: 'Hay un producto que ya no está a la venta: quítalo del carrito.', code: 'invalid', productId: id };
-      if (product.price === 0) return { error: `${product.name} es gratis: reclámalo con tu cuenta.`, code: 'free', productId: id };
-      if (product.coinsOnly) return { error: `${product.name} solo se compra con Fantastic Coins.`, code: 'coins', productId: id };
-      const max = product.maxQuantity || MAX_QUANTITY;
-      if (!Number.isInteger(quantity) || quantity < 1 || quantity > max) {
-        return { error: `La cantidad de ${product.name} debe estar entre 1 y ${max}.`, code: 'quantity', productId: id };
+    // Quién recibe cada una (los regalos, por su nombre en el servidor)
+    const found = new Map();
+    for (const r of raw) if (r.to && !found.has(r.to.toLowerCase())) found.set(r.to.toLowerCase(), await store.findPlayer(r.to));
+    const merged = new Map();
+    for (const r of raw) {
+      const target = r.to ? found.get(r.to.toLowerCase()) : self;
+      const who = target ? target.uuid.toLowerCase() : r.to ? `?${r.to.toLowerCase()}` : 'self';
+      const mk = `${r.id}|${who}`;
+      const m = merged.get(mk);
+      if (m) {
+        m.quantity += r.qty;
+        if (!m.keys.includes(r.key)) m.keys.push(r.key);
+        m.message ||= r.message;
+      } else {
+        merged.set(mk, { id: r.id, quantity: r.qty, to: r.to || null, target, keys: [r.key], message: r.message });
       }
-      if (rankById.has(id) && ++ranksIn > 1) return { error: 'Solo se puede comprar un rango por compra: deja el más alto.', code: 'ranks' };
-      const q = uuid ? await quote(product, uuid) : { unit: product.price };
-      lines.push({
-        product,
-        quantity,
-        unit: q.blocked ? null : q.unit,
-        line: q.blocked ? 0 : q.unit * quantity,
-        from: q.from || null,
-        blocked: q.blocked || null,
-        blockedCode: q.code || (q.blocked ? 'rank_owned' : null),
-      });
+    }
+    if (merged.size > CART_MAX_LINES) return { error: `Como mucho ${CART_MAX_LINES} líneas por compra: paga estas y sigue después.`, code: 'cart' };
+    const lines = [];
+    for (const m of merged.values()) {
+      const product = productById.get(m.id);
+      if (!product || product.staffOnly) return { error: 'Hay un producto que ya no está a la venta: quítalo del carrito.', code: 'invalid', productId: m.id };
+      if (product.price === 0) return { error: `${product.name} es gratis: reclámalo con tu cuenta.`, code: 'free', productId: m.id };
+      if (product.coinsOnly) return { error: `${product.name} solo se compra con Fantastic Coins.`, code: 'coins', productId: m.id };
+      const max = product.maxQuantity || MAX_QUANTITY;
+      const whom = m.target ? ` para ${m.target.name}` : m.to ? ` para ${m.to}` : '';
+      if (!Number.isInteger(m.quantity) || m.quantity < 1 || m.quantity > max) {
+        return {
+          error: max === 1 ? `${product.name}${whom} ya está en el carrito: es uno por jugador.` : `La cantidad de ${product.name}${whom} debe estar entre 1 y ${max}.`,
+          code: 'quantity',
+          productId: m.id,
+        };
+      }
+      const recipient = m.target ? { uuid: m.target.uuid.toLowerCase(), name: m.target.name } : null;
+      // Un «regalo» a uno mismo es una compra normal
+      const gift = Boolean(m.to && recipient && recipient.uuid !== buyer);
+      lines.push({ product, quantity: m.quantity, keys: m.keys, to: m.to, recipient, gift, message: gift ? m.message : null, unknown: Boolean(m.to && !m.target) });
+    }
+    // Los rangos al final y de menor a mayor (el orden en que se entregan): así cada uno mejora desde el anterior
+    lines.sort((a, b) => (rankById.get(a.product.id)?.tier ?? -1) - (rankById.get(b.product.id)?.tier ?? -1));
+    const cartRank = new Map();
+    for (const l of lines) {
+      l.unit = null;
+      l.line = 0;
+      l.from = null;
+      l.blocked = null;
+      l.blockedCode = null;
+      if (l.unknown) {
+        l.blocked = `No encontramos a ${l.to} en ${SERVER_NAME}: tiene que haber entrado al servidor al menos una vez.`;
+        l.blockedCode = 'unknown_player';
+        continue;
+      }
+      const uuid = l.recipient?.uuid;
+      const rank = rankById.get(l.product.id);
+      let q;
+      if (rank && uuid) {
+        const inCart = cartRank.get(uuid);
+        const current = inCart || (await store.getRank(uuid));
+        const owned = current ? rankById.get(current.rankId) : null;
+        if (current && current.tier >= rank.tier) {
+          q = inCart
+            ? { blocked: `${l.recipient.name} ya lleva ${owned?.name || 'un rango igual o superior'} en este carrito.`, code: 'rank_owned' }
+            : { blocked: `Este jugador ya tiene ${owned?.name || 'un rango igual o superior'}. Solo puedes mejorar a un rango superior.`, code: 'rank_owned' };
+        } else {
+          q = { unit: owned ? Math.max(MIN_CHARGE, rank.price - owned.price) : rank.price, from: owned || null };
+          cartRank.set(uuid, { rankId: rank.id, tier: rank.tier });
+        }
+      } else {
+        q = uuid ? await quote(l.product, uuid) : { unit: l.product.price };
+      }
+      if (q.blocked) {
+        l.blocked = q.blocked;
+        l.blockedCode = q.code || 'rank_owned';
+      } else {
+        l.unit = q.unit;
+        l.line = q.unit * l.quantity;
+        l.from = q.from || null;
+      }
     }
     return { lines };
+  }
+
+  // Lo que manda el navegador viejo (antes del 3 nov, el carrito entero para un jugador con «gift: true»): cada producto
+  // pasa a ser un regalo para ese jugador
+  function legacyCartItems(body) {
+    const items = Array.isArray(body.items) ? body.items : [];
+    if (body.gift !== true || typeof body.username !== 'string') return items;
+    return items.map((it) => (it && typeof it === 'object' && !it.to ? { ...it, to: body.username, message: it.message ?? body.message } : it));
   }
 
   /**
@@ -722,7 +798,20 @@ export function createApp(env) {
       subtotal: cart.subtotal,
       discount: cart.discount,
       coupon: cart.coupon ? { code: cart.coupon, discount: cart.discount } : null,
-      items: views.map((v) => ({ id: v.id, product: v.product, image: v.image, quantity: v.quantity, amount: v.amount, currency: v.currency, status: v.status, refunded: v.refunded, upgradeFrom: v.upgradeFrom })),
+      items: views.map((v) => ({
+        id: v.id,
+        product: v.product,
+        image: v.image,
+        quantity: v.quantity,
+        amount: v.amount,
+        currency: v.currency,
+        status: v.status,
+        refunded: v.refunded,
+        upgradeFrom: v.upgradeFrom,
+        // Para quién es (y si es un regalo, de quién y su mensaje)
+        username: v.username,
+        gift: v.gift,
+      })),
       refunded: cart.refunded || null,
       createdAt: cart.createdAt,
       discord: views.find((v) => v.discord)?.discord || null,
@@ -1447,14 +1536,17 @@ export function createApp(env) {
     // enseña la tienda antes de pagar. El precio de verdad lo vuelve a calcular /api/cart/checkout (o /api/checkout).
     'POST /api/cart/quote': async (req) => {
       const body = (await readJson(req)) || {};
-      const gift = body.gift === true;
-      const player = typeof body.username === 'string' && USERNAME_RE.test(body.username) ? await store.findPlayer(body.username) : null;
-      const priced = await priceLines(body.items, player?.uuid);
+      const items = legacyCartItems(body);
+      const buyer = await currentUser(req);
+      const buyerUuid = buyer?.uuid ? String(buyer.uuid).toLowerCase() : null;
+      // «Para ti»: el nombre que escribe quien compra (con el navegador viejo y «gift», ese nombre era el del regalo)
+      const self = body.gift !== true && typeof body.username === 'string' && USERNAME_RE.test(body.username) ? await store.findPlayer(body.username) : null;
+      const priced = await priceLines(items, { self, buyerUuid });
       if (priced.error) return json({ error: priced.error, code: priced.code, productId: priced.productId || null }, 400);
       const { lines } = priced;
       const subtotal = sum(lines.map((l) => l.line));
-      let payer = player?.uuid || null;
-      if (gift) payer = (await currentUser(req))?.uuid?.toLowerCase() || null;
+      // El que paga: la cuenta con la que se entra o, sin cuenta, el jugador de «para ti»
+      const payer = buyerUuid || self?.uuid || null;
       let coupon = null;
       let couponError = null;
       let discount = 0;
@@ -1474,6 +1566,7 @@ export function createApp(env) {
       return json({
         lines: lines.map((l) => ({
           productId: l.product.id,
+          keys: l.keys,
           name: l.product.name,
           image: l.product.image || null,
           category: l.product.category,
@@ -1483,6 +1576,8 @@ export function createApp(env) {
           line: l.line,
           upgradeFrom: l.from?.name || null,
           blocked: l.blocked,
+          to: l.recipient?.name || l.to || null,
+          gift: l.gift,
         })),
         subtotal,
         discount,
@@ -1490,12 +1585,15 @@ export function createApp(env) {
         coupon,
         couponError,
         mxn,
-        player: player ? { name: player.name, uuid: player.uuid } : null,
+        // Los regalos dicen de quién son: hace falta la cuenta de quien paga
+        needsLogin: lines.some((l) => l.gift || (l.to && !l.recipient)) && !buyer,
+        player: self ? { name: self.name, uuid: self.uuid } : null,
       });
     },
 
-    // Pagar el carrito: un solo pago (Stripe, PayPal o Mercado Pago) con todos sus productos. Cada producto es un pedido
-    // (con cart_id) que se entrega y se reembolsa como cualquier otro; el carrito es el pago.
+    // Pagar el carrito: un solo pago (Stripe, PayPal o Mercado Pago) con todos sus productos, cada uno para su jugador
+    // (para ti o de regalo, con su mensaje). Cada producto es un pedido (con cart_id) que se entrega y se reembolsa como
+    // cualquier otro; el carrito es el pago, y es de quien paga.
     'POST /api/cart/checkout': async (req, { url }) => {
       const body = (await readJson(req)) || {};
       const method = body.method === 'paypal' ? 'paypal' : body.method === 'mercadopago' ? 'mercadopago' : 'stripe';
@@ -1504,36 +1602,43 @@ export function createApp(env) {
       }
       if (method === 'paypal' && !paypal) return json({ error: 'El pago con PayPal no está disponible ahora mismo.' }, 503);
       if (method === 'mercadopago' && !mp) return json({ error: 'El pago con Mercado Pago no está disponible ahora mismo.' }, 503);
-      if (typeof body.username !== 'string' || !USERNAME_RE.test(body.username)) {
-        return json({ error: 'Nombre de usuario de Minecraft no válido (3-16 letras, números o _).' }, 400);
-      }
       if (body.acceptTerms !== true) return json({ error: TERMS_ERROR, code: 'terms' }, 400);
 
-      const gift = body.gift === true;
+      const wanted = legacyCartItems(body);
       const buyer = await currentUser(req);
-      if (gift && !buyer) return json({ error: 'Inicia sesión para regalar: así sabrá quién se lo regala.', code: 'login' }, 401);
-      const giverName = gift ? (await store.playerByUuid(buyer.uuid))?.name || buyer.name : null;
-      const player = await store.findPlayer(body.username);
-      if (!player) {
-        return json(
-          { error: `No encontramos a ${body.username} en ${SERVER_NAME}. Entra al servidor al menos una vez con ese nombre y vuelve a intentarlo.`, code: 'unknown_player' },
-          404,
-        );
-      }
-      if (body.uuid && String(body.uuid).toLowerCase() !== player.uuid) {
-        return json({ error: 'El jugador ha cambiado. Vuelve a comprobar el nombre.', code: 'player_changed' }, 409);
-      }
-      if (gift && player.uuid === String(buyer.uuid).toLowerCase()) {
-        return json({ error: 'Ese eres tú: para comprártelo a ti, elige «Para mí».', code: 'gift_self' }, 400);
+      const buyerUuid = buyer?.uuid ? String(buyer.uuid).toLowerCase() : null;
+      // «Para ti»: solo hace falta el nombre si hay algo que no es regalo
+      const hasSelf = wanted.some((it) => !(typeof it?.to === 'string' && it.to.trim()));
+      let self = null;
+      if (hasSelf) {
+        if (typeof body.username !== 'string' || !USERNAME_RE.test(body.username)) {
+          return json({ error: 'Nombre de usuario de Minecraft no válido (3-16 letras, números o _).' }, 400);
+        }
+        self = await store.findPlayer(body.username);
+        if (!self) {
+          return json(
+            { error: `No encontramos a ${body.username} en ${SERVER_NAME}. Entra al servidor al menos una vez con ese nombre y vuelve a intentarlo.`, code: 'unknown_player' },
+            404,
+          );
+        }
+        if (body.uuid && String(body.uuid).toLowerCase() !== self.uuid) {
+          return json({ error: 'El jugador ha cambiado. Vuelve a comprobar el nombre.', code: 'player_changed' }, 409);
+        }
       }
 
-      const priced = await priceLines(body.items, player.uuid);
+      const priced = await priceLines(wanted, { self, buyerUuid });
       if (priced.error) return json({ error: priced.error, code: priced.code, productId: priced.productId || null }, 400);
       const { lines } = priced;
+      const nobody = lines.find((l) => l.blockedCode === 'unknown_player');
+      if (nobody) return json({ error: nobody.blocked, code: 'unknown_player', productId: nobody.product.id }, 404);
+      if (!buyer && lines.some((l) => l.gift)) {
+        return json({ error: 'Inicia sesión para regalar: así sabrán quién se lo regala.', code: 'login' }, 401);
+      }
       const stuck = lines.find((l) => l.blocked);
-      if (stuck) return json({ error: `${stuck.product.name}: ${stuck.blocked}`, code: stuck.blockedCode, productId: stuck.product.id }, 409);
+      if (stuck) return json({ error: `${stuck.product.name} para ${stuck.recipient?.name || stuck.to}: ${stuck.blocked}`, code: stuck.blockedCode, productId: stuck.product.id }, 409);
       const subtotal = sum(lines.map((l) => l.line));
-      const payer = gift ? String(buyer.uuid).toLowerCase() : player.uuid;
+      const payer = buyerUuid || self.uuid;
+      const payerName = buyer ? (await store.playerByUuid(buyer.uuid))?.name || buyer.name : self.name;
       const applied = await applyCoupon(req, body.coupon, { subtotal, payer });
       if (applied.error) return json({ error: applied.error, code: applied.code }, applied.code === 'coupon_locked' ? 429 : 400);
       const discount = applied.discount;
@@ -1547,9 +1652,11 @@ export function createApp(env) {
       const id = orderId('CART');
       const base = PUBLIC_URL || url.origin;
       const https = base.startsWith('https://');
-      const account = !gift && buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
-      const giftInfo = gift ? { fromUuid: String(buyer.uuid).toLowerCase(), fromName: giverName, message: cleanGiftMessage(body.message) || null } : null;
-      const forWhom = gift ? `Regalo de ${giverName} para ${player.name}` : `Para ${player.name}`;
+      // El rol y el anuncio de lo que es «para ti» van al Discord de quien compra (si entró con su cuenta)
+      const account = buyer?.discord ? { id: buyer.discord.id, username: buyer.discord.username } : null;
+      const giftOf = (l) => (l.gift ? { fromUuid: buyerUuid, fromName: payerName, message: l.message || null } : null);
+      const forWhom = (l) => (l.gift ? `Regalo de ${payerName} para ${l.recipient.name}` : `Para ${l.recipient.name}`);
+      const gifts = lines.filter((l) => l.gift);
       const count = sum(lines.map((l) => l.quantity));
       const title = `Carrito de ${SERVER_NAME}: ${count} ${count === 1 ? 'producto' : 'productos'}`;
       // Las líneas del pago: la de siempre (precio × cantidad) si no lleva parte del cupón; si la lleva, una sola con su
@@ -1559,13 +1666,14 @@ export function createApp(env) {
         const qty = whole ? l.quantity : 1;
         const unitCharged = whole ? charged[i] / l.quantity : charged[i];
         const unitUsd = whole ? l.unit : usd[i];
-        const name = `${lineName(l)}${qty === 1 && l.quantity > 1 ? ` ×${l.quantity}` : ''}${whole ? '' : ` · cupón ${coupon.code}`}`;
+        const name = `${lineName(l)}${qty === 1 && l.quantity > 1 ? ` ×${l.quantity}` : ''}${l.gift ? ` · regalo para ${l.recipient.name}` : ''}${whole ? '' : ` · cupón ${coupon.code}`}`;
         return {
           name,
           quantity: qty,
           unitCharged,
           unitUsd,
-          description: `${forWhom} en ${SERVER_NAME}. ${l.product.description || ''}`.trim(),
+          description: `${forWhom(l)} en ${SERVER_NAME}. ${l.product.description || ''}`.trim(),
+          short: forWhom(l),
           product: l.product,
         };
       });
@@ -1577,6 +1685,8 @@ export function createApp(env) {
         line: l.line,
         charged: charged[i],
         rankFrom: l.from?.id || null,
+        to: l.recipient.name,
+        gift: l.gift,
       }));
       try {
         let checkout;
@@ -1605,13 +1715,13 @@ export function createApp(env) {
           const created = await paypal.createOrder({
             amount,
             currency: CURRENCY,
-            description: `${forWhom} en ${SERVER_NAME}: ${count} ${count === 1 ? 'producto' : 'productos'}`.slice(0, 127),
+            description: `Compra de ${payerName} en ${SERVER_NAME}: ${count} ${count === 1 ? 'producto' : 'productos'}`.slice(0, 127),
             customId: id,
             items: payLines.map((pl) => ({
               name: pl.name,
               quantity: pl.quantity,
               unitAmount: pl.unitUsd,
-              description: `${forWhom}. ${pl.product.description || ''}`.trim(),
+              description: `${pl.short}. ${pl.product.description || ''}`.trim(),
               sku: pl.product.id,
               imageUrl: https && paypalImages[pl.product.image] ? `${base}/${paypalImages[pl.product.image]}` : undefined,
               url: https ? `${base}/tienda` : undefined,
@@ -1640,10 +1750,10 @@ export function createApp(env) {
             metadata: {
               order_id: id,
               cart: 'si',
-              products: lines.map((l) => `${l.product.id}${l.quantity > 1 ? `x${l.quantity}` : ''}`).join(',').slice(0, 500),
-              player: player.name,
-              uuid: player.uuid,
-              ...(gift ? { gift_from: giverName, gift_from_uuid: giftInfo.fromUuid } : {}),
+              products: lines.map((l) => `${l.product.id}${l.quantity > 1 ? `x${l.quantity}` : ''}${l.gift ? `>${l.recipient.name}` : ''}`).join(',').slice(0, 500),
+              player: payerName,
+              uuid: payer,
+              ...(gifts.length ? { gifts_to: [...new Set(gifts.map((l) => l.recipient.name))].join(',').slice(0, 500) } : {}),
               ...(coupon ? { coupon: coupon.code } : {}),
             },
           });
@@ -1651,18 +1761,18 @@ export function createApp(env) {
         const orders = lines.map((l, i) => ({
           id: items[i].orderId,
           status: 'pending',
-          username: player.name,
-          uuid: player.uuid,
+          username: l.recipient.name,
+          uuid: l.recipient.uuid,
           productId: l.product.id,
           quantity: l.quantity,
           amount: charged[i],
           currency,
-          discord: account,
-          discordId: account?.id,
+          discord: l.gift ? null : account,
+          discordId: l.gift ? null : account?.id,
           rankFrom: l.from?.id,
           termsVersion: TERMS_VERSION,
           method,
-          gift: giftInfo,
+          gift: giftOf(l),
           cartId: id,
           coupon: coupon?.code || null,
           discount: l.line - usd[i],
@@ -1671,8 +1781,9 @@ export function createApp(env) {
           {
             id,
             status: 'pending',
-            username: player.name,
-            uuid: player.uuid,
+            // El carrito es de quien paga (cada producto dice para quién es)
+            username: payerName,
+            uuid: payer,
             payer,
             amount,
             currency,
@@ -1682,19 +1793,14 @@ export function createApp(env) {
             method,
             sessionId: checkout.id,
             items,
-            gift: giftInfo,
+            gift: null,
             discord: account,
             discordId: account?.id,
             termsVersion: TERMS_VERSION,
           },
           orders,
         );
-        await recordTerms(
-          req,
-          gift
-            ? { uuid: giftInfo.fromUuid, username: giverName, context: 'regalo', orderId: id }
-            : { uuid: player.uuid, username: player.name, context: 'compra', orderId: id },
-        );
+        await recordTerms(req, { uuid: payer, username: payerName, context: gifts.length ? 'regalo' : 'compra', orderId: id });
         return json({ id, url: checkout.url });
       } catch (err) {
         log.error(`Error creando el pago del carrito en ${method === 'paypal' ? 'PayPal' : method === 'mercadopago' ? 'Mercado Pago' : 'Stripe'}:`, err.message);
@@ -2546,34 +2652,46 @@ export function createApp(env) {
       await fulfill(child, ctx, paymentIntent, { quiet: true });
     }
     if (await store.markCartPaid(cart.id, paymentIntent)) {
-      log.log(`Carrito ${cart.id} pagado: ${cart.items.length} productos para ${cart.username}${cart.coupon ? ` (cupón ${cart.coupon})` : ''}`);
+      log.log(`Carrito ${cart.id} pagado: ${cart.items.length} productos, de ${cart.username}${cart.coupon ? ` (cupón ${cart.coupon})` : ''}`);
       await announceCart(cart.id, ctx.discord);
       await mailCartReceipt(cart.id);
     }
     return 'queued';
   }
 
-  // Un solo anuncio en Discord con todo lo del carrito
+  // Un solo anuncio en Discord con todo lo del carrito: lo de quien compra y cada regalo con su destinatario
   async function announceCart(cartId, discord) {
     try {
       const cart = await store.getCart(cartId);
       const children = await store.cartOrders(cartId);
       if (!cart || !children.length) return;
-      let linked = children.find((o) => o.discord?.id)?.discord || null;
-      if (!linked && cart.uuid) {
-        const account = await store.accountByUuid(cart.uuid);
-        if (account) linked = { id: account.discordId, username: account.username };
-      }
-      const who = linked ? `<@${linked.id}> (**${cart.username}**)` : `**${cart.username}**`;
-      const names = children.map((o) => `**${productById.get(o.productId)?.name || o.productId}**${o.quantity > 1 ? ` ×${o.quantity}` : ''}`);
-      const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} y ${names.at(-1)}` : names[0];
-      const rankOrder = children.find((o) => rankById.has(o.productId));
-      const rank = rankOrder ? rankById.get(rankOrder.productId) : null;
+      const names = (list) => {
+        const n = list.map((o) => `**${productById.get(o.productId)?.name || o.productId}**${o.quantity > 1 ? ` ×${o.quantity}` : ''}`);
+        return n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n.at(-1)}` : n[0];
+      };
+      const mention = async (o) => {
+        let linked = o.discord?.id ? o.discord : null;
+        if (!linked && o.uuid) {
+          const account = await store.accountByUuid(o.uuid);
+          if (account) linked = { id: account.discordId };
+        }
+        return linked ? `<@${linked.id}> (**${o.username}**)` : `**${o.username}**`;
+      };
+      const parts = [];
+      const own = children.filter((o) => !o.gift);
+      if (own.length) parts.push(`${await mention(own[0])} ha conseguido ${names(own)}`);
+      const byWho = new Map();
+      for (const o of children.filter((x) => x.gift)) byWho.set(o.uuid || o.username, [...(byWho.get(o.uuid || o.username) || []), o]);
+      for (const list of byWho.values()) parts.push(`**${list[0].gift.fromName}** le ha regalado ${names(list)} a ${await mention(list[0])}`);
+      // El título: el rango más alto del carrito (y quién lo recibe), o regalo, o compra
+      const rankOrders = children.filter((o) => rankById.has(o.productId));
+      const top = rankOrders.sort((x, y) => rankById.get(y.productId).tier - rankById.get(x.productId).tier)[0];
+      const rank = top ? rankById.get(top.productId) : null;
       const first = productById.get(children[0].productId);
       await discord.announce({
         embed: {
-          title: rank ? `👑 ¡${cart.username} ahora es ${rank.rank.prefix}!` : cart.gift ? '🎁 ¡Un regalo en la tienda!' : '🎉 ¡Nueva compra en la tienda!',
-          description: `${cart.gift ? `**${cart.gift.fromName}** le ha regalado a ${who}` : `${who} ha conseguido`} ${list}. ¡Gracias por apoyar ${SERVER_NAME}!`,
+          title: rank ? `👑 ¡${top.username} ahora es ${rank.rank.prefix}!` : own.length ? '🎉 ¡Nueva compra en la tienda!' : '🎁 ¡Regalos en la tienda!',
+          description: `${parts.join('. ')}. ¡Gracias por apoyar ${SERVER_NAME}!`,
           color: Number.parseInt((rank?.rank.hex || first?.colors?.[1] || '#f4c95d').slice(1), 16),
           thumbnail: { url: head(cart.username) },
           timestamp: new Date().toISOString(),
@@ -2622,8 +2740,8 @@ export function createApp(env) {
     const children = await store.cartOrders(cart.id);
     const order = cartAsOrder(cart, children);
     const acceptance = await store.termsForOrder(cart.id);
-    const payerUuid = cart.gift?.fromUuid || cart.uuid;
-    const player = cart.uuid ? await store.playerByUuid(cart.uuid) : null;
+    const payerUuid = cart.payer || cart.gift?.fromUuid || cart.uuid;
+    const player = payerUuid ? await store.playerByUuid(payerUuid) : null;
     const delivery = children.length ? await store.deliveryOf(children[0].id) : null;
     const history = payerUuid
       ? (await store.ordersFor({ uuid: payerUuid })).filter((o) => o.cartId !== cart.id).map((o) => ({ ...o, productName: productById.get(o.productId)?.name }))
@@ -2645,7 +2763,8 @@ export function createApp(env) {
     const children = await store.cartOrders(cart.id);
     const delivered = children.filter((o) => CLAIMED.includes(o.status));
     if (full) {
-      for (const child of children) {
+      // Al revés de como se entregó: con dos rangos del mismo jugador, primero se quita el más alto (y vuelve al de antes)
+      for (const child of [...children].reverse()) {
         if (!keepsLabel(child.refunded)) await store.updateOrder(child.id, { refunded: what });
         if (CLAIMED.includes(child.status)) await revoke(child, ctx);
       }
@@ -2658,12 +2777,16 @@ export function createApp(env) {
     const days = businessDaysSince(since);
     const late = policy.id === '24h' ? hours >= 24 : days > 5;
     const elapsed = policy.id === '24h' ? `${hours} horas` : `${days} días hábiles`;
-    const payer = cart.gift ? (await store.playerByUuid(cart.gift.fromUuid))?.name || cart.gift.fromName : cart.username;
+    // Quien paga (y reclama el dinero): la sanción es suya, no de quien recibió los regalos
+    const payerUuid = String(cart.payer || cart.gift?.fromUuid || cart.uuid || '').toLowerCase();
+    const payer = (payerUuid && (await store.playerByUuid(payerUuid))?.name) || cart.gift?.fromName || cart.username;
     let penalty = false;
     if (dispute && late && delivered.length) {
-      // La sanción va en la entrega de uno de sus pedidos (el puente solo manda entregas de pedidos que existen)
-      penalty = await store.queuePenalty(delivered[0], [
-        `tempbanip ${cart.gift ? payer : '{player}'} ${policy.ban} Reembolso injustificado del pedido ${cart.id} (Términos de ${SERVER_NAME}: sin reembolsos pasadas ${policy.windowText} desde la entrega)`,
+      // La sanción va en la entrega de uno de sus pedidos (el puente solo manda entregas de pedidos que existen): si
+      // hay uno suyo, con {player} (su nombre de ahora); si no, con su nombre
+      const own = delivered.find((o) => o.uuid && o.uuid.toLowerCase() === payerUuid);
+      penalty = await store.queuePenalty(own || delivered[0], [
+        `tempbanip ${own ? '{player}' : payer} ${policy.ban} Reembolso injustificado del pedido ${cart.id} (Términos de ${SERVER_NAME}: sin reembolsos pasadas ${policy.windowText} desde la entrega)`,
       ]);
       if (penalty) {
         const label = `${what} fuera de plazo · baneo de IP de ${policy.banText}`;

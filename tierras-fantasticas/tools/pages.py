@@ -618,7 +618,7 @@ def success():
         <span class="eyebrow" id="state">Comprobando</span>
         <dl class="receipt" id="details" hidden>
           <dt>Pedido</dt><dd id="d-order"></dd>
-          <dt>Jugador</dt><dd id="d-user"></dd>
+          <dt id="d-user-label">Jugador</dt><dd id="d-user"></dd>
           <dt id="d-product-label">Producto</dt><dd id="d-product"></dd>
           <dt>Total</dt><dd id="d-total"></dd>
           <dt>En el juego</dt><dd id="d-delivery"></dd>
