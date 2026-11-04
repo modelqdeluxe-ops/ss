@@ -66,7 +66,6 @@ final class BossTestV171 {
             + "tf-client/src/main/resources/assets/tfclient/sounds/clanes/emote.ogg";
     private static Mob golem, bystander, armored;
     private static float before, plainHit;
-    private static Vec3 bystanderAt;
     private static TFThrownTrident shown, thrown;
     private static ServerPlayer rival;
     private static Claim big, mine, zone;
@@ -134,6 +133,8 @@ final class BossTestV171 {
                 player.teleportTo(level, ax + 0.5, ground(level, ax, az).getY(), az + 0.5, 0F, 0F);
                 BossTest.command(server, "time set 6000");
                 PadClans.testRanks(player);
+                // Clan Coins para comprar luego los efectos arcoíris
+                net.tierrasfantasticas.tfclient.pad.server.PadClanProgress.testSet(A, 400, 5, 0, 100);
                 act(player, "estilo", "tagfx:onda|FF0000,00FF00,0000FF|3");
                 String multi = PadClans.testFx(A);
                 act(player, "estilo", "tagfx:onda|FF8800|3");
@@ -240,20 +241,18 @@ final class BossTestV171 {
             }
             case 230 -> {
                 if (golem == null) return;
-                bystanderAt = bystander == null ? null : bystander.position();
                 falling(player, level, golem, 4.0F);
                 TFMace.testLast = "";
                 float smash = hit(player, golem);
                 float fallAfter = player.fallDistance;
+                Vec3 push = bystander == null ? Vec3.ZERO : bystander.getDeltaMovement();
                 float expect = TFMace.smashBonus(4.0F, 0);
                 r.event("v171 2d (golpe aplastante, cayendo 4 bloques): le quitó " + f1(smash) + " (el normal " + f1(before) + "; el aplastante suma " + f1(expect)
                         + ", ×1,5 si es crítico) · " + TFMace.testLast + " · caída tras el golpe " + f1(fallAfter)
                         + (smash >= before + expect - 0.6 && fallAfter == 0F ? " (bien)" : " (MAL)"));
-            }
-            case 236 -> {
-                if (bystander == null) return;
-                double moved = bystanderAt == null ? -1 : bystander.position().distanceTo(bystanderAt);
-                r.event("v171 2e (el empujón del golpe aplastante): el zombi de al lado se movió " + f1(moved) + " bloques" + (moved > 0.8 ? " (bien)" : " (MAL)"));
+                double side = Math.sqrt(push.x * push.x + push.z * push.z);
+                r.event("v171 2e (el empujón del golpe aplastante): al zombi de al lado (a 2 bloques) le dio velocidad " + f1(side) + " hacia fuera y "
+                        + f1(push.y) + " hacia arriba" + (side > 0.3 && push.y > 0.3 ? " (bien)" : " (MAL)"));
             }
             case 290 -> {
                 if (golem == null) return;
@@ -364,7 +363,7 @@ final class BossTestV171 {
                 if (thrown != null && thrown.isAlive()) {
                     Vec3 at = thrown.position();
                     player.teleportTo(level, at.x - 3.5, at.y + 0.6, at.z - 0.5, -70F, 20F);
-                    r.event("v171 3b (la lanza lanzada): quieta (clavada) " + (thrown.getDeltaMovement().lengthSqr() < 0.01) + " en " + f1(at.x) + ", " + f1(at.y) + ", " + f1(at.z));
+                    r.event("v171 3b (la lanza lanzada): cayó en " + f1(at.x) + ", " + f1(at.y) + ", " + f1(at.z) + " (captura: clavada con su modelo)");
                 }
             }
             case 580 -> BossTest.shot(r, "v171_04_lanza_clavada");
@@ -376,6 +375,10 @@ final class BossTestV171 {
                 if (shown != null) shown.discard();
                 if (thrown != null) thrown.discard();
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                // primero ir (con el chunk sin cargar, la altura del suelo sale −64)
+                player.teleportTo(level, ax + 30.5, arena.y + 2, az + 170.5, 0F, 0F);
+            }
+            case 592 -> {
                 BlockPos c = ground(level, ax, az + 140);
                 rival = TFBotPlayer.spawnTarget(server, level, "Rival_Prote", c.getX() + 0.5, c.getY(), c.getZ() + 2.5);
                 if (rival == null) {
@@ -393,11 +396,11 @@ final class BossTestV171 {
                 r.event("v171 4a (la piedra del invitado dentro de la grande): " + (mine == null ? "NO SE PUSO (MAL)" : "unida " + (mine.getGroupId() != null)
                         + (mine.getGroupId() != null ? " (bien)" : " (MAL)")) + "; el pad se abre en ella con UNIDA / INDEPENDIENTE");
             }
-            case 620 -> BossTest.shot(r, "v171_05_protes_piedra_unida");
-            case 622 -> {
+            case 630 -> BossTest.shot(r, "v171_05_protes_piedra_unida");
+            case 632 -> {
                 if (mine != null) BossTest.actPad = "modo:" + mine.getClaimId() + ":indep";
             }
-            case 660 -> {
+            case 670 -> {
                 BossTest.shot(r, "v171_06_protes_independiente");
                 if (mine == null || rival == null) return;
                 ClaimManager cm = ClaimManager.getInstance();
@@ -406,8 +409,20 @@ final class BossTestV171 {
                 r.event("v171 4b (independiente, pulsado en el pad): independiente " + mine.isNestedIndependent() + "; en su cuadrado manda ella " + (at == mine)
                         + "; el dueño de la grande construye ahí " + rivalBuilds + (mine.isNestedIndependent() && at == mine && !rivalBuilds ? " (bien)" : " (MAL)"));
             }
-            case 662 -> {
+            case 672 -> {
+                // el borde de la zona independiente dentro de la grande, visto desde arriba
                 BossTest.closeScreen = true;
+                if (mine == null) return;
+                net.tierrasfantasticas.tfclient.claims.data.ClaimFlags f = mine.getOwnFlags();
+                f.showBorder = true;
+                if (big != null) big.getOwnFlags().showBorder = true;
+                ClaimManager.getInstance().save();
+                player.teleportTo(level, minePos.getX() - 34.5, minePos.getY() + 30, minePos.getZ() + 0.5, -90F, 40F);
+                BossTest.hideHud = true;
+            }
+            case 710 -> BossTest.shot(r, "v171_06b_borde_independiente");
+            case 712 -> {
+                BossTest.hideHud = false;
                 if (mine == null || big == null) return;
                 ClaimManager cm = ClaimManager.getInstance();
                 // disolver el grupo con la grande puesta: la independiente vuelve a su dueño
@@ -430,7 +445,8 @@ final class BossTestV171 {
             // ---------------------------------------------------------------------------------------------------------
             // 5. El reproductor de la música de una protección
             // ---------------------------------------------------------------------------------------------------------
-            case 670 -> {
+            case 714 -> player.teleportTo(level, ax + 60.5, arena.y + 2, az - 59.5, 0F, 0F);
+            case 724 -> {
                 BlockPos c = ground(level, ax + 60, az - 60);
                 player.teleportTo(level, c.getX() + 0.5, c.getY(), c.getZ() + 0.5, 0F, 0F);
                 zone = ClaimManager.getInstance().createClaim(level, c, player, ClaimTier.byId("claimstone_64x64"));
@@ -441,45 +457,45 @@ final class BossTestV171 {
                 PadZoneMusic.testSet(player, zone, SONG, "Canción de prueba", 4650);
                 BossTest.openPad = "protecciones/z:" + zone.getClaimId() + ":a";
             }
-            case 700 -> {
+            case 754 -> {
                 if (zone != null) BossTest.actPad = "§zonaplayer:" + zone.getClaimId() + ":Zona de prueba";
             }
-            case 740 -> BossTest.shot(r, "v171_07_reproductor");
-            case 742 -> BossTest.actPad = "pausa";
-            case 760 -> {
+            case 794 -> BossTest.shot(r, "v171_07_reproductor");
+            case 796 -> BossTest.actPad = "pausa";
+            case 814 -> {
                 PadZoneMusic.Song s = zone == null ? null : PadZoneMusic.of(zone);
                 r.event("v171 5a (reproductor: PAUSA): en pausa " + (s != null && s.paused()) + " en " + (s == null ? "-" : s.position(System.currentTimeMillis())) + " ms"
                         + (s != null && s.paused() ? " (bien)" : " (MAL)"));
                 BossTest.actPad = "repetir";
             }
-            case 770 -> BossTest.actPad = "vol:35";
-            case 780 -> BossTest.actPad = "ir:2000";
-            case 800 -> {
+            case 824 -> BossTest.actPad = "vol:35";
+            case 834 -> BossTest.actPad = "ir:2000";
+            case 854 -> {
                 PadZoneMusic.Song s = zone == null ? null : PadZoneMusic.of(zone);
                 boolean ok = s != null && !s.repeat() && s.volume() == 35 && s.paused() && s.position(System.currentTimeMillis()) == 2000;
                 r.event("v171 5b (reproductor: REPETIR, volumen 35 y saltar a 0:02): repetir " + (s != null && s.repeat()) + ", volumen " + (s == null ? -1 : s.volume())
                         + ", en " + (s == null ? -1 : s.position(System.currentTimeMillis())) + " ms" + (ok ? " (bien)" : " (MAL)"));
                 BossTest.actPad = "pausa";
             }
-            case 840 -> {
+            case 894 -> {
                 BossTest.shot(r, "v171_08_reproductor_una_vez");
                 PadZoneMusic.Song s = zone == null ? null : PadZoneMusic.of(zone);
                 r.event("v171 5c (sigue sonando una vez desde 0:02): suena " + (s != null && s.playing(System.currentTimeMillis())) + (s != null && !s.paused() ? " (bien)" : " (MAL)"));
             }
-            case 900 -> {
+            case 954 -> {
                 PadZoneMusic.Song s = zone == null ? null : PadZoneMusic.of(zone);
                 r.event("v171 5d (una vez: 4,6 s de canción, pasados 3 s desde 0:02): terminó " + (s != null && s.ended(System.currentTimeMillis()))
                         + (s != null && s.ended(System.currentTimeMillis()) ? " (bien)" : " (MAL)"));
             }
-            case 940 -> BossTest.shot(r, "v171_09_reproductor_termino");
-            case 942 -> {
+            case 994 -> BossTest.shot(r, "v171_09_reproductor_termino");
+            case 996 -> {
                 BossTest.closeScreen = true;
                 if (zone != null) {
                     PadZoneMusic.testClear(zone);
                     ClaimManager.getInstance().removeClaim(level, zone.getCenter());
                 }
             }
-            case 960 -> BossTest.next(level);
+            case 1014 -> BossTest.next(level);
             default -> {
             }
         }

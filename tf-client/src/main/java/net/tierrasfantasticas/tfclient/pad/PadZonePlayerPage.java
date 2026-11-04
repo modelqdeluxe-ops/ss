@@ -111,8 +111,10 @@ final class PadZonePlayerPage extends PadDataPage {
         boolean playing = has("sonando"), repeat = has("repetir");
         long dur = num(data, "duracion", 0);
         long pos = seekPreview >= 0 ? seekPreview : position();
+        // todo el bloque (vinilo, título, barra y controles) centrado en la tarjeta, con los controles bajo la barra
+        int top = cy + 13 + Math.max(0, (ch - 13 - 74) / 2);
         // el vinilo (gira mientras suena)
-        int r = 17, vx = cx + 6 + r, vy = cy + 16 + r;
+        int r = 17, vx = cx + 6 + r, vy = top + 1 + r;
         PadMusicPage.disc(g, vx, vy, r + 1, INK);
         PadMusicPage.disc(g, vx, vy, r, 0xFF1A1A22);
         PadMusicPage.ring(g, vx, vy, r - 4, 0xFF2C2C38);
@@ -124,15 +126,15 @@ final class PadZonePlayerPage extends PadDataPage {
         PadMusicPage.disc(g, vx, vy, 1, INK);
         // título, artista y quién la puso
         int tx = vx + r + 8, tw = cx + cw - 6 - tx;
-        g.drawString(PadUi.font(), PadUi.fitEnd(str(data, "titulo", "?"), tw), tx, cy + 15, 0xFFFFFFFF, true);
+        g.drawString(PadUi.font(), PadUi.fitEnd(str(data, "titulo", "?"), tw), tx, top + 1, 0xFFFFFFFF, true);
         String artist = str(data, "artista", "");
         String by = str(data, "por", "");
-        PadUi.text(g, PadUi.fitEnd((artist.isEmpty() ? "" : artist + " · ") + (by.isEmpty() ? "" : "la puso " + by), tw), tx, cy + 26, LAVENDER);
+        PadUi.text(g, PadUi.fitEnd((artist.isEmpty() ? "" : artist + " · ") + (by.isEmpty() ? "" : "la puso " + by), tw), tx, top + 12, LAVENDER);
         String state = has("acabo") ? "TERMINÓ" : has("pausa") ? "EN PAUSA" : "SONANDO EN LA ZONA";
-        PadUi.text(g, state, tx, cy + 36, has("acabo") || has("pausa") ? GOLD_LIGHT : GREEN);
+        PadUi.text(g, state, tx, top + 22, has("acabo") || has("pausa") ? GOLD_LIGHT : GREEN);
         // la barra de progreso (se pulsa o se arrastra)
         barX = tx;
-        barY = cy + 48;
+        barY = top + 35;
         barW = tw;
         float f = dur > 0 ? Math.min(1F, pos / (float) dur) : 0F;
         boolean barHover = can && PadUi.inside(mx, my, barX - 2, barY - 4, barW + 4, 11);
@@ -155,7 +157,7 @@ final class PadZonePlayerPage extends PadDataPage {
             seekPreview = seekAt(mx, dur);
         }));
         // los controles: desde el principio, −10 s, play/pausa, +10 s, repetir
-        int ctlY = cy + ch - 10;
+        int ctlY = Math.min(barY + 30, cy + ch - 9);
         int x = cx + 8;
         x = control(g, mx, my, x, ctlY, PadMusicPage.PREV, "inicio", "Desde el principio", can) + 5;
         x = textControl(g, mx, my, x, ctlY, "−10", "saltar:-10000", can) + 5;
