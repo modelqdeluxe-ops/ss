@@ -2374,6 +2374,19 @@ export function createApp(env) {
       const token = await (await session()).encode({ metricas: true, exp: Date.now() + METRICAS_HOURS * 3600 * 1000 });
       return json({ ok: true }, 200, { 'Set-Cookie': serializeCookie(METRICAS_COOKIE, token, { maxAge: METRICAS_HOURS * 3600, secure }) });
     },
+    // Cargar a mano lo de nLogin (tierras-fantasticas/tools/nlogin/importar.sh, con la contraseña): los registros como
+    // los manda el mod ({ nlogin: { from, to, events } }, solo si empiezan donde se quedó la web) y las cuentas de su
+    // base ({ accounts: [[nombre, creada, última vez]] }). Así el historial está aunque el servidor no tenga el mod nuevo.
+    'POST /api/metricas/importar': async (req) => {
+      if (!(await metricasAllowed(req))) return json({ error: 'Entra con la contraseña del staff.' }, 401);
+      const body = (await readJson(req)) || {};
+      const out = {};
+      if (body.nlogin && typeof body.nlogin === 'object') {
+        out.nlogin = await nlogin.ingest({ ...body.nlogin, events: Array.isArray(body.nlogin.events) ? body.nlogin.events.slice(0, NLOGIN_MAX_EVENTS) : [] });
+      }
+      if (Array.isArray(body.accounts)) out.accounts = await nlogin.importAccounts(body.accounts);
+      return json(out);
+    },
     'POST /api/metricas/salir': async (req, { secure }) =>
       json({ ok: true }, 200, { 'Set-Cookie': serializeCookie(METRICAS_COOKIE, '', { maxAge: 0, secure }) }),
     // Los datos de las gráficas desde «desde» (YYYY-MM-DD, no antes del de config/metricas.json): las sesiones y los
@@ -2407,6 +2420,8 @@ export function createApp(env) {
       if (!safeEqual(auth, `Bearer ${env.BRIDGE_SECRET}`)) return json({ error: 'Clave del puente incorrecta.' }, 401);
 
       const body = (await readJson(req)) || {};
+      // (4 nov 2026) la consulta anterior (antes de que esta la cambie): para las sesiones de /metricas con los conectados
+      const prevStatus = await store.serverStatus().catch(() => null);
       const list = (value, limit) => (Array.isArray(value) ? value : []).slice(0, limit);
       const validPlayer = (p) => p && typeof p.name === 'string' && USERNAME_RE.test(p.name) && typeof p.uuid === 'string' && UUID_RE.test(p.uuid);
       const ms = Date.now();
@@ -2523,6 +2538,13 @@ export function createApp(env) {
           resetDone++;
         }
         log.warn(`Puente: reiniciados en la web ${resetDone} jugadores (el servidor empezó limpio)`);
+      }
+
+      // (4 nov 2026) /metricas sin cambiar el mod: quién entra y sale, con la lista de conectados (src/nlogin.js)
+      try {
+        await nlogin.presence(players, ms, prevStatus);
+      } catch (err) {
+        log.error('Puente: no se pudieron apuntar las sesiones para /metricas:', err.message);
       }
 
       // (4 nov 2026) Los registros de nLogin (TF Client 1.3.174+): el mod pregunta por dónde seguir ({ want }) o manda lo

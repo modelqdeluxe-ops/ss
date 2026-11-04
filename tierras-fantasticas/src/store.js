@@ -223,6 +223,25 @@ const SCHEMA = [
     key TEXT PRIMARY KEY,
     start INTEGER NOT NULL
   )`,
+  // Sin el TF Client 1.3.174: las sesiones con la lista de conectados del puente (src/nlogin.js, presence)
+  `CREATE TABLE IF NOT EXISTS bridge_open (
+    key TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    start INTEGER NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS bridge_sessions (
+    key TEXT NOT NULL,
+    start INTEGER NOT NULL,
+    end INTEGER NOT NULL,
+    cut INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (key, start)
+  )`,
+  'CREATE INDEX IF NOT EXISTS bridge_sessions_start ON bridge_sessions (start)',
+  `CREATE TABLE IF NOT EXISTS bridge_events (
+    t INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    PRIMARY KEY (t, kind)
+  )`,
 ];
 
 // Columnas nuevas en tablas que ya existen en la base de datos publicada.

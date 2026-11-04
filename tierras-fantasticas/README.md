@@ -239,8 +239,20 @@ reporte en Excel; la subpágina /métricas, con contraseña de staff; los datos,
   `/staff` (`ADMIN_KEY`). Para cambiarla, la huella nueva:
   `node --input-type=module -e "import { hashPassword } from './src/password.js'; console.log(await hashPassword(process.argv[1]))" 'contraseña-nueva'`
   (desde esta carpeta) y se pone en `password`.
-- Pruebas: `test/metricas.test.js` (el puente, la contraseña, los datos y las cuentas) y `tf-client/tools/nlogin/`
-  (la lectura de los registros, con registros de verdad, sin compilar el mod).
+- **Sin el TF Client 1.3.174 en el servidor** (el dueño no puede cambiar el mod hasta una actualización grande): la web
+  apunta las sesiones con la lista de conectados que ya manda el puente cada 10 s (`presence` en `src/nlogin.js`,
+  tablas `bridge_open`, `bridge_sessions` y `bridge_events`: entra = aparece en la lista, sale = deja de aparecer; sin
+  consultas en 60 s = apagado y arranque). Solo escribe en la base cuando alguien entra o sale. En `/api/metricas` lo del
+  puente solo cuenta **después del último registro de nLogin**, así que cuando llegue nLogin no se cuenta nada dos veces.
+  Lo que no da el puente: intentos con otra versión, fallos de Mojang, reconexiones de menos de 10 s y la fecha de
+  creación de las cuentas nuevas (cuenta desde que entra por primera vez).
+- **Cargar el historial a mano**: `METRICAS_PASSWORD=… tierras-fantasticas/tools/nlogin/importar.sh <carpeta nLogin>`
+  (la del servidor o el zip del dueño descomprimido) manda los registros desde `desde` (empezando donde va la web: no
+  repite nada) y las cuentas de `nlogin.db` (solo nombre, creación y última vez) a `POST /api/metricas/importar`. El
+  4 nov 2026 se cargó así el zip del dueño (del 26 oct al 4 nov, 1854 eventos y 178 cuentas): el cursor quedó en
+  `2026-11-04-3.log` byte 5876, y cuando el servidor tenga la 1.3.174 el mod sigue desde ahí y rellena el hueco.
+- Pruebas: `test/metricas.test.js` (el puente, la contraseña, los datos, las cuentas, los conectados del puente y la
+  carga a mano) y `tf-client/tools/nlogin/` (la lectura de los registros, con registros de verdad, sin compilar el mod).
 
 ### 3. Discord
 

@@ -184,3 +184,58 @@ test('las cuentas de la página (metricas-calc.js) y el Excel (xlsx.js)', async 
   assert.deepStrictEqual([...bytes.slice(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
   assert.strictEqual(blob.type, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 });
+
+test('sin el mod nuevo: las sesiones con los conectados que manda el puente (y nLogin manda si llega)', async () => {
+  const { createNLogin } = await import('../src/nlogin.js');
+  const { createStore } = await import('../src/store.js');
+  const db = createD1();
+  const store = createStore(db);
+  const nl = createNLogin(db, store.ready, { desde: '2026-10-26' });
+  const t0 = at(29, 18);
+  const s10 = 10000;
+  const p = (...names) => names.map((name) => ({ name }));
+  await nl.presence(p('Eva', 'Fer'), t0, null);
+  await nl.presence(p('Eva', 'Fer'), t0 + s10, { at: t0 });
+  // Fer sale: su sesión acaba en la consulta anterior
+  await nl.presence(p('Eva'), t0 + 2 * s10, { at: t0 + s10 });
+  // el puente no llama en 3 minutos: el servidor se apagó; Eva vuelve tras el arranque
+  await nl.presence(p('Eva'), t0 + 2 * s10 + 180000, { at: t0 + 2 * s10 });
+  let d = await nl.data(at(26, 0));
+  const name = (i) => d.players[i][0];
+  assert.deepStrictEqual(d.sessions.map(([i, s, dur]) => [name(i), s, dur]), [
+    ['Eva', t0 / 1000, 20],
+    ['Fer', t0 / 1000, 10],
+  ]);
+  assert.deepStrictEqual(d.stops, [(t0 + 2 * s10) / 1000]);
+  assert.deepStrictEqual(d.starts, [(t0 + 2 * s10 + 180000) / 1000]);
+  assert.deepStrictEqual(d.open.map(([i, s]) => [name(i), s]), [['Eva', (t0 + 2 * s10 + 180000) / 1000]]);
+  // la cuenta de un jugador que la web no conocía: desde que entró por primera vez
+  assert.strictEqual(d.players.find((x) => x[0] === 'Fer')[1], t0 / 1000);
+  assert.strictEqual(d.bridgeFrom, t0);
+
+  // Las cuentas de la base de nLogin cargadas a mano: la creación de verdad (más antigua) manda
+  assert.strictEqual(await nl.importAccounts([['Fer', at(20, 12), at(28, 12)], ['Nadie', null, null], ['no vale', 1, 1]]), 2);
+  d = await nl.data(at(26, 0));
+  assert.strictEqual(d.players.find((x) => x[0] === 'Fer')[1], at(20, 12) / 1000);
+
+  // Llegan registros de nLogin hasta después: lo del puente de antes ya no cuenta (no se cuenta nada dos veces)
+  n = 9000;
+  await nl.ingest({ from: null, to: { file: '2026-10-29-1.log', offset: 10 }, events: [ev(t0, 'in', 'Eva', at(1, 0)), ev(t0 + 5 * 60000, 'out', 'Eva', at(1, 0))] });
+  d = await nl.data(at(26, 0));
+  assert.deepStrictEqual(d.sessions.map(([i, s, dur]) => [d.players[i][0], s, dur]), [['Eva', t0 / 1000, 300]]);
+  assert.deepStrictEqual(d.stops, []);
+});
+
+test('POST /api/metricas/importar: con la contraseña, el historial y las cuentas de nLogin', async () => {
+  assert.strictEqual((await call('/api/metricas/importar', { method: 'POST', body: '{}' })).status, 401);
+  const cookie = (await login(PASSWORD)).headers.get('Set-Cookie').split(';')[0];
+  const post = (body) => call('/api/metricas/importar', { method: 'POST', headers: { Cookie: cookie, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const r = await (await post({ accounts: [['Beto', at(10, 9), at(27, 20)]] })).json();
+  assert.strictEqual(r.accounts, 1);
+  const data = await (await call('/api/metricas', { headers: { Cookie: cookie } })).json();
+  assert.strictEqual(data.players.find((x) => x[0] === 'Beto')[1], at(10, 9) / 1000);
+  // un lote que no empieza donde se quedó la web no entra
+  const bad = await (await post({ nlogin: { from: null, to: { file: 'x.log', offset: 1 }, events: [] } })).json();
+  assert.strictEqual(bad.nlogin.ok, 0);
+  assert.notStrictEqual(bad.nlogin.cursor, null);
+});

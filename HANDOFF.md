@@ -317,6 +317,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   `web_metricas.mjs`): `METRICAS DE NLOGIN EN MOHIST: TODO BIEN` — el mod pregunta por dónde va la web, manda los 1854
   eventos (los que cuenta grep) en 5 consultas sin repetir ninguno, sin IP; una línea nueva en el último registro llega
   una vez y sin la IP; tras reiniciar el servidor sigue donde iba.
+- **Sin cambiar el mod** (el dueño: «no puedo cambiar el mod ahora si no es una update de peso»): la web apunta las
+  sesiones con la lista de conectados del puente actual y su historial (del 26 oct al 4 nov) se cargó a mano con
+  `tierras-fantasticas/tools/nlogin/importar.sh` desde su zip. Cuando suba la 1.3.174 (en la próxima actualización
+  grande), el mod sigue desde el cursor y rellena el hueco. Ojo: la contraseña que se le dio primero por el chat estaba
+  mal escrita (inventada al escribir el mensaje): **copia siempre lo que se generó, nunca lo escribas de memoria**.
 - Lo que se vio en los datos (para el dueño): sí retiene a los que entran; entra poca gente nueva; hubo una caída del 11
   al 16 de octubre y días de decenas de arranques (el 1 nov, 27 arranques y 7 jugadores); ~13 % de las sesiones acaban
   en una reconexión en menos de 3 min; los reinicios fijos son a las 3:00 y 15:00 (hora de México), justo antes de las

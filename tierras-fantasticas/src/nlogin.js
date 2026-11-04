@@ -23,6 +23,8 @@ const NAME_RE = /^[A-Za-z0-9_.*-]{1,32}$/;
 const ID_RE = /^[\w.-]{1,80}:\d{1,12}$/;
 const FILE_RE = /^[\w.-]{1,80}$/;
 const CURSOR_KEY = 'nlogin_cursor';
+// Sin consulta del puente en este tiempo, el servidor se apagó (o se cortó la conexión)
+export const BRIDGE_GAP_MS = 60 * 1000;
 
 function cleanCursor(c) {
   if (c == null) return null;
@@ -179,21 +181,109 @@ export function createNLogin(db, init, { desde }) {
     return { cursor: to, desde, ok: events.length };
   }
 
+  // --- Sin el TF Client 1.3.174 en el servidor: lo que ya manda el puente (4 nov 2026) ---
+  // El dueño no puede cambiar el mod ahora: la web apunta las sesiones con la lista de conectados que manda el puente
+  // cada 10 s (/bridge/poll). Entra = aparece en la lista; sale = deja de aparecer (acaba en la consulta anterior). Si el
+  // puente no llama en 60 s, el servidor se apagó (o se cortó): todas las sesiones acaban en la última consulta y se
+  // apunta un apagado y un arranque. Solo escribe cuando alguien entra o sale (nada por cada consulta). En data(), estas
+  // sesiones solo cuentan después del último registro de nLogin (así, cuando llegue nLogin, no se cuenta nada dos veces).
+  async function presence(online, now, prev) {
+    await init();
+    const opens = (await db.prepare('SELECT key, name, start FROM bridge_open').all()).results;
+    const onlineBy = new Map(online.filter((p) => p && typeof p.name === 'string' && NAME_RE.test(p.name)).map((p) => [p.name.toLowerCase(), p.name]));
+    const lastPoll = prev && Number.isFinite(prev.at) ? prev.at : null;
+    const gap = lastPoll !== null && now - lastPoll > BRIDGE_GAP_MS;
+    const st = [];
+    if (gap) {
+      st.push(db.prepare("INSERT OR IGNORE INTO bridge_events (t, kind) VALUES (?, 'stop'), (?, 'start')").bind(lastPoll, now));
+    }
+    const still = new Set();
+    for (const o of opens) {
+      if (!gap && onlineBy.has(o.key)) {
+        still.add(o.key);
+        continue;
+      }
+      // salió (o se apagó el servidor): estaba en la consulta anterior y en esta ya no
+      const end = lastPoll ?? now;
+      if (end > o.start && end - o.start <= SESSION_MAX_MS) {
+        st.push(db.prepare('INSERT OR REPLACE INTO bridge_sessions (key, start, end, cut) VALUES (?, ?, ?, ?)').bind(o.key, o.start, end, gap ? 1 : 0));
+      }
+      st.push(db.prepare('DELETE FROM bridge_open WHERE key = ?').bind(o.key));
+      st.push(db.prepare('UPDATE nlogin_players SET last_seen = MAX(COALESCE(last_seen, 0), ?) WHERE key = ?').bind(end, o.key));
+    }
+    for (const [key, name] of onlineBy) {
+      if (still.has(key)) continue;
+      st.push(db.prepare('INSERT OR REPLACE INTO bridge_open (key, name, start) VALUES (?, ?, ?)').bind(key, name, now));
+      // un jugador que la web no conocía: su cuenta es de ahora (si luego llega nLogin, pone la fecha de verdad)
+      st.push(
+        db
+          .prepare(
+            `INSERT INTO nlogin_players (key, name, created, first_seen, last_seen) VALUES (?, ?, ?, ?, ?)
+             ON CONFLICT (key) DO UPDATE SET name = excluded.name, first_seen = COALESCE(nlogin_players.first_seen, excluded.first_seen),
+               last_seen = MAX(COALESCE(nlogin_players.last_seen, 0), excluded.last_seen)`,
+          )
+          .bind(key, name, now, now, now),
+      );
+    }
+    if (st.length) await db.batch(st);
+  }
+
+  // Cuentas de la base de nLogin cargadas a mano (POST /api/metricas/importar): [nombre, creada (ms), última vez (ms)].
+  // Solo eso de cada cuenta. La creación se queda con la más antigua.
+  async function importAccounts(list, now = Date.now()) {
+    await init();
+    const rows = (Array.isArray(list) ? list : [])
+      .slice(0, 5000)
+      .filter((a) => Array.isArray(a) && typeof a[0] === 'string' && NAME_RE.test(a[0]))
+      .map(([name, created, seen]) => [
+        name.toLowerCase(),
+        name,
+        Number.isSafeInteger(created) && created > 1.4e12 && created <= now + 86400000 ? created : null,
+        Number.isSafeInteger(seen) && seen > 1.4e12 && seen <= now + 86400000 ? seen : null,
+      ]);
+    const st = rows.map((r) =>
+      db
+        .prepare(
+          `INSERT INTO nlogin_players (key, name, created, first_seen, last_seen) VALUES (?, ?, ?, NULL, ?)
+           ON CONFLICT (key) DO UPDATE SET
+             created = CASE WHEN nlogin_players.created IS NULL OR (excluded.created IS NOT NULL AND excluded.created < nlogin_players.created)
+               THEN excluded.created ELSE nlogin_players.created END,
+             last_seen = MAX(COALESCE(nlogin_players.last_seen, 0), COALESCE(excluded.last_seen, 0))`,
+        )
+        .bind(...r),
+    );
+    for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
+    return rows.length;
+  }
+
   // Todo lo de la página de métricas desde «since» (ms), compacto: las sesiones como [jugador, inicio, duración] en
-  // segundos, con los jugadores en una lista aparte.
+  // segundos, con los jugadores en una lista aparte. Lo de nLogin hasta su último registro y, después, lo del puente.
   async function data(since) {
     await init();
     const s = Math.floor(since);
-    const sessions = (await db.prepare('SELECT key, start, end FROM nlogin_sessions WHERE start >= ? ORDER BY start').bind(s).all()).results;
-    const events = (
-      await db
-        .prepare("SELECT t, kind, name FROM nlogin_events WHERE t >= ? AND kind IN ('reg', 'start', 'stop', 'verr', 'mojang') ORDER BY t")
-        .bind(s)
-        .all()
-    ).results;
-    const entries = (await db.prepare("SELECT COUNT(*) AS n, MAX(t) AS last FROM nlogin_events WHERE t >= ? AND kind = 'in'").bind(s).first()) || {};
     const lastAny = (await db.prepare('SELECT MAX(t) AS t FROM nlogin_events').first())?.t || null;
-    const open = (await db.prepare('SELECT key, start FROM nlogin_open WHERE start >= ?').bind(s - SESSION_MAX_MS).all()).results;
+    // lo del puente cuenta desde el último registro de nLogin (o desde «since» si es después)
+    const fromBridge = Math.max(s, (lastAny || 0) + 1);
+    const sessions = [
+      ...(await db.prepare('SELECT key, start, end FROM nlogin_sessions WHERE start >= ?').bind(s).all()).results,
+      ...(await db.prepare('SELECT key, start, end FROM bridge_sessions WHERE start >= ?').bind(fromBridge).all()).results,
+    ].sort((a, b) => a.start - b.start || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    const events = [
+      ...(
+        await db
+          .prepare("SELECT t, kind, name FROM nlogin_events WHERE t >= ? AND kind IN ('reg', 'start', 'stop', 'verr', 'mojang')")
+          .bind(s)
+          .all()
+      ).results,
+      ...(await db.prepare('SELECT t, kind, NULL AS name FROM bridge_events WHERE t >= ?').bind(fromBridge).all()).results,
+    ].sort((a, b) => a.t - b.t);
+    const entries = (await db.prepare("SELECT COUNT(*) AS n FROM nlogin_events WHERE t >= ? AND kind = 'in'").bind(s).first()) || {};
+    // Los que están dentro ahora: los del puente (si no, los abiertos de nLogin)
+    const bridgeOpen = (await db.prepare('SELECT key, start FROM bridge_open').all()).results;
+    const nloginOpen = (await db.prepare('SELECT key, start FROM nlogin_open WHERE start >= ?').bind(s - SESSION_MAX_MS).all()).results;
+    const openKeys = new Set(bridgeOpen.map((r) => r.key));
+    const open = [...bridgeOpen, ...nloginOpen.filter((r) => !openKeys.has(r.key))];
+    const bridgeFirst = (await db.prepare('SELECT MIN(t) AS t FROM (SELECT MIN(start) AS t FROM bridge_sessions UNION ALL SELECT MIN(start) FROM bridge_open)').first())?.t || null;
     const keys = new Set([
       ...sessions.map((r) => r.key),
       ...open.map((r) => r.key),
@@ -222,6 +312,8 @@ export function createNLogin(db, init, { desde }) {
     return {
       cursor: await cursor(),
       lastEvent: lastAny,
+      // desde cuándo hay datos del puente (sin nLogin)
+      bridgeFrom: bridgeFirst ? Math.max(bridgeFirst, fromBridge) : null,
       entries: entries.n || 0,
       players,
       sessions: sessions.map((r) => [idx(r.key), sec(r.start), sec(r.end) - sec(r.start)]),
@@ -235,5 +327,5 @@ export function createNLogin(db, init, { desde }) {
     };
   }
 
-  return { cursor, ingest, data };
+  return { cursor, ingest, data, presence, importAccounts };
 }
