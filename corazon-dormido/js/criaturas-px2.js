@@ -212,7 +212,12 @@ const CRI_PX2 = (() => {
       const i = id[y * ancho + x]; if (i < 0) continue;
       let t = tono[y * ancho + x];
       for (const [dx, dy] of VEC) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= ancho || yy >= alto) continue; const j = id[yy * ancho + xx]; if (j > i && !formas[j].sinSurco) { t = Math.max(1, t - 2); break; } }
-      L.px(x, y, formas[i].rampa[t]);
+      const f = formas[i];
+      let r = f.rampa;
+      if (f.rayas) { const [ex, ey, an, r2] = f.rayas, c = f.e || f.c; if (Math.floor(((x + 0.5 - c[0]) * ex + (y + 0.5 - c[1]) * ey) / an + 100) % 2) r = r2; }
+      if (f.trama && (x + y) % 2 && t > 1) t = Math.max(1, t - 1);
+      L.px(x, y, r[t]);
+      if (f.luz) f.luz.px(x, y, r[t]);
     }
   }
   // la cuchilla: mango desde el puño (dirección a) y una hoja ancha y oxidada con el filo brillante
@@ -331,6 +336,99 @@ const CRI_PX2 = (() => {
       piel: [0, '#26301c', '#42522e', '#5e7240', '#7c9256'], atras: [0, '#1a2214', '#2e3a22', '#40502e', '#52643a'],
       barriga: [0, '#46563a', '#687a50', '#8a9c6a', '#a8b886'], manto: [0, '#2a1c14', '#4a3424', '#6a4e36', '#8c6c4c'], cuero: [0, '#2a160c', '#4a2a16', '#6a4226', '#8a5a34'],
     },
+  });
+  // ---------------------------------------------------------------- voladores (avispa y moscarda)
+  // Como las moscas de Core Keeper: aletean a 20 fps (2 cuadros quieta, 4 al moverse). Al preparar el picotazo se
+  // quedan en el aire con el abdomen curvado (aguijón hacia ti) y al lanzarse van inclinadas con las alas atrás.
+  const VW = 40, VH = 36, VOX = 20, VOY = 32;
+  function cuadroVolador(v, k, o) {
+    const L = new Lienzo(VW, VH), luz = new Lienzo(VW, VH), R = o.rampas, pal = o.pal, g = o.gordo ? 1.25 : 1;
+    const C = [VOX, VOY - 10 + (k.bob || 0) + (k.cae || 0)], ala = k.ala ?? 0; // ala: 0 arriba, 1 en medio, 2 abajo, 3 atrás
+    const formas = [], delante = [];
+    const alaForma = (cx, cy, rx, ry, atras) => ({ e: [cx, cy, rx, ry], rampa: atras ? R.alaAtras : R.ala, trama: true, sinSurco: true });
+    const alas = (lado) => { // lado: -1 izquierda / detrás, 1 derecha / delante
+      if (k.plegadas) return [];
+      if (v === 'de') {
+        const dx = lado < 0 ? 2 : 0;
+        return [ala === 0 ? alaForma(C[0] - 1 + dx, C[1] - 6 * g, 2.4, 5 * g, lado < 0) : ala === 1 ? alaForma(C[0] - 3 + dx, C[1] - 4 * g, 4, 3.2, lado < 0) : ala === 2 ? alaForma(C[0] - 4 + dx, C[1] - 1, 5, 2, lado < 0) : alaForma(C[0] - 6 + dx, C[1] - 2, 5.5, 1.6, lado < 0)];
+      }
+      const s = lado;
+      return [ala === 0 ? alaForma(C[0] + s * 5 * g, C[1] - 5, 2.8, 5, false) : ala === 1 ? alaForma(C[0] + s * 6 * g, C[1] - 3, 4, 3.4, false) : ala === 2 ? alaForma(C[0] + s * 7 * g, C[1] - 1, 5, 2.4, false) : alaForma(C[0] + s * 4 * g, C[1] - 2, 3, 2, false)];
+    };
+    const curva = k.curva || 0, inc = k.inclina || 0;
+    if (v === 'de') {
+      formas.push(...alas(-1));
+      const a0 = [C[0] - 2, C[1] + 1 + inc * 0.5], a1 = [C[0] - 7 * g + curva * 4, C[1] + 3 + curva * 4 - inc * 1.5];
+      formas.push({ c: [a0[0], a0[1], a1[0], a1[1], 3.3 * g, 2.1 * g], rampa: R.abdomen, rayas: o.rayas ? [a1[0] - a0[0], a1[1] - a0[1], 1.6 * Math.hypot(a1[0] - a0[0], a1[1] - a0[1]), R.raya] : null });
+      formas.push({ e: [C[0], C[1] + inc * 0.3, 3.2 * g, 3 * g], rampa: R.cuerpo });
+      formas.push({ e: [C[0] + 4 * g, C[1] - 1 + inc, 2.6, 2.4], rampa: R.cabeza, luz: o.cabezaLuz ? luz : null });
+      delante.push(...alas(1));
+      // patas, el aguijón y los ojos
+      masas(L, formas, VW, VH);
+      if (o.aguijon) { const d = [a1[0] - a0[0], a1[1] - a0[1]], n = Math.hypot(...d) || 1, t0 = [a1[0] + (d[0] / n) * 1.6 * g, a1[1] + (d[1] / n) * 1.6 * g]; CRI_PX.linea(L, t0, [t0[0] + (d[0] / n) * 2.5, t0[1] + (d[1] / n) * 2.5], pal.aguijon); }
+      ojosVolador(L, luz, v, [C[0] + 4 * g, C[1] - 1 + inc], o, k);
+      masas(L, delante, VW, VH);
+    } else {
+      const ab = v === 'ab', cab = [C[0], C[1] + (ab ? 2.5 : -3)], abd = [C[0], C[1] + (ab ? -3.5 + curva * 7 : 3.5 - curva * 2)];
+      formas.push(...alas(-1), ...alas(1));
+      const abdF = { e: [abd[0], abd[1], 3.6 * g, 3.2 * g], rampa: R.abdomen, rayas: o.rayas ? [0, 1, 1.6, R.raya] : null };
+      const cabF = { e: [cab[0], cab[1], 2.8 * g * 0.9, 2.4], rampa: R.cabeza, luz: o.cabezaLuz ? luz : null };
+      const torF = { e: [C[0], C[1], 3.3 * g, 2.8 * g], rampa: R.cuerpo };
+      if (ab) formas.splice(0, 0, ...(curva > 0.5 ? [] : [abdF])), formas.push(torF), curva > 0.5 && formas.push(abdF), formas.push(cabF);
+      else formas.splice(0, 0, cabF), formas.push(torF, abdF);
+      masas(L, formas, VW, VH);
+      if (o.aguijon && (!ab || curva > 0.5)) { const y0 = Math.round(abd[1] + 3.2 * g); CRI_PX.linea(L, [abd[0], y0], [abd[0], y0 + 2], pal.aguijon); }
+      if (ab) ojosVolador(L, luz, v, cab, o, k);
+    }
+    if (k.estela) for (let i = 0; i < 3; i++) { const y = Math.round(C[1] - 3 + i * 3), x0 = v === 'de' ? C[0] - 13 - i : C[0] - 1; if (v === 'de') for (let x = x0; x < x0 + 5 - i; x++) L.px(x, y, (x + i) % 2 ? R.ala[3] : R.ala[4]); }
+    contorno2(L, pal.K, VW, VH);
+    // las patas finas (sin contorno), colgando
+    if (!k.plegadas) {
+      if (v === 'de') for (let i = 0; i < 3; i++) { const x0 = Math.round(C[0] - 1 + i * 1.6), y0 = Math.round(C[1] + 3 * g); for (let j = 0; j < 2 + (i === 1 ? 1 : 0); j++) if (!L.get(x0 - (j > 1 ? 1 : 0), y0 + j) || j) L.px(x0 - (j > 1 ? 1 : 0), y0 + j, pal.K); }
+      else for (const s of [-1, 1]) for (let i = 0; i < 2; i++) { const x0 = Math.round(C[0] + s * (1 + i * 1.6)), y0 = Math.round(C[1] + 3 * g); L.px(x0, y0, pal.K); L.px(x0 + s * (i ? 1 : 0), y0 + 1, pal.K); }
+    }
+    if (k.tumbado) { tumbar(L, VW, VH, VOX, VOY); luz.d.fill(null); }
+    return { color: MANO.normales(L), luz, puntos: { cabeza: [C[0] + 4, C[1] - 1] } };
+  }
+  function ojosVolador(L, luz, v, [hx, hy], o, k) {
+    hx = Math.round(hx); hy = Math.round(hy);
+    const pon = (x, y, c, brilla) => { L.px(x, y, c); if (brilla && !k.ojosC) luz.px(x, y, c); };
+    if (o.ojos === 'calavera') { // cuencas oscuras con un punto rojo
+      const ps = v === 'de' ? [[hx, hy - 1], [hx + 2, hy - 1]] : [[hx - 1, hy - 1], [hx + 1, hy - 1]];
+      for (const [x, y] of ps) pon(x, y, k.ojosC ? o.pal.cuenca : o.pal.ojo, true);
+      pon(v === 'de' ? hx + 2 : hx, hy + 1, o.pal.cuenca);
+    } else { // ojos compuestos grandes
+      const ps = v === 'de' ? [[hx, hy - 1], [hx + 1, hy - 1], [hx, hy], [hx + 1, hy - 2]] : [[hx - 2, hy - 1], [hx - 1, hy - 1], [hx - 2, hy], [hx + 1, hy - 1], [hx + 2, hy - 1], [hx + 2, hy]];
+      for (const [x, y] of ps) pon(x, y, k.ojosC ? o.pal.cuenca : o.pal.ojo, true);
+      pon(ps[0][0], ps[0][1], k.ojosC ? o.pal.cuenca : o.pal.brillo, true);
+    }
+  }
+  const VOLAR = {
+    q: (v, f) => ({ ala: f ? 2 : 0, bob: f ? 1 : 0 }),
+    a: (v, f) => ({ ala: [0, 1, 2, 1][f], bob: [0, 0, 1, 1][f] }),
+    p: (v, f) => ({ ala: f ? 2 : 0, curva: 1, inclina: -1, bob: -1 }),
+    g: (v, f) => ({ ala: 3, inclina: 2, curva: 0.6, estela: true, bob: f }),
+    r: (v, f) => (f === 0 ? { ala: 1, inclina: -2, ojosC: true, bob: -1 } : { ala: 2 }),
+    m: (v, f) => [{ ala: 1, inclina: -2, ojosC: true }, { plegadas: true, ojosC: true, cae: 4 }, { plegadas: true, ojosC: true, tumbado: true }, { plegadas: true, ojosC: true, tumbado: true }][f],
+    n: (v, f) => ({ ala: f % 2 ? 2 : 0, cae: [6, 4, 2, 0][f] }),
+  };
+  function volador(o) {
+    return { manual: (anim, f, v) => cuadroVolador(v, VOLAR[anim](v, f), o), anims: { q: { n: 2, bucle: true }, a: { n: 4, bucle: true }, p: { n: 2 }, g: { n: 2 }, r: { n: 2 }, m: { n: 4 } },
+      tiempos: { q: { fps: 20 }, a: { fps: 20 }, p: { fps: 20, bucle: true }, g: { fps: 20, bucle: true } },
+      W: VW, H: VH, ox: VOX, oy: VOY, px: 1, yaw: 0, zancada: 10, fpsQuieta: 20, vistas: true };
+  }
+  const ALA = { ala: [0, '#6a8094', '#a4bccc', '#cfe2ee', '#f0faff'], alaAtras: [0, '#4a5a6a', '#7a90a2', '#9ab0c0', '#b8ccda'] };
+  // la Aguijonera: cara de calavera, abdomen a rayas y aguijón
+  FICHAS.avispa = volador({
+    rayas: true, aguijon: true, ojos: 'calavera',
+    pal: { K: '#140a04', aguijon: '#c8ccd4', ojo: '#ff3a2a', cuenca: '#1a0606', brillo: '#ffd0a0' },
+    rampas: Object.assign({ cuerpo: [0, '#1e1208', '#3a2610', '#5a3c18', '#7a5624'], abdomen: [0, '#7a4208', '#c07a10', '#f0b028', '#ffe080'], raya: [0, '#140a04', '#2a1a0c', '#3a2610', '#4a3218'], cabeza: [0, '#7a6a4c', '#b0a07a', '#d8ccaa', '#f4ecd4'] }, ALA),
+  });
+  // la Moscarda: gorda, de la Podre, con los ojos rojos que brillan
+  FICHAS.moscarda = volador({
+    gordo: true, ojos: 'mosca',
+    pal: { K: '#040506', aguijon: '#c8ccd4', ojo: '#e0281c', cuenca: '#2a0606', brillo: '#ffb0a0' },
+    rampas: Object.assign({ cuerpo: [0, '#0c1216', '#18242c', '#26384a', '#3a5266'], abdomen: [0, '#10241c', '#1e4a36', '#2e7050', '#52a476'], raya: [0, '#0a1410', '#14281e', '#1e3a2c', '#2a4c3a'], cabeza: [0, '#0c1216', '#18242c', '#26384a', '#3a5266'] }, ALA, { ala: [0, '#4a5058', '#7a848e', '#a4aeb8', '#ccd6de'], alaAtras: [0, '#30363c', '#4e565e', '#6a747c', '#8a949c'] }),
   });
   function registrar() { for (const [t, d] of Object.entries(FICHAS)) CRI.DEF[t] = d; }
   registrar();

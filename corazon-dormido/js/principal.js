@@ -481,7 +481,7 @@ const PREPARA = { repta: 0.35, salta: 0.55, lancea: 0.45, bruto: 0.8, seton: 0.6
 function cuadroPorTiempo(T, n, t, bucle) {
   const p = T.pausas || [], ticks = Array.from({ length: n }, (_, i) => 1 + (p[i] || 0)), total = ticks.reduce((a, b) => a + b, 0);
   let k = Math.floor(t * T.fps);
-  if (bucle) k = ((k % total) + total) % total; else if (k >= total) return n - 1;
+  if (bucle || T.bucle) k = ((k % total) + total) % total; else if (k >= total) return n - 1;
   for (let i = 0; i < n; i++) { if (k < ticks[i]) return i; k -= ticks[i]; }
   return n - 1;
 }
