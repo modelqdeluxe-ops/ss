@@ -306,8 +306,9 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   `[Clan TF] Ana: …` «por mixin» y nunca como chat público). Con la 1.3.168, 7 fallos.
 - Antes de tocar algo que en Mohist vaya por otro camino (chat, comandos, eventos de Bukkit), pruébalo ahí con esa
   carpeta: el jar sale del artefacto `tfclient-jar` de la ejecución de la rama (no se compila en el contenedor).
-- Lo que preguntó el dueño de paso: el aviso del juego al comprar con cupón **no** dice que fue con descuento (solo
-  «Recibiste X» y «Steve compró X»); no pidió cambiarlo.
+- El aviso del juego al comprar con cupón **no** dice que fue con descuento (solo «Recibiste X» y «Steve compró X») y
+  **así lo quiere el dueño**: «no quiero que vean que compré con descuento… que solo diga Javier compró tal cosa y ya».
+  No añadas el cupón ni el descuento a los avisos del juego.
 
 ### CHECKPOINT (3 nov 2026, TF Client 1.3.168: LOS OBJETOS DE TF FUERA DEL CREATIVO, ESPINAS EN TODA LA ARMADURA Y DESENCANTAR LAS CRATES) — lee esto primero
 
