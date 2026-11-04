@@ -10,11 +10,7 @@ package net.tierrasfantasticas.tfclient.claims.gui;
 
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.tierrasfantasticas.tfclient.claims.data.Claim;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimGroup;
@@ -32,8 +28,9 @@ import net.tierrasfantasticas.tfclient.claims.data.ClaimManager;
  *   baneos). En su cuadrado manda ella; fuera, la grande. Está ahí gracias al grupo: si su dueño sale del grupo o se
  *   disuelve el grupo con la grande puesta, la piedra vuelve a su dueño como las unidas.</li>
  * </ul>
- * Al ponerla sale unida (lo de siempre) y en el chat los dos botones; se cambia cuando quiera desde la piedra (pad o
- * menú) o con {@code /tf claims merge modo <zona> unir|independiente}. Solo su dueño (o un operador).
+ * Al ponerla sale unida (lo de siempre) y se le abre el pad en esa piedra con la elección (Protección › la piedra:
+ * UNIDA / INDEPENDIENTE, que cambia cuando quiera). Solo su dueño; el staff también con
+ * {@code /tf web claims modo <zona> unir|independiente}. (Los jugadores no tienen /tf claims desde la 1.3.24.)
  */
 public final class ClaimNesting {
     private ClaimNesting() {}
@@ -59,12 +56,12 @@ public final class ClaimNesting {
     }
 
     /**
-     * Cambia el modo de la piedra: true = independiente, false = unida. Devuelve el texto para el jugador (también si no
-     * se puede).
+     * Cambia el modo de la piedra: true = independiente, false = unida. player null = el staff desde la consola. Devuelve
+     * el texto para quien lo pidió (también si no se puede).
      */
     public static String setMode(ServerPlayer player, Claim claim, boolean independent) {
         if (claim == null) return "Esa zona ya no existe.";
-        if (!claim.isOwner(player.getUUID()) && !player.hasPermissions(2)) return "Solo el dueño de la piedra elige cómo está.";
+        if (player != null && !claim.isOwner(player.getUUID()) && !player.hasPermissions(2)) return "Solo el dueño de la piedra elige cómo está.";
         ClaimGroup group = groupAround(claim);
         if (group == null) return "Esta piedra no está dentro de la zona de un grupo.";
         ClaimManager manager = ClaimManager.getInstance();
@@ -78,29 +75,16 @@ public final class ClaimNesting {
         return "Tu piedra se unió a «" + group.getName() + "»: ahora es una sola zona.";
     }
 
-    /** En el chat: «Tu piedra está dentro de la zona «X». ¿Cómo la quieres?» con [UNIDA] [INDEPENDIENTE]. */
+    /**
+     * Al poner la piedra dentro de la zona de un grupo: el aviso en el chat y el pad abierto en esa piedra, con la elección
+     * (UNIDA / INDEPENDIENTE) arriba.
+     */
     public static void offer(ServerPlayer player, Claim claim) {
         ClaimGroup group = groupAround(claim);
         if (group == null) return;
-        boolean independent = claim.isNestedIndependent();
-        String id = claim.getClaimId().toString();
-        MutableComponent line = Component.literal("Tu piedra está dentro de la zona «" + group.getName() + "». ¿Cómo la quieres? ")
-                .withStyle(ChatFormatting.AQUA);
-        line.append(button("UNIDA", !independent, "/tf claims merge modo " + id + " unir",
-                "Una sola zona con «" + group.getName() + "»: sus reglas, su mensaje y su altura."));
-        line.append(Component.literal(" "));
-        line.append(button("INDEPENDIENTE", independent, "/tf claims merge modo " + id + " independiente",
-                "Tu zona dentro de «" + group.getName() + "»: tu borde, tu mensaje, tus reglas y tus miembros."));
-        player.sendSystemMessage(line);
-    }
-
-    private static Component button(String label, boolean chosen, String command, String hover) {
-        if (chosen) {
-            return Component.literal("[✔ " + label + "]").withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN).withBold(true)
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Así está ahora. " + hover))));
-        }
-        return Component.literal("[" + label + "]").withStyle(Style.EMPTY.withColor(ChatFormatting.GOLD).withBold(true)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Clic: " + hover))));
+        boolean pad = net.tierrasfantasticas.tfclient.pad.TFPadNet.openApp(player, "protecciones", "z:" + claim.getClaimId() + ":a");
+        player.sendSystemMessage(Component.literal("Tu piedra está dentro de la zona «" + group.getName() + "». Elige en el pad"
+                + (pad ? "" : " (Protección › tu piedra)") + ": UNIDA (una sola zona con la grande) o INDEPENDIENTE (tu zona, con tu borde, tu mensaje y tus reglas, dentro de la grande).")
+                .withStyle(ChatFormatting.AQUA));
     }
 }

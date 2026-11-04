@@ -45,8 +45,19 @@ public final class ClaimAdminCommands {
         literalargumentbuilder.then(Commands.literal((String)"stats").executes(ClaimAdminCommands::stats));
         literalargumentbuilder.then(Commands.literal((String)"reload").executes(ClaimAdminCommands::reload));
         literalargumentbuilder.then(ClaimCommands.giveCommand());
+        // (1.3.170) una piedra dentro de la zona de un grupo: unida o independiente (los jugadores lo eligen en el pad)
+        literalargumentbuilder.then(Commands.literal("modo").then(Commands.argument("zona", StringArgumentType.word())
+                .then(Commands.literal("unir").executes(ctx -> mode(ctx, false)))
+                .then(Commands.literal("independiente").executes(ctx -> mode(ctx, true)))));
         literalargumentbuilder.then(Commands.literal((String)"globalflag").then(Commands.argument((String)"flag", (ArgumentType)StringArgumentType.word()).suggests(GLOBAL_FLAGS).then(Commands.argument((String)"value", (ArgumentType)StringArgumentType.word()).suggests(ON_OFF).executes(ClaimAdminCommands::globalFlag))));
         return literalargumentbuilder;
+    }
+
+    private static int mode(CommandContext<CommandSourceStack> ctx, boolean independent) {
+        Claim claim = net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting.byId(StringArgumentType.getString(ctx, "zona"));
+        String out = net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting.setMode(ctx.getSource().getPlayer(), claim, independent);
+        ctx.getSource().sendSuccess(() -> Component.literal("[TF Claims] " + out).withStyle(ChatFormatting.YELLOW), true);
+        return 1;
     }
 
     private static int openPanel(CommandContext<CommandSourceStack> commandcontext) throws CommandSyntaxException {
