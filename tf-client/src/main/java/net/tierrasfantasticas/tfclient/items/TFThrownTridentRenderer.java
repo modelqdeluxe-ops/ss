@@ -32,10 +32,14 @@ import net.minecraft.world.item.ItemStack;
 /**
  * (1.3.171) La lanza o el tridente de un set, lanzado (TFThrownTrident): su propio modelo 3D (el del objeto), no el
  * tridente de Minecraft. Los modelos de los sets van a lo largo, con la punta arriba (+Y, como se llevan en la mano):
- * se gira como el tridente de Minecraft (hacia donde vuela) y se le da la vuelta para que la punta vaya delante; la
- * punta queda un poco por delante de donde está la entidad (donde se clava), a la escala que tiene en la mano.
+ * se gira como el tridente de Minecraft (hacia donde vuela) y se le da la vuelta para que la punta vaya delante.
+ * (1.3.172, el dueño: «déjalas todas al tamaño del tridente real») Todas miden lo mismo que el tridente de Minecraft
+ * lanzado (su modelo: 31 píxeles, 1,94 bloques) y la punta queda donde la suya (4 píxeles por delante de la entidad,
+ * donde se clava); antes salían al tamaño de la mano (de 1,7 a 3,2 bloques).
  */
 public class TFThrownTridentRenderer extends EntityRenderer<TFThrownTrident> {
+    /** El largo del tridente de Minecraft lanzado (TridentModel: de y −4 a y 27, en píxeles) y cuánto va su punta por delante. */
+    static final float VANILLA_LENGTH = 31.0F / 16.0F, VANILLA_TIP_AHEAD = 4.0F / 16.0F;
     private final ItemRenderer items;
     /** Lo que ocupa el modelo de cada objeto (en bloques, 0 a 1 = un bloque): minX, minY, minZ, maxX, maxY, maxZ. */
     private static final Map<Item, float[]> BOUNDS = new HashMap<>();
@@ -53,8 +57,8 @@ public class TFThrownTridentRenderer extends EntityRenderer<TFThrownTrident> {
         if (!stack.isEmpty()) {
             BakedModel model = items.getModel(stack, entity.level(), null, entity.getId());
             float[] b = BOUNDS.computeIfAbsent(stack.getItem(), k -> bounds(model));
-            float scale = model.getTransforms().thirdPersonRightHand.scale.y();
-            if (scale <= 0.0F || scale > 4.0F) scale = 1.0F;
+            float length = b[4] - b[1];
+            float scale = length > 0.05F ? VANILLA_LENGTH / length : 1.0F;
             pose.pushPose();
             pose.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partial, entity.yRotO, entity.getYRot()) - 90.0F));
             pose.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(partial, entity.xRotO, entity.getXRot()) + 90.0F));
@@ -62,7 +66,7 @@ public class TFThrownTridentRenderer extends EntityRenderer<TFThrownTrident> {
             pose.mulPose(Axis.XP.rotationDegrees(180.0F));
             pose.scale(scale, scale, scale);
             float cx = (b[0] + b[3]) / 2.0F, cz = (b[2] + b[5]) / 2.0F;
-            pose.translate(0.5F - cx, 0.5F - b[4] + 0.15F, 0.5F - cz);
+            pose.translate(0.5F - cx, 0.5F - b[4] + VANILLA_TIP_AHEAD / scale, 0.5F - cz);
             items.render(stack, ItemDisplayContext.NONE, false, pose, buffers, light, OverlayTexture.NO_OVERLAY, model);
             pose.popPose();
             testDrawn++;

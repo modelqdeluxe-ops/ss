@@ -285,6 +285,17 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (4 nov 2026, TF Client 1.3.172: LAS LANZAS LANZADAS, AL TAMAÑO DEL TRIDENTE) — lee esto primero
+
+- El dueño preguntó si el tamaño de las lanzas lanzadas estaba bien. Medido (prueba `[prueba-jefes=lanzas]`,
+  `bosses/BossTestLanzas`): en la 1.3.171 salían al tamaño de la mano en tercera persona, de 1,7 a 3,2 bloques (Valentine,
+  Runemoth, Dryadia y Deepsea, 1,5-1,7 veces el tridente de Minecraft, que mide 1,94). El dueño: «déjalas todas al
+  tamaño del tridente real».
+- `items/TFThrownTridentRenderer`: cada modelo se escala a `VANILLA_LENGTH` (31 px = 1,94 bloques, el TridentModel) y
+  la punta va donde la del tridente (`VANILLA_TIP_AHEAD`, 4 px por delante de la entidad). En la mano no cambia nada.
+- La prueba `lanzas` las lanza hacia abajo para que se claven de pie en fila (con el tridente de Minecraft y un jugador
+  al lado) y se miden en la captura con PIL.
+
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.171: MARTILLOS = MAZA, LANZAS CON SU MODELO, REPRODUCTOR DE LA ZONA Y ONDA) — lee esto primero
 
 El dueño, tras la 1.3.170: «¿probaste bien lo de las protes? La música de las protes, tipo el reproductor: la barra de
