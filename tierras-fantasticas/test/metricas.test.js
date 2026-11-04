@@ -168,14 +168,34 @@ test('las cuentas de la página (metricas-calc.js) y el Excel (xlsx.js)', async 
   assert.strictEqual(m.summary.mojangOut, 1);
   assert.deepStrictEqual(m.versions, [['26.2', 1]]);
   const d27 = m.daily.find((r) => r.day === '2026-10-27');
-  assert.deepStrictEqual([d27.players, d27.fresh, d27.old, d27.restarts, d27.sessions], [3, 2, 1, 2, 5]);
+  // 3 entraron y los 3 jugaron 30 min o más; 5 sesiones pero 4 visitas (la reconexión de Carla es la misma visita)
+  assert.deepStrictEqual([d27.players, d27.real, d27.fresh, d27.restarts, d27.sessions, d27.visits], [3, 3, 2, 2, 5, 4]);
   assert.strictEqual(Math.round(d27.hours * 60), 40 + 60 + 45 + 60 + 58 + 0);
+  // con un mínimo de 50 min, Ana (40 min) no cuenta como que jugó ese día
+  assert.strictEqual(compute({ ...data, now: at(28, 12) }, { minMinutes: 50 }).daily.find((r) => r.day === '2026-10-27').real, 2);
+  // los grupos (sus últimos 7 días): los 3 jugaron 1 día → ocasionales
+  assert.deepStrictEqual(m.segments.map((x) => [x.id, x.players]), [['diario', 0], ['regular', 0], ['ocasional', 3], ['fantasma', 0], ['sefue', 0]]);
+  // los 3 ponen todas las horas
+  assert.strictEqual(m.pareto.at(-1).share, 1);
   // nadie volvió otro día (todo fue el 27): 0 de 2
   assert.deepStrictEqual([m.summary.newReturned, m.summary.newCanReturn], [0, 2]);
   assert.strictEqual(m.players[0].name, 'Carla');
   assert.strictEqual(m.weekly[0].week, '2026-10-26');
   // las 20 h del martes: Beto (hasta las 19:50 no) y Carla
   assert.ok(m.heat[1][20] > 0);
+
+  // Por UUID: dos nombres con el mismo UUID son el mismo jugador
+  const u = '0f0e0d0c-0b0a-4908-8706-050403020100';
+  const same = compute({
+    desde: '2026-10-26',
+    now: at(28, 12),
+    players: [['Viejo', at(1, 0) / 1000, u], ['Nuevo', at(1, 0) / 1000, u]],
+    sessions: [[0, at(26, 18) / 1000, 3600], [1, at(27, 18) / 1000, 3600]],
+    starts: [],
+    stops: [],
+  });
+  assert.strictEqual(same.summary.players, 1);
+  assert.deepStrictEqual([same.players[0].name, same.players[0].uuid, same.players[0].daysReal, same.players[0].names.sort()], ['Nuevo', u, 2, ['Nuevo', 'Viejo']]);
 
   assert.strictEqual(crc32(new TextEncoder().encode('abc')), 0x352441c2);
   assert.strictEqual(excelDay('2026-10-26'), 46321);

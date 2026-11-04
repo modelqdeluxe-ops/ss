@@ -231,9 +231,26 @@ reporte en Excel; la subpágina /métricas, con contraseña de staff; los datos,
   mapa de calor día × hora, arranques por día (rojo con más de 4), reconexiones (salir y entrar en menos de 3 min sin
   reinicio), intentos con otra versión, fallos de Mojang y la tabla de jugadores. Todo en hora del centro de México
   (UTC-6). Se actualiza sola cada minuto. `/métricas` (con tilde) lleva a `/metricas`.
+- **v2 (4 nov 2026, el dueño: «si 1 o 2 jugadores hicieron esas sesiones no es un día exitoso… son fantasmas… cataloga
+  al jugador por su UUID… quiero ver retención, hazlo interactivo, más gráficos que no sean de barras»)**:
+  - Cada jugador es su **UUID** (de `nlogin.db` con `importar.sh`, del puente o de la tabla `players` de la tienda;
+    columna `uuid` de `nlogin_players`): los nombres con el mismo UUID son la misma persona.
+  - **Visitas** en vez de sesiones (las reconexiones de menos de 3 min son la misma visita) y, sobre todo, jugadores y
+    horas. Un día cuenta como **jugado de verdad** solo con un mínimo de minutos ese día (10 min, 30 min, 1 h o 2 h;
+    por defecto 30, se elige arriba y se recuerda en el navegador).
+  - **Grupos** por los días de verdad de los últimos 7: casi a diario (5–7), regulares (2–4), ocasionales (1),
+    fantasmas (entraron sin llegar al mínimo) y se fueron (no jugaron esos 7 días).
+  - Pestañas: **Resumen** (entraron / jugaron de verdad / máximo a la vez por día, con quién puso las horas de cada día
+    en el globo; dona de grupos que lleva a los jugadores; grupos día a día; concentración de las horas; última vez),
+    **Retención** (curva de los nuevos día a día, los del principio que siguen, pegada DAU/WAU, semanas y cohortes),
+    **Jugadores** (quién jugó cada día en una matriz jugador × día, días frente a horas, tabla con UUID y la ficha de
+    cada jugador con sus horas por día y a qué horas entra) y **Horarios y estabilidad** (a la vez por hora, día de la
+    semana × hora, duración de las visitas, arranques y reconexiones). Desde/hasta, filtros por grupo y buscador.
+  - Las cuentas: `public/metricas-calc.js`; las gráficas (SVG sin librerías): `public/metricas-charts.js`.
 - **Excel**: «Descargar Excel» hace un `.xlsx` de verdad en el navegador (`public/xlsx.js`, sin librerías: zip con
-  `CompressionStream`) con 10 hojas: Resumen, Por día, Por semana, Cuentas nuevas, Embudo de nuevos, Por hora, Días
-  jugados, Jugadores, Sesiones y Arranques (fechas como fechas de Excel, filtros y la cabecera fija).
+  `CompressionStream`) con 14 hojas: Resumen, Por día (con quién puso las horas), Grupos por día, Retención nuevos,
+  Siguen del principio, Por semana, Cohortes, Concentración, Por hora, Duración visitas, Jugadores (con UUID y grupo),
+  Quién jugó cada día, Sesiones y Arranques (fechas como fechas de Excel, filtros y la cabecera fija).
 - **La contraseña**: en `config/metricas.json` solo está su huella PBKDF2 (la contraseña se le dio al dueño por el chat
   y no está en el repositorio). También entran el secreto `METRICAS_PASSWORD` de Cloudflare (si se pone) y la clave de
   `/staff` (`ADMIN_KEY`). Para cambiarla, la huella nueva:

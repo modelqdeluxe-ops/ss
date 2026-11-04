@@ -322,6 +322,13 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   `tierras-fantasticas/tools/nlogin/importar.sh` desde su zip. Cuando suba la 1.3.174 (en la próxima actualización
   grande), el mod sigue desde el cursor y rellena el hueco. Ojo: la contraseña que se le dio primero por el chat estaba
   mal escrita (inventada al escribir el mensaje): **copia siempre lo que se generó, nunca lo escribas de memoria**.
+- **v2 del panel** (el dueño: las sesiones engañan, «son fantasmas, solo veo jugar a los mismos 5», «cataloga por UUID»,
+  «retención, interactivo, más gráficos que no sean de barras»): jugadores por UUID, visitas, días de juego de verdad
+  (mínimo de minutos), grupos, retención y cohortes, concentración, matriz jugador × día, dispersión, ficha del
+  jugador y 4 pestañas (README, «v2»). Con sus datos (26 oct–4 nov, mínimo 30 min): unos 28 jugadores distintos juegan
+  de verdad cada día, pero **a la vez solo hay ~7 en las horas fuertes (máximo 16)**: por eso ve siempre a pocos; 16 casi a
+  diario, 25 regulares, 30 apenas o se fueron; los 10 que más juegan ponen el 43 % de las horas; de las cuentas nuevas,
+  el 47 % jugó al día siguiente y el 33 % seguía a la semana. nLogin no sabe si alguien está AFK.
 - Lo que se vio en los datos (para el dueño): sí retiene a los que entran; entra poca gente nueva; hubo una caída del 11
   al 16 de octubre y días de decenas de arranques (el 1 nov, 27 arranques y 7 jugadores); ~13 % de las sesiones acaban
   en una reconexión en menos de 3 min; los reinicios fijos son a las 3:00 y 15:00 (hora de México), justo antes de las

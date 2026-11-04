@@ -3,7 +3,7 @@
 # dueño ya descomprimido) cuando el servidor no tiene el TF Client 1.3.174 (que los manda solo por el puente).
 #   METRICAS_PASSWORD=… importar.sh <carpeta nLogin> [web]
 # Manda los registros desde el día de config/metricas.json, empezando donde va la web (no repite nada), y las cuentas de
-# nlogin.db (solo nombre, creación y última vez). Si no se pone METRICAS_PASSWORD, la pide.
+# nlogin.db (solo nombre, creación, última vez y UUID). Si no se pone METRICAS_PASSWORD, la pide.
 set -euo pipefail
 AQUI=$(cd "$(dirname "$0")" && pwd)
 RAIZ=$(cd "$AQUI/../../.." && pwd)
@@ -19,7 +19,8 @@ if [ -f "$NL/nlogin.db" ]; then
   python3 -I - "$NL/nlogin.db" "$TMP/cuentas.json" <<'PY'
 import json, sqlite3, sys
 db = sqlite3.connect("file:" + sys.argv[1] + "?mode=ro", uri=True)
-rows = [[n, c, s] for n, c, s in db.execute("SELECT last_name, creation_date, last_seen FROM nlogin")]
+# solo nombre, creación, última vez y UUID (nunca IP, contraseña ni correo)
+rows = [[n, c, s, u] for n, c, s, u in db.execute("SELECT last_name, creation_date, last_seen, unique_id FROM nlogin")]
 json.dump(rows, open(sys.argv[2], "w"))
 print(f"{len(rows)} cuentas en nlogin.db")
 PY

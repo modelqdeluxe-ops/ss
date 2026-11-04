@@ -293,6 +293,8 @@ const MIGRATIONS = [
           WHEN status = 'pending' THEN 'held' ELSE 'void' END,
      created_at, updated_at
    FROM carts WHERE coupon IS NOT NULL`,
+  // (4 nov 2026) /metricas: el UUID de cada jugador (de la base de nLogin o del puente)
+  'ALTER TABLE nlogin_players ADD COLUMN uuid TEXT',
 ];
 
 // La versión del esquema: cambia sola al tocar SCHEMA o MIGRATIONS (y entonces se vuelven a pasar una vez).
