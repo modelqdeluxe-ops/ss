@@ -32,8 +32,8 @@ import net.tierrasfantasticas.tfclient.server.TFBotPlayer;
  * (1.3.171, el dueño: «¿viste si todo ok con el modelo de la lanza al lanzar? que no sea demasiado grande, que no tenga
  * errores de tamaño») Prueba «lanzas»: en fila, de pie y con la punta a la misma altura, el tridente de Minecraft lanzado
  * y las lanzas lanzadas de los sets (las más grandes, las más pequeñas y las de escala rara), y al final un jugador
- * (1,8 bloques) con la de Valentine en la mano, para medir en las capturas su tamaño frente al tridente, al jugador y a
- * la misma lanza en la mano.
+ * (1,8 bloques), para medir en las capturas su tamaño frente al tridente y al jugador. (1.3.172) Todas clavadas de pie
+ * en el suelo (lanzadas hacia abajo): deben medir lo mismo que el tridente de Minecraft.
  */
 final class BossTestLanzas {
     private BossTestLanzas() {}
@@ -44,11 +44,10 @@ final class BossTestLanzas {
     private static final List<Entity> SPAWNED = new ArrayList<>();
     private static ServerPlayer holder;
 
-    /** Quieta, de pie, apuntando al cielo (sin gravedad; una velocidad mínima hacia arriba para que mire arriba). */
-    private static void stand(Entity e, double x, double y, double z) {
-        e.setNoGravity(true);
-        e.moveTo(x, y, z, 0F, -90F);
-        e.setDeltaMovement(new Vec3(0, 1.0E-4, 0));
+    /** (1.3.172) Lanzada recta hacia abajo desde 6 bloques: se clava de pie en el suelo (la punta abajo). */
+    private static void drop(Entity e, double x, double ground, double z) {
+        e.moveTo(x, ground + 6, z, 0F, 90F);
+        e.setDeltaMovement(new Vec3(0, -2.5, 0));
     }
 
     static void step(int t, MinecraftServer server, ServerLevel level, ServerPlayer player, BossTest.Rep r) {
@@ -59,12 +58,12 @@ final class BossTestLanzas {
                 BlockPos g = new BlockPos(ax, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, ax, az), az);
                 BossTest.command(server, "time set 6000");
                 BossTest.hideHud = true;
-                double top = g.getY() + 3.6, x = g.getX() + 0.5;
+                double ground = g.getY(), x = g.getX() + 0.5;
                 double z = g.getZ() + 0.5 - 7.5;
-                // el tridente de Minecraft (su punta va ~0,19 por delante de la entidad)
+                // el tridente de Minecraft
                 ThrownTrident vanilla = EntityType.TRIDENT.create(level);
                 if (vanilla != null) {
-                    stand(vanilla, x, top - 0.19, z);
+                    drop(vanilla, x, ground, z);
                     level.addFreshEntity(vanilla);
                     SPAWNED.add(vanilla);
                 }
@@ -74,8 +73,7 @@ final class BossTestLanzas {
                     Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("tfclient", id));
                     if (it == null || it == Items.AIR) continue;
                     TFThrownTrident s = new TFThrownTrident(level, player, new ItemStack(it));
-                    // la punta del modelo va 0,15 por delante de la entidad
-                    stand(s, x, top - 0.15, z);
+                    drop(s, x, ground, z);
                     level.addFreshEntity(s);
                     SPAWNED.add(s);
                     order.append(", ").append(id.replace("_trident", ""));
@@ -87,7 +85,7 @@ final class BossTestLanzas {
                     holder.teleportTo(level, x, g.getY(), z + 1.6, 90F, 0F);
                     order.append(", jugador con la de Valentine en la mano");
                 }
-                r.event("lanzas 1 (de izquierda a derecha, puntas a " + String.format(java.util.Locale.ROOT, "%.1f", top - g.getY()) + " bloques del suelo): " + order);
+                r.event("lanzas 1 (de izquierda a derecha, clavadas de pie en el suelo): " + order);
                 player.teleportTo(level, x - 10.0, g.getY(), g.getZ() + 0.5, -90F, -9F);
             }
             case 60 -> BossTest.shot(r, "lanzas_01_fila");

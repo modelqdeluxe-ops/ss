@@ -1,5 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **4 nov 2026 — 1.3.172**: las lanzas lanzadas de los sets, todas al tamaño del tridente de Minecraft
+> (`TFThrownTridentRenderer.VANILLA_LENGTH`). Prueba `[prueba-jefes=lanzas]`.
+>
 > **4 nov 2026 — 1.3.171, MARTILLOS = MAZA**: los martillos y mazas de los sets son la maza de 1.21 (golpe
 > aplastante, Densidad, Brecha, Ráfaga de viento: `items/TFMace`); las lanzas lanzadas se ven con su modelo
 > (`TFThrownTrident`); la pestaña MÚSICA de la protección es un reproductor (`PadZonePlayerPage`); ONDA de varios colores
