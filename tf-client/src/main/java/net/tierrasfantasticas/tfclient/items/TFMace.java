@@ -263,11 +263,23 @@ public final class TFMace {
         if (burst > 0) up = BURST[Math.min(BURST.length, burst) - 1];
         // (1.3.173) lo que se ve y se oye, como la 1.21: el polvo del bloque que pisa el que recibe y el sonido de la maza
         // desde quien pega (TFMaceClient, en cada TF Client cercano)
-        TFMaceNet.send(level, new TFMaceNet.Smash(target.getOnPos(), target.onGround(), heavy, p.getX(), p.getY(), p.getZ(), burst));
+        TFMaceNet.send(level, new TFMaceNet.Smash(target.getOnPos(), standsOnGround(target), heavy, p.getX(), p.getY(), p.getZ(), burst));
         p.setDeltaMovement(v.x, up, v.z);
         p.hurtMarked = true;
         if (p instanceof ServerPlayer sp) sp.connection.send(new ClientboundSetEntityMotionPacket(sp));
         testLast += " · empujó " + pushed + (burst > 0 ? " · ráfaga " + burst : "") + " · caída tras el golpe " + p.fallDistance;
+    }
+
+    /**
+     * ¿El que recibe está en el suelo? (el sonido del suelo o el del aire) Lo de Minecraft (onGround) y, para los que no
+     * se mueven (mobs sin IA: Minecraft no les pone onGround), si tiene un bloque sólido justo bajo los pies.
+     */
+    static boolean standsOnGround(LivingEntity e) {
+        if (e.onGround()) return true;
+        net.minecraft.core.BlockPos below = e.getOnPos();
+        var shape = e.level().getBlockState(below).getCollisionShape(e.level(), below);
+        if (shape.isEmpty()) return false;
+        return Math.abs(e.getY() - (below.getY() + shape.max(net.minecraft.core.Direction.Axis.Y))) < 0.06;
     }
 
     /** ¿Le empuja el golpe aplastante? Como en Java, y además respetando el PvP del servidor y de las zonas. */
