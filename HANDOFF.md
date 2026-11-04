@@ -312,6 +312,11 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   eventos por el puente de la web de pruebas dan los mismos jugadores por día que el informe hecho a mano en Python
   (41, 34, 35, 40, 40, 33, 7, 32, 30, 15 del 26 oct al 4 nov). `npm test` 80/80 (con `test/metricas.test.js`).
   Capturas de la página (1280 y 390 de ancho, sin desbordes) y el Excel abierto con openpyxl y LibreOffice.
+- **En un Mohist de verdad** (`tf-client/tools/mohist/probar_metricas.sh <carpeta> <jar> <registros de nLogin>`, con el
+  jar del artefacto de CI y los registros del dueño en `plugins/nLogin/logs`; la web es el Worker en local,
+  `web_metricas.mjs`): `METRICAS DE NLOGIN EN MOHIST: TODO BIEN` — el mod pregunta por dónde va la web, manda los 1854
+  eventos (los que cuenta grep) en 5 consultas sin repetir ninguno, sin IP; una línea nueva en el último registro llega
+  una vez y sin la IP; tras reiniciar el servidor sigue donde iba.
 - Lo que se vio en los datos (para el dueño): sí retiene a los que entran; entra poca gente nueva; hubo una caída del 11
   al 16 de octubre y días de decenas de arranques (el 1 nov, 27 arranques y 7 jugadores); ~13 % de las sesiones acaban
   en una reconexión en menos de 3 min; los reinicios fijos son a las 3:00 y 15:00 (hora de México), justo antes de las
