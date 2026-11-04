@@ -46,7 +46,8 @@ final class BossTestLanzas {
 
     /** (1.3.172) Lanzada recta hacia abajo desde 6 bloques: se clava de pie en el suelo (la punta abajo). */
     private static void drop(Entity e, double x, double ground, double z) {
-        e.moveTo(x, ground + 6, z, 0F, 90F);
+        // ya mirando abajo (xRot −90: el proyectil gira poco a poco hacia donde va y se clavaría a medio girar)
+        e.moveTo(x, ground + 6, z, 0F, -90F);
         e.setDeltaMovement(new Vec3(0, -2.5, 0));
     }
 
@@ -59,7 +60,7 @@ final class BossTestLanzas {
                 BossTest.command(server, "time set 6000");
                 BossTest.hideHud = true;
                 double ground = g.getY(), x = g.getX() + 0.5;
-                double z = g.getZ() + 0.5 - 7.5;
+                double z = g.getZ() + 0.5 - 10.0;
                 // el tridente de Minecraft
                 ThrownTrident vanilla = EntityType.TRIDENT.create(level);
                 if (vanilla != null) {
@@ -69,7 +70,7 @@ final class BossTestLanzas {
                 }
                 StringBuilder order = new StringBuilder("tridente de Minecraft");
                 for (String id : SPEARS) {
-                    z += 1.5;
+                    z += 2.0;
                     Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation("tfclient", id));
                     if (it == null || it == Items.AIR) continue;
                     TFThrownTrident s = new TFThrownTrident(level, player, new ItemStack(it));
@@ -86,7 +87,7 @@ final class BossTestLanzas {
                     order.append(", jugador con la de Valentine en la mano");
                 }
                 r.event("lanzas 1 (de izquierda a derecha, clavadas de pie en el suelo): " + order);
-                player.teleportTo(level, x - 10.0, g.getY(), g.getZ() + 0.5, -90F, -9F);
+                player.teleportTo(level, x - 12.0, g.getY(), g.getZ() + 0.5, -90F, 0F);
             }
             case 60 -> BossTest.shot(r, "lanzas_01_fila");
             case 62 -> {
