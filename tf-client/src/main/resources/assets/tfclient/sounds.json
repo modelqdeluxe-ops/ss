@@ -4122,5 +4122,48 @@
     "attenuation_distance": 16
    }
   ]
+ },
+ "maza.golpe_suelo": {
+  "subtitle": "subtitles.tfclient.maza.golpe",
+  "sounds": [
+   "minecraft:item/mace/smash_ground1",
+   "minecraft:item/mace/smash_ground2",
+   "minecraft:item/mace/smash_ground3",
+   "minecraft:item/mace/smash_ground4"
+  ]
+ },
+ "maza.golpe_suelo_fuerte": {
+  "subtitle": "subtitles.tfclient.maza.golpe",
+  "sounds": [
+   "minecraft:item/mace/smash_ground_heavy"
+  ]
+ },
+ "maza.golpe_aire": {
+  "subtitle": "subtitles.tfclient.maza.golpe_aire",
+  "sounds": [
+   "minecraft:item/mace/smash_air1",
+   "minecraft:item/mace/smash_air2",
+   "minecraft:item/mace/smash_air3"
+  ]
+ },
+ "maza.rafaga": {
+  "subtitle": "subtitles.tfclient.maza.rafaga",
+  "sounds": [
+   {
+    "name": "minecraft:entity/wind_charge/wind_burst1",
+    "attenuation_distance": 8,
+    "pitch": 1.25
+   },
+   {
+    "name": "minecraft:entity/wind_charge/wind_burst2",
+    "attenuation_distance": 8,
+    "pitch": 1.25
+   },
+   {
+    "name": "minecraft:entity/wind_charge/wind_burst3",
+    "attenuation_distance": 8,
+    "pitch": 1.25
+   }
+  ]
  }
 }

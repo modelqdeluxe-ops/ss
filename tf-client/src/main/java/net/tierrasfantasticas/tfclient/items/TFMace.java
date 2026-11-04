@@ -11,13 +11,9 @@ package net.tierrasfantasticas.tfclient.items;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,7 +27,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
@@ -55,8 +50,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   daño por cada uno de los 3 primeros bloques, +2 por cada uno de los 5 siguientes y +1 por cada bloque después (sin
  *   tope); si es crítico, también ×1,5. Se lo come aunque el ataque no esté cargado. Al acertar: no hay daño de caída (la
  *   caída vuelve a contar desde ahí), se queda casi quieto en el aire un instante, empuja a los de alrededor (3,5
- *   bloques; el doble si caía más de 5), polvo del suelo y su golpe (seco, fuerte si caía más de 5, otro si el blanco
- *   estaba en el aire). No empuja a quien no se puede pegar (sin PvP en el servidor o en esa zona, salvo en un duelo),
+ *   bloques; el doble si caía más de 5) y, en cada TF Client cercano, la explosión de polvo y el sonido de la maza de la
+ *   1.21 (TFMaceClient: los sonidos se bajan de Mojang). No empuja a quien no se puede pegar (sin PvP en el servidor o en esa zona, salvo en un duelo),
  *   ni a sus mascotas, ni a los de su equipo.</li>
  *   <li>Encantamientos de la maza: <b>Densidad</b> (I-V, +0,5 de daño por bloque caído y nivel, solo en el golpe
  *   aplastante), <b>Brecha</b> (I-IV, la armadura del blanco protege un 15 % menos por nivel; mixin
@@ -260,36 +255,31 @@ public final class TFMace {
             if (e instanceof ServerPlayer sp) sp.connection.send(new ClientboundSetEntityMotionPacket(sp));
             pushed++;
         }
-        // el polvo del suelo y el golpe
-        BlockState ground = level.getBlockState(target.getOnPos());
-        if (target.onGround() && !ground.isAir()) {
-            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), target.getX(), target.getY() + 0.1, target.getZ(),
-                    heavy ? 90 : 45, 1.1, 0.1, 1.1, 0.25);
-            level.sendParticles(ParticleTypes.EXPLOSION, target.getX(), target.getY() + 0.3, target.getZ(), heavy ? 3 : 1, 0.4, 0.1, 0.4, 0.0);
-            if (heavy) {
-                level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.55F, 1.35F);
-                level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 0.8F, 0.75F);
-            } else {
-                level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 0.6F, 1.05F);
-            }
-        } else {
-            level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.5), target.getZ(), 20, 0.4, 0.4, 0.4, 0.2);
-            level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, SoundSource.PLAYERS, 1.0F, 0.7F);
-        }
         // sin daño de caída: la caída vuelve a contar desde aquí, y se queda casi quieto un instante
         p.resetFallDistance();
         Vec3 v = p.getDeltaMovement();
         double up = 0.01;
         int burst = EnchantmentHelper.getItemEnchantmentLevel(WIND_BURST.get(), stack);
-        if (burst > 0) {
-            up = BURST[Math.min(BURST.length, burst) - 1];
-            level.sendParticles(ParticleTypes.CLOUD, p.getX(), p.getY(), p.getZ(), 25, 0.5, 0.1, 0.5, 0.08);
-            level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.PHANTOM_FLAP, SoundSource.PLAYERS, 1.0F, 0.6F);
-        }
+        if (burst > 0) up = BURST[Math.min(BURST.length, burst) - 1];
+        // (1.3.173) lo que se ve y se oye, como la 1.21: el polvo del bloque que pisa el que recibe y el sonido de la maza
+        // desde quien pega (TFMaceClient, en cada TF Client cercano)
+        TFMaceNet.send(level, new TFMaceNet.Smash(target.getOnPos(), standsOnGround(target), heavy, p.getX(), p.getY(), p.getZ(), burst));
         p.setDeltaMovement(v.x, up, v.z);
         p.hurtMarked = true;
         if (p instanceof ServerPlayer sp) sp.connection.send(new ClientboundSetEntityMotionPacket(sp));
         testLast += " · empujó " + pushed + (burst > 0 ? " · ráfaga " + burst : "") + " · caída tras el golpe " + p.fallDistance;
+    }
+
+    /**
+     * ¿El que recibe está en el suelo? (el sonido del suelo o el del aire) Lo de Minecraft (onGround) y, para los que no
+     * se mueven (mobs sin IA: Minecraft no les pone onGround), si tiene un bloque sólido justo bajo los pies.
+     */
+    static boolean standsOnGround(LivingEntity e) {
+        if (e.onGround()) return true;
+        net.minecraft.core.BlockPos below = e.getOnPos();
+        var shape = e.level().getBlockState(below).getCollisionShape(e.level(), below);
+        if (shape.isEmpty()) return false;
+        return Math.abs(e.getY() - (below.getY() + shape.max(net.minecraft.core.Direction.Axis.Y))) < 0.06;
     }
 
     /** ¿Le empuja el golpe aplastante? Como en Java, y además respetando el PvP del servidor y de las zonas. */

@@ -1578,5 +1578,8 @@
  "enchantment.tfclient.brecha.desc": "La armadura del enemigo protege menos de los golpes de la maza.",
  "enchantment.tfclient.rafaga_viento": "Ráfaga de viento",
  "enchantment.tfclient.rafaga_viento.desc": "Tras un golpe aplastante, el viento te lanza hacia arriba.",
- "entity.tfclient.lanza_lanzada": "Lanza"
+ "entity.tfclient.lanza_lanzada": "Lanza",
+ "subtitles.tfclient.maza.golpe": "Golpe de la maza",
+ "subtitles.tfclient.maza.golpe_aire": "Golpe de la maza en el aire",
+ "subtitles.tfclient.maza.rafaga": "Ráfaga de viento"
 }
