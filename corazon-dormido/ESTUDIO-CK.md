@@ -124,8 +124,12 @@ nosotros (ver `ARTE.md`).
 
 ## Lo que queda (por orden)
 1. Lo que aún es de esqueleto: el setón y el velador caído, las mascotas, los mercaderes y los siete jefes (por
-   piezas a mano, con masas como el mole).
-2. Los ataques de las criaturas también de frente y de espaldas (ahora solo de lado).
-3. Suelos con el borde oscuro de cada zona y objetos con cuatro orientaciones.
-4. Leer el código del juego (`Pug.Other.dll`) para las fórmulas del jugador (velocidad, picar, empuje): hace falta
-   permiso para instalar el descompilador de .NET.
+   piezas a mano, con masas como el mole; `criaturas-px2.js` tiene `masas`, `contorno2`, `tumbar` y `acabarH`).
+2. Iconos que faltan por rehacer a mano: comida, semillas, peces, materiales sueltos, muebles de la casa.
+3. Mecánicas: comparar con Core Keeper lo que pasa al morir, el hambre y las habilidades (sus números están en los
+   datos de cada entidad; las fórmulas del jugador están en `Pug.Other.dll`, que pide permiso para descompilar).
+4. Objetos con cuatro orientaciones y los que faltan a mano (tienda, trono, altar del cielo, fuente seca, Archivero,
+   Muda, raíz, árbol muerto).
+5. Herramientas para revisar (en la carpeta temporal de cada sesión): una hoja de cuadros de una criatura
+   (`CRI.DEF[tipo].manual(anim, f, vista)` en `herramientas/taller.html`) y una partida con criaturas andando y
+   atacando alrededor del jugador.
