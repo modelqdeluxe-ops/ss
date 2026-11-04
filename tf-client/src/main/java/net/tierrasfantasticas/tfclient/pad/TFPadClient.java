@@ -147,6 +147,7 @@ public final class TFPadClient {
     public static void actForTest(String action) {
         if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadViewPage v) v.actForTest(action);
         else if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadCommunityPage c) c.actForTest(action);
+        else if (Minecraft.getInstance().screen instanceof TFPadScreen pad && pad.page() instanceof PadZonePlayerPage z) z.actForTest(action);
     }
 
     /** La prueba en el juego (BossTest «pad»): la portada («») o una app, aunque haya otra pantalla abierta. */

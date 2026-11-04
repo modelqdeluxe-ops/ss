@@ -125,7 +125,8 @@ final class PadClanViews {
         String fxName = switch (fx.mode()) {
             case "degradado" -> "degradado de " + fx.colors().length + " colores";
             case "arcoiris" -> "arcoíris «" + net.tierrasfantasticas.tfclient.clans.ClanTagFx.styleName(fx.style()) + "» (velocidad " + fx.speed() + ")";
-            case "onda" -> "onda de " + fx.colors().length + " colores (velocidad " + fx.speed() + ")";
+            case "onda" -> fx.colors().length == 1 ? "onda de brillo, #" + String.format("%06X", fx.colors()[0]) + " (velocidad " + fx.speed() + ")"
+                    : "onda de " + fx.colors().length + " colores (velocidad " + fx.speed() + ")";
             default -> "un color, #" + hex;
         };
         b.header("La etiqueta [" + tag + "] y la insignia. ETIQUETA: color y efectos.");

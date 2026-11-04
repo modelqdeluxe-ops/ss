@@ -1,5 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **4 nov 2026 — 1.3.171, MARTILLOS = MAZA**: los martillos y mazas de los sets son la maza de 1.21 (golpe
+> aplastante, Densidad, Brecha, Ráfaga de viento: `items/TFMace`); las lanzas lanzadas se ven con su modelo
+> (`TFThrownTrident`); la pestaña MÚSICA de la protección es un reproductor (`PadZonePlayerPage`); ONDA de varios colores
+> solo con los efectos arcoíris. Prueba `[prueba-jefes=v171]`. CHECKPOINT en `HANDOFF.md`.
+>
 > **4 nov 2026 — 1.3.170, PIEDRA UNIDA O INDEPENDIENTE**: la piedra dentro de la zona de un grupo se elige en el pad:
 > UNIDA (una sola zona) o INDEPENDIENTE (su zona dentro de la grande; manda en su cuadrado). Probado en Mohist con bots que
 > ponen la piedra y pulsan el pad (`tf-client/tools/mohist/probar_protecciones.sh`). CHECKPOINT en `HANDOFF.md`.

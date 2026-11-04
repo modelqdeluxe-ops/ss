@@ -30,7 +30,9 @@
     "jobs.FurnaceResultSlotJobsMixin",
     "jobs.BrewingStandMenuJobsMixin",
     "items.CreativeSlotGuardMixin",
-    "items.ContainerCloneGuardMixin"
+    "items.ContainerCloneGuardMixin",
+    "items.LivingEntityBreachMixin",
+    "items.ThrownTridentAccessor"
   ],
   "client": [
     "LoadingOverlayAccessor",

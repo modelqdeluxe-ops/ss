@@ -516,7 +516,8 @@ public final class PadClaims {
         PadView.Builder b = PadView.of(app).tab(base + "a", "AJUSTES")
                 .tab(base + "m", members > 0 ? "MIEMBROS (" + members + ")" : "MIEMBROS")
                 .tab(base + "b", bans > 0 ? "BANEOS (" + bans + ")" : "BANEOS")
-                .tab(base + "p", "PARTÍCULAS").tab(base + "u", "MÚSICA").tab(base + "x", "MÁS").selected(base + section);
+                // (1.3.171) MÚSICA abre el reproductor de la zona (pad/PadZonePlayerPage: barra, volumen, repetir…)
+                .tab(base + "p", "PARTÍCULAS").tab("§zonaplayer:" + c.getClaimId() + ":" + title(c), "MÚSICA").tab(base + "x", "MÁS").selected(base + section);
         if (c.getGroupId() != null && !c.isGroupMother()) {
             Claim mother = c.getMother();
             b.header("Esta piedra está unida al grupo de " + (mother != null ? mother.getOwnerName() : "?") + ": la zona se administra desde su piedra principal.");

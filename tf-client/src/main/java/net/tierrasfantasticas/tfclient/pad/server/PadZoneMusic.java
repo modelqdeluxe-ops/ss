@@ -48,16 +48,37 @@ public final class PadZoneMusic {
     static final JsonStore STORE_IMPL = new JsonStore("musica_zonas.json");
     public static final net.tierrasfantasticas.tfclient.pad.PadServer.Store STORE = STORE_IMPL;
 
-    /** Lo que suena en una zona. */
-    public record Song(String url, String title, String artist, long durationMs, long originMs, int volume, String by) {
-        long position(long now) {
+    /**
+     * Lo que suena en una zona. (1.3.171, el dueño: «en la música de las protes pon tipo el reproductor: la barra de
+     * progreso de la canción, el volumen, que se repita indefinidamente, todo eso») pausedMs: dónde se pausó (−1 si
+     * suena); repeat: en bucle (lo de siempre) o una vez (al acabar, se calla hasta que se vuelva a dar a reproducir).
+     */
+    public record Song(String url, String title, String artist, long durationMs, long originMs, int volume, String by, long pausedMs,
+                       boolean repeat) {
+        public boolean paused() {
+            return pausedMs >= 0;
+        }
+
+        public long position(long now) {
+            if (pausedMs >= 0) return pausedMs;
             long p = now - originMs;
-            return durationMs > 0 ? Math.floorMod(p, durationMs) : Math.max(0, p);
+            if (durationMs <= 0) return Math.max(0, p);
+            return repeat ? Math.floorMod(p, durationMs) : Math.max(0, Math.min(p, durationMs));
+        }
+
+        /** ¿Se oye ahora? (ni en pausa ni acabada si no se repite) */
+        public boolean playing(long now) {
+            return pausedMs < 0 && (repeat || durationMs <= 0 || now - originMs < durationMs);
+        }
+
+        /** Acabó (una vez, sin repetir). */
+        public boolean ended(long now) {
+            return pausedMs < 0 && !repeat && durationMs > 0 && now - originMs >= durationMs;
         }
     }
 
-    /** Lo que se le contó a cada jugador: la zona y su link (para saber si cambió). */
-    private record Told(UUID claim, String url, int volume, long at) {}
+    /** Lo que se le contó a cada jugador: la zona, su link, el volumen y desde cuándo suena (para saber si cambió). */
+    private record Told(UUID claim, String url, int volume, long at, long origin) {}
 
     private static final Map<UUID, Told> TOLD = new HashMap<>();
     /** El que pone una canción de su carpeta que el servidor aún no tiene: la zona y la canción, hasta que la suba. */
@@ -85,7 +106,7 @@ public final class PadZoneMusic {
         String url = TFJson.str(o, "url", "");
         if (url.isEmpty()) return null;
         return new Song(url, TFJson.str(o, "titulo", "?"), TFJson.str(o, "artista", ""), TFJson.num(o, "duracion", 0), TFJson.num(o, "inicio", 0),
-                (int) TFJson.num(o, "volumen", 80), TFJson.str(o, "por", ""));
+                (int) TFJson.num(o, "volumen", 80), TFJson.str(o, "por", ""), TFJson.num(o, "pausa", -1), TFJson.bool(o, "repetir", true));
     }
 
     private static boolean canManage(ServerPlayer p, Claim c) {
@@ -135,6 +156,7 @@ public final class PadZoneMusic {
         o.addProperty("inicio", System.currentTimeMillis());
         Song old = of(c);
         o.addProperty("volumen", old == null ? 80 : old.volume());
+        o.addProperty("repetir", old == null || old.repeat());
         o.addProperty("por", p.getGameProfile().getName());
         zones().add(c.getClaimId().toString(), o);
         STORE_IMPL.changed();
@@ -177,6 +199,159 @@ public final class PadZoneMusic {
         STORE_IMPL.changed();
     }
 
+    // ---------------------------------------------------------------------------------------------------------------
+    // (1.3.171) El reproductor de la zona: pausa, saltar, repetir y volumen (la app de datos «zonamusica»)
+    // ---------------------------------------------------------------------------------------------------------------
+
+    private static JsonObject entry(Claim c) {
+        JsonElement e = c == null ? null : zones().get(c.getClaimId().toString());
+        return e != null && e.isJsonObject() ? e.getAsJsonObject() : null;
+    }
+
+    /** Pone la canción en ms (en pausa, se queda ahí; sonando, sigue desde ahí). */
+    private static void seekTo(JsonObject o, Song s, long ms, long now) {
+        long pos = Math.max(0, s.durationMs() > 0 ? Math.min(ms, s.durationMs() - 250) : ms);
+        if (s.paused()) o.addProperty("pausa", pos);
+        else o.addProperty("inicio", now - pos);
+    }
+
+    /** Pausa o sigue; si acabó (sin repetir), vuelve a empezar. */
+    static String togglePause(Claim c, long now) {
+        JsonObject o = entry(c);
+        Song s = of(c);
+        if (o == null || s == null) return "La zona no tiene música.";
+        if (s.paused()) {
+            o.addProperty("inicio", now - s.pausedMs());
+            o.remove("pausa");
+        } else if (s.ended(now)) {
+            o.addProperty("inicio", now);
+        } else {
+            o.addProperty("pausa", s.position(now));
+        }
+        STORE_IMPL.changed();
+        return null;
+    }
+
+    static String seek(Claim c, long ms, long now) {
+        JsonObject o = entry(c);
+        Song s = of(c);
+        if (o == null || s == null) return "La zona no tiene música.";
+        // saltar en una canción que ya acabó (sin repetir): vuelve a sonar desde ahí
+        if (s.ended(now)) {
+            o.addProperty("inicio", now - Math.max(0, Math.min(ms, Math.max(0, s.durationMs() - 250))));
+        } else {
+            seekTo(o, s, ms, now);
+        }
+        STORE_IMPL.changed();
+        return null;
+    }
+
+    static String setVolume(Claim c, int volume) {
+        JsonObject o = entry(c);
+        if (o == null) return "La zona no tiene música.";
+        o.addProperty("volumen", Math.max(0, Math.min(100, volume)));
+        STORE_IMPL.changed();
+        return null;
+    }
+
+    /** En bucle o una vez: la canción sigue por donde iba. */
+    static String toggleRepeat(Claim c, long now) {
+        JsonObject o = entry(c);
+        Song s = of(c);
+        if (o == null || s == null) return "La zona no tiene música.";
+        long pos = s.position(now);
+        if (s.durationMs() > 0 && pos >= s.durationMs()) pos = 0;
+        o.addProperty("repetir", !s.repeat());
+        if (!s.paused()) o.addProperty("inicio", now - pos);
+        STORE_IMPL.changed();
+        return null;
+    }
+
+    /** La app de datos del reproductor (pad/PadZonePlayerPage): la zona elegida con «zona:<id>» y sus botones. */
+    public static final net.tierrasfantasticas.tfclient.pad.PadServer.DataApp APP = new net.tierrasfantasticas.tfclient.pad.PadServer.DataApp() {
+        @Override
+        public JsonObject data(ServerPlayer player) {
+            JsonObject out = new JsonObject();
+            Claim c = zoneOf(player);
+            if (c == null) {
+                out.addProperty("zona", "");
+                return out;
+            }
+            long now = System.currentTimeMillis();
+            out.addProperty("zona", c.getClaimId().toString());
+            out.addProperty("nombre", PadClaims.title(c));
+            out.addProperty("puede", canManage(player, c));
+            Song s = of(c);
+            out.addProperty("hay", s != null);
+            if (s != null) {
+                out.addProperty("titulo", s.title());
+                out.addProperty("artista", s.artist());
+                out.addProperty("por", s.by());
+                out.addProperty("duracion", s.durationMs());
+                out.addProperty("pos", s.position(now));
+                out.addProperty("sonando", s.playing(now));
+                out.addProperty("pausa", s.paused());
+                out.addProperty("acabo", s.ended(now));
+                out.addProperty("repetir", s.repeat());
+                out.addProperty("volumen", s.volume());
+            }
+            return out;
+        }
+
+        @Override
+        public JsonObject action(ServerPlayer player, String action) {
+            if (action.startsWith("zona:")) {
+                net.tierrasfantasticas.tfclient.pad.PadServer.put(player, "zonamusica.zona", action.substring(5));
+                return null;
+            }
+            Claim c = zoneOf(player);
+            if (c == null) return null;
+            if (!canManage(player, c)) {
+                TFPadNet.notice(player, "Solo el dueño de la zona controla su música.");
+                return null;
+            }
+            long now = System.currentTimeMillis();
+            String arg = action.contains(":") ? action.substring(action.indexOf(':') + 1) : "";
+            String msg;
+            try {
+                msg = switch (action.contains(":") ? action.substring(0, action.indexOf(':')) : action) {
+                    case "pausa" -> togglePause(c, now);
+                    case "ir" -> seek(c, Long.parseLong(arg), now);
+                    case "saltar" -> {
+                        Song s = of(c);
+                        yield s == null ? null : seek(c, s.position(now) + Long.parseLong(arg), now);
+                    }
+                    case "inicio" -> {
+                        Song s = of(c);
+                        if (s != null && s.paused()) togglePause(c, now);
+                        yield seek(c, 0, now);
+                    }
+                    case "vol" -> setVolume(c, Integer.parseInt(arg));
+                    case "repetir" -> toggleRepeat(c, now);
+                    case "quitar" -> {
+                        clear(player, c);
+                        yield null;
+                    }
+                    default -> null;
+                };
+            } catch (NumberFormatException e) {
+                msg = null;
+            }
+            if (msg != null) TFPadNet.notice(player, msg);
+            return null;
+        }
+    };
+
+    /** La zona que tiene abierta en el reproductor (y que aún existe). */
+    private static Claim zoneOf(ServerPlayer player) {
+        String id = net.tierrasfantasticas.tfclient.pad.PadServer.get(player, "zonamusica.zona", "");
+        try {
+            return id.isEmpty() ? null : ClaimManager.getInstance().findClaimById(UUID.fromString(id));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     private static String cut(String s, int n) {
         return s.length() > n ? s.substring(0, n) : s;
     }
@@ -196,19 +371,22 @@ public final class PadZoneMusic {
             Claim c = p.isSpectator() ? null : ClaimManager.getInstance().getClaimAt(p.level(), p.blockPosition());
             Song s = of(c);
             Told t = TOLD.get(p.getUUID());
-            if (s == null) {
+            // (1.3.171) en pausa o acabada (una vez), como si no tuviera
+            if (s == null || !s.playing(now)) {
                 if (t != null) {
-                    PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(t.claim, false, "", "", "", 0, 0, 0));
+                    PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(t.claim, false, "", "", "", 0, 0, 0, true));
                     TOLD.remove(p.getUUID());
                 }
                 continue;
             }
-            boolean same = t != null && t.claim.equals(c.getClaimId()) && t.url.equals(s.url());
-            // al entrar, si cambió la canción o el volumen, y un recordatorio cada 10 s (para ir a la par)
+            boolean same = t != null && t.claim.equals(c.getClaimId()) && t.url.equals(s.url()) && t.origin == s.originMs();
+            // al entrar, si cambió la canción, el volumen o por dónde va (saltar, pausa, repetir), y un recordatorio cada
+            // 10 s (para ir a la par)
             if (same && t.volume == s.volume() && now - t.at < 10_000) continue;
-            if (t != null && !t.claim.equals(c.getClaimId())) PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(t.claim, false, "", "", "", 0, 0, 0));
-            PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(c.getClaimId(), true, s.url(), s.title(), s.artist(), s.position(now), s.durationMs(), s.volume()));
-            TOLD.put(p.getUUID(), new Told(c.getClaimId(), s.url(), s.volume(), now));
+            if (t != null && !t.claim.equals(c.getClaimId())) PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(t.claim, false, "", "", "", 0, 0, 0, true));
+            PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(c.getClaimId(), true, s.url(), s.title(), s.artist(), s.position(now), s.durationMs(), s.volume(),
+                    s.repeat()));
+            TOLD.put(p.getUUID(), new Told(c.getClaimId(), s.url(), s.volume(), now, s.originMs()));
         }
         // las canciones de las zonas no se borran por viejas (las de los discos se borran si ocupan mucho): se tocan
         if (ticks % (20 * 600) == 0) {
@@ -233,7 +411,7 @@ public final class PadZoneMusic {
     public static void onDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         // en el otro mundo, la de allí (o ninguna) en el próximo medio segundo
         Told t = TOLD.remove(event.getEntity().getUUID());
-        if (t != null && event.getEntity() instanceof ServerPlayer p) PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(t.claim, false, "", "", "", 0, 0, 0));
+        if (t != null && event.getEntity() instanceof ServerPlayer p) PadSpeakerNet.toPlayer(p, new PadSpeakerNet.Zone(t.claim, false, "", "", "", 0, 0, 0, true));
     }
 
     // ---------------------------------------------------------------------------------------------------------------

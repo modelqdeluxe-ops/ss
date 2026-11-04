@@ -285,6 +285,50 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (4 nov 2026, TF Client 1.3.171: MARTILLOS = MAZA, LANZAS CON SU MODELO, REPRODUCTOR DE LA ZONA Y ONDA) — lee esto primero
+
+El dueño, tras la 1.3.170: «¿probaste bien lo de las protes? La música de las protes, tipo el reproductor: la barra de
+progreso, el volumen, que se repita indefinidamente, todo eso, en la pestaña de música de la protección. Hay una opción
+de la etiqueta que no es arcoíris pero da el efecto arcoíris: solo si lo compras. Las lanzas al tirarlas tienen la
+textura del tridente. El martillo de todos los sets, que sea una maza (revisa cómo funciona la maza, y sus
+encantamientos). Revisa desencantar, y lo de las protes también».
+
+- **Martillos y mazas = la maza de Minecraft 1.21** (`items/TFMace`, `TFItemTypes.Mace`; los `heavy` de `tf_sets.json`
+  cuyo id lleva `hammer` o `mace`: 62; los garrotes y guanteletes siguen siendo espadas pesadas): velocidad 0,6, daño
+  6 + el extra del set, sin barrido, no rompe bloques en creativo. **Golpe aplastante** (cayendo más de 1,5 bloques y
+  sin élitros): +4 por bloque los 3 primeros, +2 los 5 siguientes, +1 después; el crítico ×1,5 también a eso; anula el
+  daño de caída, frena en el aire y empuja a los de alrededor (3,5 bloques, el doble cayendo más de 5; no a jugadores
+  sin PvP en el servidor o en esa zona salvo en duelo, ni mascotas ni aliados), polvo y golpe. Encantamientos nuevos
+  (registro `tfclient:densidad`, `brecha`, `rafaga_viento`): **Densidad** I-V (+0,5 por bloque y nivel), **Brecha** I-IV
+  (la armadura protege 15 % menos por nivel: `mixin/items/LivingEntityBreachMixin`) y **Ráfaga de viento** I-III (de
+  tesoro: lanza 8/16/24 bloques arriba tras el golpe). Mesa: Densidad y Brecha. Yunque (`TFEnchanting.anvilAccepts` →
+  `TFMace.anvilAccepts`): además Ráfaga, Castigo, Perdición, Aspecto ígneo y Desaparición. Densidad, Brecha, Castigo y
+  Perdición se excluyen. Nunca Filo, Saqueo, Barrido, Empuje (ni Irrompibilidad/Reparación: no se gastan). Las estelas
+  de arma tratan la maza como espada (`TrailClient`).
+- **Lanzas lanzadas con su modelo**: `TFItemTypes.Trident.releaseUsing` lanza `items/TFThrownTrident` (el tridente de
+  Minecraft con el objeto sincronizado; `mixin/items/ThrownTridentAccessor` para Empalamiento, Lealtad y Canalización)
+  y `TFThrownTridentRenderer` dibuja el modelo del objeto (mide su largo con los vértices; la punta +Y delante, la
+  escala de la mano).
+- **Reproductor de la música de la zona**: la pestaña MÚSICA de la protección (`PadClaims`, clave «§zonaplayer:») abre
+  `pad/PadZonePlayerPage` (app de datos `zonamusica` en `PadZoneMusic.APP`): vinilo, título, quién la puso, barra que
+  avanza y se pulsa o arrastra, desde el principio, −10 / +10 s, play/pausa, REPETIR (siempre / una vez), volumen 0-100
+  arrastrable, CAMBIAR CANCIÓN y QUITAR (dos veces). `Song` guarda `pausa` y `repetir`; el paquete `Zone` lleva `loop`
+  (el cliente no repite si es «una vez»); cada cambio llega al momento a los que están dentro (`Told.origin`).
+- **ONDA de la etiqueta del clan**: era el arcoíris gratis (2-3 colores cualesquiera corriendo). Ahora ONDA de varios
+  colores solo con los efectos arcoíris comprados; sin ellos, ONDA de un color (un brillo que la recorre, sin cambiar
+  de tono). `ClanTagFx.of` baja a un color las guardadas antes; el servidor no deja guardarla; el editor pone candado
+  al «+».
+- **Probado**: prueba en el juego `[prueba-jefes=v171]` (`bosses/BossTestV171`, commit e45022f8): **22 de 22 bien**.
+  ONDA sin comprar (un color, el tono no se mueve más de 0,2°) y comprada (3 colores); 62 mazas; golpe normal 11,
+  aplastante cayendo 4 bloques 37,5 ((11 + 14) × 1,5 crítico), Densidad V 52,5, Brecha IV contra diamante 2,5 → 7,6,
+  Ráfaga III 2,22 hacia arriba, el zombi de al lado empujado; yunque y piedra de afilar con mazas (crate sí, rango no,
+  la maldición se queda); la lanza lanzada con su modelo (capturas en el aire y clavada); la piedra del invitado unida,
+  INDEPENDIENTE pulsado en el pad (manda en su cuadrado, el dueño de la grande no construye), disolver con la grande
+  puesta (vuelve a su dueño) y quitar la grande (se queda); el borde de la independiente en el suelo dentro de la grande;
+  el reproductor (pausa, repetir, volumen, saltar, «una vez» termina). Ojo al escribir pruebas: con el chunk sin cargar,
+  `level.getHeight` da el mínimo (−64): ir primero y medir el suelo unos ticks después. Y en el Mohist del contenedor con
+  la 1.3.171: protecciones 22 de 22 y chat del clan 22 de 22.
+
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.170: LA PIEDRA DENTRO DE LA ZONA DE UN GRUPO, UNIDA O INDEPENDIENTE) — lee esto primero
 
 - El dueño: «quiero que las protecciones, bajo el feature de unir protecciones, me den a elegir si mi prote es

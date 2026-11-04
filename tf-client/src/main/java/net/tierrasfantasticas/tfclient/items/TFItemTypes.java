@@ -116,6 +116,62 @@ public final class TFItemTypes {
         }
     }
 
+    /**
+     * (1.3.171) Los martillos y las mazas de los sets: la maza de Minecraft 1.21 ({@link TFMace}): velocidad 0,6, daño
+     * de la maza (6) más el extra del set, golpe aplastante al caer, sin barrido y con los encantamientos de la maza.
+     */
+    public static class Mace extends net.minecraft.world.item.TieredItem implements net.minecraft.world.item.Vanishable, TFItem {
+        private final Multimap<Attribute, AttributeModifier> modifiers;
+
+        public Mace(Tier tier, Properties p) {
+            super(tier, p);
+            com.google.common.collect.ImmutableMultimap.Builder<Attribute, AttributeModifier> b = com.google.common.collect.ImmutableMultimap.builder();
+            b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", 5.0F + tier.getAttackDamageBonus(),
+                    AttributeModifier.Operation.ADDITION));
+            b.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", -3.4F, AttributeModifier.Operation.ADDITION));
+            this.modifiers = b.build();
+        }
+
+        @Override
+        public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+            return slot == EquipmentSlot.MAINHAND ? modifiers : super.getDefaultAttributeModifiers(slot);
+        }
+
+        @Override
+        public boolean canAttackBlock(net.minecraft.world.level.block.state.BlockState state, Level level, net.minecraft.core.BlockPos pos,
+                net.minecraft.world.entity.player.Player player) {
+            return !player.isCreative();
+        }
+
+        @Override
+        public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target, net.minecraft.world.entity.LivingEntity attacker) {
+            stack.hurtAndBreak(1, attacker, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+            TFMace.afterHit(stack, target, attacker);
+            return true;
+        }
+
+        @Override
+        public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.world.item.enchantment.Enchantment enchantment) {
+            return TFMace.tableAccepts(enchantment);
+        }
+
+        @Override
+        public int getDefaultTooltipHideFlags(ItemStack stack) {
+            return HIDE_ATTRIBUTES;
+        }
+
+        @Override
+        public Component getName(ItemStack stack) {
+            return name(this, super.getName(stack));
+        }
+
+        @Override
+        public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+            tooltip.add(Component.literal("Maza: golpe aplastante al caer sobre el enemigo").withStyle(ChatFormatting.GRAY));
+            tooltip(stack, tooltip);
+        }
+    }
+
     public static class Axe extends AxeItem implements TFItem {
         public Axe(Tier tier, float damage, float speed, Properties p) {
             super(tier, damage, speed, p);
@@ -268,6 +324,29 @@ public final class TFItemTypes {
     public static class Trident extends TridentItem implements TFItem {
         public Trident(Properties p) {
             super(p);
+        }
+
+        /**
+         * (1.3.171, el dueño: «las lanzas al tirarlas se les pone la textura del tridente») Lanzarla como Minecraft, pero
+         * la entidad es TFThrownTrident (se dibuja con su modelo). Con Propulsión, lo de Minecraft (no se lanza).
+         */
+        @Override
+        public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+            if (!(entity instanceof Player player) || net.minecraft.world.item.enchantment.EnchantmentHelper.getRiptide(stack) > 0) {
+                super.releaseUsing(stack, level, entity, timeLeft);
+                return;
+            }
+            if (this.getUseDuration(stack) - timeLeft < 10) return;
+            if (!level.isClientSide) {
+                stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(entity.getUsedItemHand()));
+                TFThrownTrident thrown = new TFThrownTrident(level, player, stack);
+                thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.5F, 1.0F);
+                if (player.getAbilities().instabuild) thrown.pickup = net.minecraft.world.entity.projectile.AbstractArrow.Pickup.CREATIVE_ONLY;
+                level.addFreshEntity(thrown);
+                level.playSound(null, thrown, SoundEvents.TRIDENT_THROW, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                if (!player.getAbilities().instabuild) player.getInventory().removeItem(stack);
+            }
+            player.awardStat(net.minecraft.stats.Stats.ITEM_USED.get(this));
         }
 
         @Override

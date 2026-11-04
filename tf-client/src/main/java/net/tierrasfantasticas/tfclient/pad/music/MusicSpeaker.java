@@ -68,6 +68,8 @@ public final class MusicSpeaker {
         SpeakerSound sound;
         /** (1.3.160) La música de una protección: suena igual en toda la zona (no situada) y en bucle. */
         boolean zone;
+        /** (1.3.171) La de la zona, en bucle (si no, una vez: al acabar se calla). */
+        boolean loop = true;
         long playedAt;
 
         Heard(String url, long originMs, long durationMs) {
@@ -78,7 +80,7 @@ public final class MusicSpeaker {
 
         long position() {
             long p = System.currentTimeMillis() - originMs;
-            return zone && durationMs > 0 ? Math.floorMod(p, durationMs) : p;
+            return zone && loop && durationMs > 0 ? Math.floorMod(p, durationMs) : p;
         }
 
         boolean over() {
@@ -117,6 +119,7 @@ public final class MusicSpeaker {
         long origin = System.currentTimeMillis() - m.positionMs();
         Heard old = HEARD.get(m.claim());
         if (old != null && old.zone && old.url.equals(url)) {
+            old.loop = m.loop();
             // el recordatorio: si va desfasada más de 1,5 s, se vuelve a poner donde va; si no, no se corta
             long d = m.durationMs() > 0 ? Math.floorMod(origin - old.originMs, m.durationMs()) : Math.abs(origin - old.originMs);
             if (m.durationMs() > 0) d = Math.min(d, m.durationMs() - d);
@@ -133,6 +136,7 @@ public final class MusicSpeaker {
         if (old != null) stopSound(old);
         Heard h = new Heard(url, origin, m.durationMs());
         h.zone = true;
+        h.loop = m.loop();
         HEARD.put(m.claim(), h);
         if (MusicLibrary.hearOthers()) ensure(m.claim(), h);
     }
@@ -499,6 +503,8 @@ public final class MusicSpeaker {
             Heard h = e.getValue();
             // (1.3.160) la de la zona, en bucle: si acabó (o el motor de sonido se reinició), otra vez donde va
             if (h.zone) {
+                // (1.3.171) una vez (sin REPETIR): al acabar, no vuelve a empezar
+                if (!h.loop && h.durationMs > 0 && h.position() >= h.durationMs) return false;
                 if ((h.sound == null || !mc.getSoundManager().isActive(h.sound)) && MusicLibrary.hearOthers()
                         && System.currentTimeMillis() - h.playedAt > 2000) {
                     Path file = cacheFile(h.url);

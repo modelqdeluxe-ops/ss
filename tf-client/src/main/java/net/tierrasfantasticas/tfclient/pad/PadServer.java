@@ -109,6 +109,8 @@ public final class PadServer {
         DATA_APPS.put("pase", net.tierrasfantasticas.tfclient.pad.server.PadPass.APP);
         // (1.3.156) la guerra de clanes (la barra vertical doble: PadClanWarPage)
         DATA_APPS.put("guerra", net.tierrasfantasticas.tfclient.pad.server.PadClanWar.APP);
+        // (1.3.171) el reproductor de la música de una protección (PadZonePlayerPage)
+        DATA_APPS.put("zonamusica", net.tierrasfantasticas.tfclient.pad.server.PadZoneMusic.APP);
         // pad de administrador (los a_* solo los abre el staff)
         APPS.put("a_apps", PadAdmin.APPS);
         APPS.put("a_ajustes", PadAdmin.SETTINGS);

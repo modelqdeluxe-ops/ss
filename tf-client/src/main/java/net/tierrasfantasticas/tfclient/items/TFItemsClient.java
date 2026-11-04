@@ -113,8 +113,15 @@ public final class TFItemsClient {
     }
 
     /** Los modelos de alas, mochilas, capas y colas puestas no son de ningún objeto: hay que cargarlos aparte. */
+    /** (1.3.171) La lanza o el tridente de un set, lanzado: con su modelo. */
+    @SubscribeEvent
+    public static void onRenderers(net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(TFItems.THROWN_TRIDENT.get(), TFThrownTridentRenderer::new);
+    }
+
     @SubscribeEvent
     public static void onRegisterModels(ModelEvent.RegisterAdditional event) {
+        TFThrownTridentRenderer.clearBounds();
         for (TFSets.SetDef set : TFSets.all().values()) {
             for (TFSets.ItemDef def : set.items()) {
                 if ("back".equals(def.type()) && def.worn() != null) event.register(new ResourceLocation(def.worn()));

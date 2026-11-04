@@ -802,7 +802,11 @@ final class PadViewPage extends PadPage {
             if ((h.kind == 2 || h.kind == 3) && !inList(my)) continue;
             switch (h.kind) {
                 case 1 -> {
-                    if (!h.action.equals(view.tab())) {
+                    if (h.action.startsWith("§")) {
+                        // (1.3.171) una pestaña que abre una página del propio pad (la MÚSICA de una protección)
+                        pad.sound("tab", 0.7F);
+                        run(h.action);
+                    } else if (!h.action.equals(view.tab())) {
                         pad.sound("tab", 0.7F);
                         send("tab:" + h.action, "");
                     }
@@ -862,6 +866,15 @@ final class PadViewPage extends PadPage {
             PadMusicPage.zoneName = z.length > 2 ? z[2] : "tu zona";
             PadMusicPage.zoneAt = System.currentTimeMillis();
             pad.openApp("musica");
+            return;
+        }
+        // (1.3.171) el reproductor de la música de una protección: «§zonaplayer:<zona>:<nombre>»
+        if (action.startsWith("§zonaplayer:")) {
+            String[] z = action.split(":", 3);
+            if (z.length > 1) {
+                pad.sound("page", 0.55F);
+                pad.setPage(new PadZonePlayerPage(pad, z[1], z.length > 2 ? z[2] : "tu zona"));
+            }
             return;
         }
         // (1.3.156) la paleta de colores (PadColorPicker): «§color:<app>:<pestaña>:<RRGGBB>:<texto>»

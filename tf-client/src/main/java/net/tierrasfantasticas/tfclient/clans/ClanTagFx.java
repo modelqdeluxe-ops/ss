@@ -23,7 +23,10 @@ import net.minecraft.network.chat.TextColor;
  *   <li><b>solido</b>: un color (el de siempre).</li>
  *   <li><b>degradado</b>: de un color a otro (2 o 3), letra a letra.</li>
  *   <li><b>arcoiris</b>: todos los colores, que corren (velocidad 1 a 5).</li>
- *   <li><b>onda</b>: el degradado, que va y viene por la etiqueta.</li>
+ *   <li><b>onda</b>: un brillo que recorre la etiqueta en su color; con los efectos arcoíris comprados, el degradado de
+ *   2 o 3 colores que va y viene (1.3.171, el dueño: «hay una opción que no es arcoíris pero que te da el efecto de
+ *   arcoíris; el efecto arcoíris solo debe darlo si lo compras»: la onda de varios colores corriendo era un arcoíris
+ *   gratis).</li>
  * </ul>
  * En el chat y en el TAB (que no se pueden animar: lo pinta el servidor una vez) sale como se ve en el instante 0; encima
  * de la cabeza, en la lista de jugadores, en el estandarte y en el pad lo anima el TF Client de cada uno (ClanLooks).
@@ -112,6 +115,7 @@ public final class ClanTagFx {
         String mode = clan.get("tagEfecto").getAsString();
         // (1.3.160) el arcoíris se compra en la tienda del clan: sin él, de un color
         if (mode.equals(RAINBOW) && !rainbowOwned(clan)) return solid(base);
+        boolean paidColors = rainbowOwned(clan);
         StringBuilder cols = new StringBuilder();
         if (clan.has("tagColores") && clan.get("tagColores").isJsonArray()) {
             JsonArray a = clan.getAsJsonArray("tagColores");
@@ -120,6 +124,8 @@ public final class ClanTagFx {
         int speed = clan.has("tagVelocidad") ? clan.get("tagVelocidad").getAsInt() : 2;
         int style = clan.has("tagEstilo") ? clan.get("tagEstilo").getAsInt() : 0;
         Fx fx = decode(mode + "|" + cols + "|" + speed + "|" + style, base);
+        // (1.3.171) la onda de varios colores corriendo es un arcoíris: sin comprarlo, la onda de un color (su brillo)
+        if (fx.mode().equals(WAVE) && fx.colors().length > 1 && !paidColors) return new Fx(WAVE, new int[] {fx.colors()[0]}, fx.speed());
         // el primer color manda en lo que no se anima (y es «el color del clan»)
         return fx.mode().equals(SOLID) ? solid(base) : fx;
     }
@@ -155,6 +161,12 @@ public final class ClanTagFx {
                 return along(c, u);
             }
             case WAVE -> {
+                if (c.length == 1) {
+                    // (1.3.171) la onda de un color: un brillo que la recorre (su color, sin cambiar de tono)
+                    double pos = ((t * v * 0.5) % 1.6) - 0.3;
+                    double near = Math.max(0, 1 - Math.abs(u - pos) / 0.28);
+                    return mix(c[0], 0xFFFFFF, 0.6 * near * near);
+                }
                 double w = (u * 0.9 - t * v * 0.6) % 2.0;
                 if (w < 0) w += 2;
                 return along(c, w > 1 ? 2 - w : w);
