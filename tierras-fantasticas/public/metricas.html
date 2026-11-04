@@ -4,18 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Métricas — Tierras Fantásticas</title>
-  <!-- (4 nov 2026) Panel privado del staff: las métricas de jugadores con los registros de nLogin que manda el puente
-       (TF Client 1.3.174+). No se enlaza desde ninguna página y no se indexa; los datos solo llegan con la contraseña
-       del staff (POST /api/metricas/entrar). Las cuentas, en metricas-calc.js; el Excel, en xlsx.js. -->
+  <!-- (4 nov 2026) Panel privado del staff: las métricas de jugadores (registros de nLogin y lo que manda el puente).
+       No se enlaza desde ninguna página y no se indexa; los datos solo llegan con la contraseña del staff
+       (POST /api/metricas/entrar). Las cuentas, en metricas-calc.js; las gráficas, en metricas-charts.js; el Excel, en
+       xlsx.js. -->
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/img/icon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* Concepto «Atardecer» de la web: crema, tarjetas blancas con borde cálido, texto marrón y acento naranja. Las
-       series: naranja (los que ya jugaban / siguen), azul (regresan) y verde (nuevos); rojo solo para lo que pasa del
-       límite. Paleta comprobada para daltonismo (los pares que se tocan). */
+    /* Concepto «Atardecer» de la web: crema, tarjetas blancas con borde cálido, texto marrón y acento naranja.
+       Series: azul (entraron), naranja (jugaron de verdad), verde (a la vez / nuevos). Los segmentos van de oscuro
+       (casi a diario) a claro (fantasmas) en la misma escala naranja; «se fueron», en gris. Rojo solo para lo que pasa
+       del límite. Paleta comprobada para daltonismo (los pares que se tocan). */
     :root {
       --bg: #fff6ec;
       --card: #ffffff;
@@ -42,12 +44,12 @@
     body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 var(--font-body); }
     body::before { content: ""; position: fixed; inset: 0 0 auto; height: 320px; z-index: -1;
       background: linear-gradient(180deg, #ffd9b0 0%, #ffe9d3 45%, var(--bg) 100%); }
-    .wrap { max-width: 1200px; margin: 0 auto; padding-block: 20px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+    .wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px));
       padding-right: max(16px, env(safe-area-inset-right, 0px)); }
     [hidden] { display: none !important; }
 
     /* Cabecera */
-    .top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 18px; }
+    .top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 14px; }
     .brand { display: flex; align-items: center; gap: 12px; min-width: 0; text-decoration: none; color: inherit; }
     .brand img { width: 48px; height: 48px; object-fit: contain; flex: none; }
     .brand h1 { margin: 0; font: 700 22px/1.1 var(--font-display); letter-spacing: -.01em; }
@@ -59,11 +61,10 @@
     .chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
     .chip.on i { background: var(--green); box-shadow: 0 0 0 3px #16a34a26; }
     .chip.off i { background: var(--red); }
-    label.since { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--dim); }
-    input, button { font: inherit; }
-    input[type=date], input[type=search], input[type=password] { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--bd);
+    input, button, select { font: inherit; }
+    input[type=date], input[type=search], input[type=password] { padding: 7px 10px; border-radius: 10px; border: 1px solid var(--bd);
       background: var(--card); color: var(--text); min-width: 0; }
-    input:focus-visible, button:focus-visible { outline: 3px solid #fb923c80; outline-offset: 2px; }
+    input:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 3px solid #fb923c80; outline-offset: 2px; }
     .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border-radius: 12px; cursor: pointer; font-weight: 700;
       border: 2px solid #7c2d12; background: linear-gradient(160deg, #fb923c 0 50%, #f97316 50% 100%); color: #fff;
       text-shadow: 0 1px 0 #7c2d12; box-shadow: 0 3px 0 #7c2d12; transition: transform .12s ease, box-shadow .12s ease; }
@@ -73,6 +74,21 @@
     .btn.ghost:hover { background: var(--card-2); }
     .btn:disabled { opacity: .55; cursor: default; transform: none; }
     .btn svg { width: 18px; height: 18px; flex: none; }
+
+    /* Filtros */
+    .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 10px 14px; background: var(--card);
+      border: 1px solid var(--bd); border-radius: var(--r); margin-bottom: 14px; font-size: 13px; color: var(--dim); }
+    .filters label, .filters .grp { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .seg-ctl { display: inline-flex; border: 1px solid var(--bd); border-radius: 10px; overflow: hidden; }
+    .seg-ctl button { border: 0; background: var(--card); padding: 6px 11px; cursor: pointer; color: var(--text); font-weight: 600; }
+    .seg-ctl button + button { border-left: 1px solid var(--bd); }
+    .seg-ctl button[aria-pressed=true] { background: var(--accent); color: #fff; }
+
+    /* Pestañas */
+    .tabs { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 16px; border-bottom: 2px solid var(--bd); }
+    .tabs button { border: 0; background: none; padding: 10px 14px; cursor: pointer; font: 600 15px var(--font-body); color: var(--dim);
+      border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+    .tabs button[aria-selected=true] { color: var(--accent-2); border-bottom-color: var(--accent); }
 
     /* Entrar */
     .login { max-width: 420px; margin: 8vh auto 0; padding: 26px; background: var(--card); border: 1px solid var(--bd); border-radius: 20px;
@@ -86,56 +102,74 @@
     .err { color: var(--red); font-weight: 600; min-height: 1.5em; margin: 0; }
 
     /* Resumen */
-    .lede { margin: 0 0 16px; font-size: 17px; max-width: 60rem; text-wrap: pretty; }
+    .lede { margin: 0 0 14px; font-size: 17px; max-width: 64rem; text-wrap: pretty; }
     .lede b { color: var(--accent-2); }
-    .sources { margin: -8px 0 16px; max-width: 60rem; font-size: 13px; color: var(--dim); background: var(--card); border: 1px solid var(--bd);
+    .sources { margin: 0 0 16px; max-width: 64rem; font-size: 13px; color: var(--dim); background: var(--card); border: 1px solid var(--bd);
       border-radius: 10px; padding: 8px 12px; }
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 165px), 1fr)); gap: 12px; margin-bottom: 16px; }
-    .kpi { background: var(--card); border: 1px solid var(--bd); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin-bottom: 16px; }
+    .kpi { background: var(--card); border: 1px solid var(--bd); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 4px; min-width: 0;
+      align-content: start; }
     .kpi .k { font-size: 13px; color: var(--dim); font-weight: 600; }
     .kpi .v { font: 700 28px/1.1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
     .kpi .v small { font: 600 14px var(--font-body); color: var(--dim); letter-spacing: 0; }
     .kpi .s { font-size: 13px; color: var(--faint); }
-    .kpi .s .up { color: var(--green); font-weight: 700; }
-    .kpi .s .down { color: var(--red); font-weight: 700; }
+    .kpi.alert { border-color: #fca5a5; }
+    .kpi.alert .v { color: var(--red); }
 
     /* Tarjetas */
     .sec { margin: 26px 0 12px; font: 600 17px/1.25 var(--font-display); }
-    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); gap: 14px; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 14px; }
     .card { background: var(--card); border: 1px solid var(--bd); border-radius: var(--r); padding: 16px 18px; min-width: 0; display: flex;
       flex-direction: column; gap: 8px; }
     .card + .card, .card + .grid2, .grid2 + .card, .grid2 + .grid2 { margin-top: 14px; }
     .grid2 > .card + .card { margin-top: 0; }
     .card h3 { margin: 0; font-size: 16px; font-weight: 700; }
+    .card .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
     .note { margin: 0; color: var(--dim); font-size: 13px; }
-    .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--dim); }
+    .say { margin: 0; font-size: 14px; font-weight: 600; color: var(--text); background: var(--card-2); border-radius: 10px; padding: 8px 12px; }
+    .say b { color: var(--accent-2); }
+    .legend, .lgs { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 13px; color: var(--dim); }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .lg { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--bd); background: var(--card); border-radius: 999px; padding: 3px 10px;
+      cursor: pointer; color: var(--text); font-size: 13px; }
+    .lg.off { opacity: .45; text-decoration: line-through; }
     .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; flex: none; }
-    .chart { position: relative; min-height: 230px; }
-    .chart.tall { min-height: 260px; }
-    .chart.heat { min-height: 0; }
+    .chart { position: relative; min-height: 220px; }
+    .chart.tall { min-height: 280px; }
+    .chart.auto { min-height: 0; }
     .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
     .chart text { fill: var(--faint); font: 12px var(--font-body); }
     .chart .lbl { fill: var(--dim); font-weight: 600; }
-    .empty { display: grid; place-items: center; min-height: inherit; color: var(--faint); font-size: 14px; text-align: center; padding: 12px; }
-    .tip { position: absolute; z-index: 5; pointer-events: none; min-width: 150px; background: #fffdfa; border: 1px solid var(--bd); border-radius: 10px;
-      box-shadow: 0 8px 22px #3d1f0a24; padding: 8px 10px; font-size: 13px; }
-    .tip .t { color: var(--dim); font-weight: 600; margin-bottom: 4px; }
+    .chart .rowlbl { fill: var(--text); font-weight: 600; }
+    .chart .celltxt { fill: #3d2b1f; font-size: 11px; font-weight: 700; }
+    .chart .celltxt.light { fill: #fff; }
+    .clickable { cursor: pointer; }
+    .empty { display: grid; place-items: center; min-height: inherit; color: var(--faint); font-size: 14px; text-align: center; padding: 18px 12px; }
+    .tip { position: absolute; z-index: 5; pointer-events: none; min-width: 170px; max-width: 280px; background: #fffdfa; border: 1px solid var(--bd);
+      border-radius: 10px; box-shadow: 0 8px 22px #3d1f0a24; padding: 8px 10px; font-size: 13px; }
+    .tip .t { color: var(--dim); font-weight: 700; margin-bottom: 4px; }
     .tip .r { display: flex; align-items: center; gap: 7px; font-variant-numeric: tabular-nums; }
     .tip .r b { margin-left: auto; padding-left: 14px; }
+    .tip .n { color: var(--faint); font-size: 12px; margin-top: 4px; }
 
-    /* Embudo */
-    .funnel { display: grid; gap: 6px; }
-    .frow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; align-items: baseline; font-size: 14px; }
-    .frow b { font-variant-numeric: tabular-nums; }
-    .frow b small { color: var(--faint); font-weight: 600; margin-left: 6px; }
-    .ftrack { grid-column: 1 / -1; height: 14px; background: var(--grid); border-radius: 7px; overflow: hidden; }
-    .ftrack i { display: block; height: 100%; border-radius: 7px; background: var(--accent); }
-    .floss { font-size: 12px; color: var(--faint); padding-left: 2px; }
-    .floss.worst { color: var(--red); font-weight: 600; }
+    /* Dona */
+    .donut { display: grid; grid-template-columns: minmax(150px, 200px) minmax(0, 1fr); gap: 14px; align-items: center; }
+    .donut-svg { width: 100%; max-width: 200px; height: auto; }
+    .donut-svg .donut-v { font: 700 30px var(--font-display); fill: var(--text); }
+    .donut-svg .donut-l { font-size: 12px; fill: var(--faint); }
+    .donut-legend { display: grid; gap: 4px; min-width: 0; }
+    .dl { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; border: 1px solid transparent;
+      background: none; border-radius: 10px; padding: 5px 8px; color: var(--text); font-size: 14px; }
+    button.dl { cursor: pointer; }
+    button.dl:hover { background: var(--card-2); }
+    .dl.on { border-color: var(--accent); background: #fff7ed; }
+    .dl-t { display: grid; min-width: 0; }
+    .dl-t small { color: var(--faint); font-size: 12px; }
+    .dl-v { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    @media (max-width: 520px) { .donut { grid-template-columns: 1fr; justify-items: center; } .donut-legend { width: 100%; } }
 
     /* Tablas */
-    .tbox { overflow-x: auto; border: 1px solid var(--bd); border-radius: 12px; max-height: 520px; overflow-y: auto; }
+    .tbox { overflow-x: auto; border: 1px solid var(--bd); border-radius: 12px; max-height: 560px; overflow-y: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
     th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
     th:first-child, td:first-child { text-align: left; }
@@ -145,20 +179,43 @@
     th[aria-sort=ascending] button::after { content: " ▲"; font-size: 10px; }
     th[aria-sort=descending] button::after { content: " ▼"; font-size: 10px; }
     tr:last-child td { border-bottom: 0; }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-    .pill.on { background: #dcfce7; color: #166534; }
-    .pill.act { background: #ffedd5; color: #9a3412; }
-    .pill.gone { background: #f4eee7; color: #6b5a4b; }
+    tbody tr.row { cursor: pointer; }
+    tbody tr.row:hover { background: #fff7ed; }
+    td.uuid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--faint); text-align: left; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
     .pill.new { background: #dbeafe; color: #1d4ed8; margin-left: 6px; }
+    .pill.live { background: #dcfce7; color: #166534; margin-left: 6px; }
     .bar-cell { display: inline-block; height: 6px; border-radius: 3px; background: var(--accent); vertical-align: middle; margin-right: 8px; opacity: .8; }
     .tabletools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
     .tabletools input { flex: 1 1 220px; max-width: 320px; }
+    [data-panel=jugadores] > .tabletools { margin-bottom: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips button { border: 1px solid var(--bd); background: var(--card); border-radius: 999px; padding: 5px 11px; cursor: pointer; font-size: 13px;
+      font-weight: 600; color: var(--text); display: inline-flex; align-items: center; gap: 6px; }
+    .chips button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .chips button small { font-weight: 700; opacity: .8; }
+
+    /* Cohortes */
+    .cohort td.c { text-align: center; font-weight: 700; min-width: 64px; }
 
     .stab { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px; }
     .stab div { background: var(--card-2); border-radius: 10px; padding: 10px 12px; }
     .stab b { display: block; font: 700 20px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
     .stab span { font-size: 13px; color: var(--dim); }
     .loading { text-align: center; color: var(--dim); padding: 40px 0; }
+
+    /* Ficha del jugador */
+    .drawer-bg { position: fixed; inset: 0; background: #2a1a0e66; z-index: 30; }
+    .drawer { position: fixed; z-index: 31; top: 0; right: 0; bottom: 0; width: min(720px, 100%); background: var(--bg); overflow-y: auto;
+      box-shadow: -10px 0 30px #3d1f0a33; padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 32px 18px;
+      display: grid; gap: 12px; align-content: start; }
+    .drawer header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .drawer h2 { margin: 0; font: 700 22px/1.2 var(--font-display); word-break: break-word; }
+    .drawer .uuidline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px; color: var(--dim); }
+    .drawer .uuidline button { font-family: var(--font-body); }
+    @media (prefers-reduced-motion: no-preference) { .drawer { animation: slidein .18s ease-out; } }
+    @keyframes slidein { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 
     @media (max-width: 560px) {
       .brand h1 { font-size: 19px; }
@@ -174,12 +231,11 @@
     <header class="top">
       <a class="brand" href="/">
         <img src="/img/logo.webp" alt="" width="48" height="48">
-        <span><h1>Métricas</h1><small>Jugadores de Tierras Fantásticas, con los registros de nLogin</small></span>
+        <span><h1>Métricas</h1><small>Jugadores de Tierras Fantásticas</small></span>
       </a>
       <span class="grow"></span>
       <div class="tools" id="tools" hidden>
         <span class="chip" id="bridge"><i></i><span>Puente</span></span>
-        <label class="since" for="since">Desde <input type="date" id="since"></label>
         <button class="btn ghost" id="refresh" type="button" title="Actualizar ahora">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>
           <span>Actualizar</span>
@@ -206,95 +262,184 @@
     <p class="loading" id="loading">Cargando…</p>
 
     <main id="panel" hidden>
-      <p class="lede" id="lede"></p>
-      <p class="sources" id="sources" hidden></p>
-      <div class="kpis">
-        <div class="kpi"><span class="k">Jugadores en el periodo</span><span class="v" id="k-players">—</span><span class="s" id="k-players-s"></span></div>
-        <div class="kpi"><span class="k">Jugaron los últimos 7 días</span><span class="v" id="k-active">—</span><span class="s" id="k-active-s"></span></div>
-        <div class="kpi"><span class="k">Cuentas nuevas</span><span class="v" id="k-new">—</span><span class="s" id="k-new-s"></span></div>
-        <div class="kpi"><span class="k">Nuevos que volvieron</span><span class="v" id="k-ret">—</span><span class="s" id="k-ret-s"></span></div>
-        <div class="kpi"><span class="k">Sesión típica</span><span class="v" id="k-sess">—</span><span class="s" id="k-sess-s"></span></div>
-        <div class="kpi"><span class="k">Horas jugadas</span><span class="v" id="k-hours">—</span><span class="s" id="k-hours-s"></span></div>
+      <div class="filters">
+        <label for="since">Desde <input type="date" id="since"></label>
+        <label for="until">Hasta <input type="date" id="until"></label>
+        <span class="grp">Un día cuenta como «jugó» con al menos
+          <span class="seg-ctl" id="minctl" role="group" aria-label="Minutos para contar un día">
+            <button type="button" data-min="10">10 min</button><button type="button" data-min="30">30 min</button><button type="button" data-min="60">1 h</button><button type="button" data-min="120">2 h</button>
+          </span>
+        </span>
       </div>
 
-      <section class="card" id="por-dia">
-        <h3>Jugadores por día</h3>
-        <p class="note">Jugadores distintos que entraron cada día: los que ya tenían cuenta y los que la crearon ese día. Hora del centro de México.</p>
-        <div class="legend"><span><i class="sw" style="background: var(--accent)"></i>Ya tenían cuenta</span><span><i class="sw" style="background: var(--green)"></i>Cuenta nueva ese día</span></div>
-        <div class="chart tall" id="c-daily"></div>
+      <nav class="tabs" role="tablist" aria-label="Secciones">
+        <button type="button" role="tab" id="tab-resumen" data-tab="resumen" aria-selected="true">Resumen</button>
+        <button type="button" role="tab" id="tab-retencion" data-tab="retencion" aria-selected="false">Retención</button>
+        <button type="button" role="tab" id="tab-jugadores" data-tab="jugadores" aria-selected="false">Jugadores</button>
+        <button type="button" role="tab" id="tab-horarios" data-tab="horarios" aria-selected="false">Horarios y estabilidad</button>
+      </nav>
+
+      <!-- RESUMEN -->
+      <section data-panel="resumen" role="tabpanel" aria-labelledby="tab-resumen">
+        <p class="lede" id="lede"></p>
+        <p class="sources" id="sources" hidden></p>
+        <div class="kpis" id="kpis"></div>
+
+        <section class="card">
+          <div class="head"><h3>Cada día: cuántos entraron, cuántos jugaron de verdad y cuántos a la vez</h3><div class="lgs" id="lg-daily"></div></div>
+          <p class="note">Pasa el dedo o el ratón por la gráfica: te dice quién puso las horas de ese día. «A la vez» es el máximo conectado al mismo tiempo.</p>
+          <div class="chart tall" id="c-daily"></div>
+        </section>
+
+        <div class="grid2">
+          <section class="card">
+            <h3>¿Quiénes son? (los últimos 7 días)</h3>
+            <p class="note">Según los días que llegaron al mínimo de juego. Toca un grupo para ver quiénes son.</p>
+            <div class="chart auto" id="c-segments"></div>
+          </section>
+          <section class="card">
+            <h3>Cómo cambian los grupos día a día</h3>
+            <p class="note">Cada día, los grupos según sus 7 días anteriores (desde el 7.º día del periodo).</p>
+            <div class="lgs" id="lg-segtrend"></div>
+            <div class="chart" id="c-segtrend"></div>
+          </section>
+        </div>
+
+        <div class="grid2">
+          <section class="card">
+            <h3>¿Cuánto del juego ponen los que más juegan?</h3>
+            <p class="say" id="say-pareto"></p>
+            <div class="chart" id="c-pareto"></div>
+          </section>
+          <section class="card">
+            <h3>Última vez que jugaron</h3>
+            <p class="note">De todos los que jugaron en el periodo.</p>
+            <div class="chart auto" id="c-last"></div>
+          </section>
+        </div>
       </section>
 
-      <h2 class="sec">¿Vuelven los nuevos?</h2>
-      <div class="grid2">
+      <!-- RETENCIÓN -->
+      <section data-panel="retencion" role="tabpanel" aria-labelledby="tab-retencion" hidden>
+        <p class="lede" id="lede-ret"></p>
+        <div class="kpis" id="kpis-ret"></div>
         <section class="card">
-          <h3>Qué pasa con una cuenta nueva</h3>
-          <p class="note">Cuentas creadas en el periodo que ya tuvieron al menos una semana para volver.</p>
-          <div class="funnel" id="c-funnel"></div>
+          <div class="head"><h3>¿Vuelven los nuevos? Curva de retención</h3><div class="lgs" id="lg-ret"></div></div>
+          <p class="note">De las cuentas creadas en el periodo: qué parte jugó (al menos el mínimo) justo N días después de crearla, y qué parte jugó ese día o cualquiera después. Solo cuentan las que ya tuvieron esos días.</p>
+          <div class="chart tall" id="c-ret"></div>
         </section>
-        <section class="card">
-          <h3>Cuentas nuevas por semana</h3>
-          <p class="note">Por la semana en que se crearon. «Volvieron»: otro día después del registro. «+7 días»: una semana después o más (de las que ya la tuvieron). «Activas»: jugaron los últimos 7 días.</p>
-          <div class="tbox"><table id="t-cohorts"><thead><tr><th>Semana</th><th>Cuentas</th><th>Jugaron</th><th title="Volvieron otro día">Volvieron</th><th title="Volvieron una semana después o más">+7 días</th><th title="Jugaron los últimos 7 días">Activas</th></tr></thead><tbody></tbody></table></div>
-        </section>
-      </div>
-
-      <h2 class="sec">Quién juega</h2>
-      <div class="grid2">
-        <section class="card">
-          <h3>Jugadores de cada semana</h3>
-          <p class="note">Los que siguen de la semana anterior, los que regresan tras faltar alguna y los de cuenta nueva.</p>
-          <div class="legend" id="weekly-legend"><span><i class="sw" style="background: var(--accent)"></i>Siguen</span><span><i class="sw" style="background: var(--blue)"></i>Regresan</span><span><i class="sw" style="background: var(--green)"></i>Nuevos</span><span><i class="sw" style="background: var(--muted)"></i>Sin semana anterior para comparar</span></div>
-          <div class="chart" id="c-weekly"></div>
-        </section>
-        <section class="card">
-          <h3>Cuántos días jugó cada uno</h3>
-          <p class="note">Días distintos con al menos una sesión, por jugador. En color, los que solo vinieron un día.</p>
-          <div class="chart" id="c-days"></div>
-        </section>
-      </div>
-
-      <h2 class="sec">Cuándo hay gente</h2>
-      <section class="card">
-        <h3>Conectados a cada hora</h3>
-        <p class="note">Media de jugadores conectados por día de la semana y hora (centro de México), contando los días con alguien.</p>
-        <div class="chart heat" id="c-heat"></div>
+        <div class="grid2">
+          <section class="card">
+            <h3>De los que jugaban al principio, ¿cuántos siguen?</h3>
+            <p class="say" id="say-surv"></p>
+            <div class="chart" id="c-surv"></div>
+          </section>
+          <section class="card">
+            <h3>Pegada: diarios entre semanales</h3>
+            <p class="note">Jugadores de verdad de cada día entre los de sus 7 días. 100 % = todos juegan todos los días; un servidor que engancha suele estar por encima del 20 %.</p>
+            <div class="chart" id="c-stick"></div>
+          </section>
+        </div>
+        <div class="grid2">
+          <section class="card">
+            <h3>Jugadores de cada semana</h3>
+            <p class="note">Los que siguen de la semana anterior, los que regresan tras faltar y los de cuenta nueva (jugando al menos el mínimo algún día).</p>
+            <div class="lgs" id="lg-weekly"></div>
+            <div class="chart" id="c-weekly"></div>
+          </section>
+          <section class="card">
+            <h3>Cuentas nuevas por semana: cuántas siguen jugando</h3>
+            <p class="note">Por la semana en que se crearon (filas) y las semanas después (columnas): qué parte jugó de verdad esa semana.</p>
+            <div class="tbox"><table class="cohort" id="t-cohorts"></table></div>
+          </section>
+        </div>
       </section>
 
-      <h2 class="sec">Estabilidad</h2>
-      <div class="grid2">
+      <!-- JUGADORES -->
+      <section data-panel="jugadores" role="tabpanel" aria-labelledby="tab-jugadores" hidden>
+        <div class="tabletools">
+          <div class="chips" id="segchips"></div>
+          <input type="search" id="search" placeholder="Buscar por nombre o UUID" aria-label="Buscar jugador">
+        </div>
         <section class="card">
-          <h3>Arranques del servidor por día</h3>
-          <p class="note">Cada arranque echa a todos los que estaban dentro. En rojo, los días con más de <span id="limit"></span>.</p>
-          <div class="chart" id="c-restarts"></div>
+          <h3>¿Quién jugó cada día?</h3>
+          <p class="note">Cada fila es un jugador (por UUID) y cada columna un día; el color, las horas que jugó. Toca un jugador para ver su ficha.</p>
+          <div class="chart auto" id="c-calendar"></div>
+          <button class="btn ghost" type="button" id="more-cal" hidden>Ver todos</button>
         </section>
+        <section class="card">
+          <h3>Días jugados frente a horas</h3>
+          <p class="note">Cada punto es un jugador: a la derecha, más días de verdad; arriba, más horas. El color es su grupo y el tamaño, sus visitas.</p>
+          <div class="chart" id="c-scatter"></div>
+        </section>
+        <section class="card">
+          <p class="note" id="players-note"></p>
+          <div class="tbox"><table id="t-players"><thead><tr>
+            <th data-k="name"><button type="button">Jugador</button></th>
+            <th data-k="segment"><button type="button">Grupo</button></th>
+            <th data-k="daysReal7"><button type="button">Días (7)</button></th>
+            <th data-k="daysReal"><button type="button">Días jugados</button></th>
+            <th data-k="hours" aria-sort="descending"><button type="button">Horas</button></th>
+            <th data-k="hours7"><button type="button">Horas (7)</button></th>
+            <th data-k="visits"><button type="button">Visitas</button></th>
+            <th data-k="avgVisitMin"><button type="button">Min/visita</button></th>
+            <th data-k="last"><button type="button">Última vez</button></th>
+            <th data-k="created"><button type="button">Cuenta creada</button></th>
+            <th data-k="uuid"><button type="button">UUID</button></th>
+          </tr></thead><tbody></tbody></table></div>
+        </section>
+      </section>
+
+      <!-- HORARIOS Y ESTABILIDAD -->
+      <section data-panel="horarios" role="tabpanel" aria-labelledby="tab-horarios" hidden>
+        <section class="card">
+          <div class="head"><h3>Conectados a cada hora del día</h3><div class="lgs" id="lg-hours"></div></div>
+          <p class="note">Media y máximo de jugadores conectados a la vez en cada hora (centro de México), en los días con alguien.</p>
+          <div class="chart" id="c-hours"></div>
+        </section>
+        <section class="card">
+          <h3>Por día de la semana y hora</h3>
+          <p class="note">Media de conectados a la vez.</p>
+          <div class="chart auto" id="c-heat"></div>
+        </section>
+        <div class="grid2">
+          <section class="card">
+            <h3>Cuánto dura una visita</h3>
+            <p class="note">Una visita junta las reconexiones de menos de 3 minutos.</p>
+            <div class="chart" id="c-visits"></div>
+          </section>
+          <section class="card">
+            <h3>Arranques y reconexiones por día</h3>
+            <p class="note">Cada arranque echa a todos. Línea roja: <span id="limit"></span>.</p>
+            <div class="lgs" id="lg-stab"></div>
+            <div class="chart" id="c-restarts"></div>
+          </section>
+        </div>
         <section class="card">
           <h3>Cortes y entradas fallidas</h3>
-          <p class="note">Reconexión: salió y volvió a entrar en menos de tres minutos sin ningún reinicio (se le cerró el juego o se le cortó la conexión).</p>
           <div class="stab" id="stab"></div>
-          <div class="chart" id="c-recon"></div>
         </section>
-      </div>
-
-      <h2 class="sec">Jugadores</h2>
-      <section class="card">
-        <div class="tabletools">
-          <p class="note" id="players-note"></p>
-          <input type="search" id="search" placeholder="Buscar jugador" aria-label="Buscar jugador">
-        </div>
-        <div class="tbox"><table id="t-players"><thead><tr>
-          <th data-k="name"><button type="button">Jugador</button></th>
-          <th data-k="state"><button type="button">Estado</button></th>
-          <th data-k="hours" aria-sort="descending"><button type="button">Horas</button></th>
-          <th data-k="days"><button type="button">Días</button></th>
-          <th data-k="sessions"><button type="button">Sesiones</button></th>
-          <th data-k="avgMin"><button type="button">Min/sesión</button></th>
-          <th data-k="last"><button type="button">Última vez</button></th>
-          <th data-k="created"><button type="button">Cuenta creada</button></th>
-        </tr></thead><tbody></tbody></table></div>
       </section>
-
     </main>
   </div>
+
+  <div class="drawer-bg" id="drawer-bg" hidden></div>
+  <aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="d-name">
+    <header>
+      <div><h2 id="d-name"></h2><div class="uuidline"><span id="d-uuid"></span><button class="btn ghost" type="button" id="d-copy">Copiar UUID</button></div></div>
+      <button class="btn ghost" type="button" id="d-close" aria-label="Cerrar">✕</button>
+    </header>
+    <p class="note" id="d-names"></p>
+    <div class="kpis" id="d-kpis"></div>
+    <section class="card">
+      <h3>Horas por día</h3>
+      <div class="chart" id="d-daily"></div>
+    </section>
+    <section class="card">
+      <h3>Sus visitas (a qué horas entra)</h3>
+      <div class="chart auto" id="d-timeline"></div>
+    </section>
+  </aside>
   <script type="module" src="/metricas.js"></script>
 </body>
 </html>

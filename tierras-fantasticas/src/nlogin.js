@@ -23,6 +23,11 @@ const NAME_RE = /^[A-Za-z0-9_.*-]{1,32}$/;
 const ID_RE = /^[\w.-]{1,80}:\d{1,12}$/;
 const FILE_RE = /^[\w.-]{1,80}$/;
 const CURSOR_KEY = 'nlogin_cursor';
+// Un UUID (con o sin guiones) → con guiones y en minúsculas, o null
+export function cleanUuid(v) {
+  const hex = typeof v === 'string' ? v.replace(/-/g, '').toLowerCase() : '';
+  return /^[0-9a-f]{32}$/.test(hex) ? `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}` : null;
+}
 // Sin consulta del puente en este tiempo, el servidor se apagó (o se cortó la conexión)
 export const BRIDGE_GAP_MS = 60 * 1000;
 
@@ -191,6 +196,7 @@ export function createNLogin(db, init, { desde }) {
     await init();
     const opens = (await db.prepare('SELECT key, name, start FROM bridge_open').all()).results;
     const onlineBy = new Map(online.filter((p) => p && typeof p.name === 'string' && NAME_RE.test(p.name)).map((p) => [p.name.toLowerCase(), p.name]));
+    const uuidOf = new Map(online.filter((p) => p && typeof p.name === 'string').map((p) => [p.name.toLowerCase(), cleanUuid(p.uuid)]));
     const lastPoll = prev && Number.isFinite(prev.at) ? prev.at : null;
     const gap = lastPoll !== null && now - lastPoll > BRIDGE_GAP_MS;
     const st = [];
@@ -218,37 +224,39 @@ export function createNLogin(db, init, { desde }) {
       st.push(
         db
           .prepare(
-            `INSERT INTO nlogin_players (key, name, created, first_seen, last_seen) VALUES (?, ?, ?, ?, ?)
+            `INSERT INTO nlogin_players (key, name, created, first_seen, last_seen, uuid) VALUES (?, ?, ?, ?, ?, ?)
              ON CONFLICT (key) DO UPDATE SET name = excluded.name, first_seen = COALESCE(nlogin_players.first_seen, excluded.first_seen),
-               last_seen = MAX(COALESCE(nlogin_players.last_seen, 0), excluded.last_seen)`,
+               last_seen = MAX(COALESCE(nlogin_players.last_seen, 0), excluded.last_seen), uuid = COALESCE(excluded.uuid, nlogin_players.uuid)`,
           )
-          .bind(key, name, now, now, now),
+          .bind(key, name, now, now, now, uuidOf.get(key) || null),
       );
     }
     if (st.length) await db.batch(st);
   }
 
-  // Cuentas de la base de nLogin cargadas a mano (POST /api/metricas/importar): [nombre, creada (ms), última vez (ms)].
+  // Cuentas de la base de nLogin cargadas a mano (POST /api/metricas/importar): [nombre, creada (ms), última vez (ms), UUID].
   // Solo eso de cada cuenta. La creación se queda con la más antigua.
   async function importAccounts(list, now = Date.now()) {
     await init();
     const rows = (Array.isArray(list) ? list : [])
       .slice(0, 5000)
       .filter((a) => Array.isArray(a) && typeof a[0] === 'string' && NAME_RE.test(a[0]))
-      .map(([name, created, seen]) => [
+      .map(([name, created, seen, uuid]) => [
         name.toLowerCase(),
         name,
         Number.isSafeInteger(created) && created > 1.4e12 && created <= now + 86400000 ? created : null,
         Number.isSafeInteger(seen) && seen > 1.4e12 && seen <= now + 86400000 ? seen : null,
+        cleanUuid(uuid),
       ]);
     const st = rows.map((r) =>
       db
         .prepare(
-          `INSERT INTO nlogin_players (key, name, created, first_seen, last_seen) VALUES (?, ?, ?, NULL, ?)
+          `INSERT INTO nlogin_players (key, name, created, first_seen, last_seen, uuid) VALUES (?, ?, ?, NULL, ?, ?)
            ON CONFLICT (key) DO UPDATE SET
              created = CASE WHEN nlogin_players.created IS NULL OR (excluded.created IS NOT NULL AND excluded.created < nlogin_players.created)
                THEN excluded.created ELSE nlogin_players.created END,
-             last_seen = MAX(COALESCE(nlogin_players.last_seen, 0), COALESCE(excluded.last_seen, 0))`,
+             last_seen = MAX(COALESCE(nlogin_players.last_seen, 0), COALESCE(excluded.last_seen, 0)),
+             uuid = COALESCE(excluded.uuid, nlogin_players.uuid)`,
         )
         .bind(...r),
     );
@@ -293,17 +301,24 @@ export function createNLogin(db, init, { desde }) {
     const index = new Map();
     for (let list = [...keys], i = 0; i < list.length; i += 90) {
       const rows = (
-        await db.prepare('SELECT key, name, created, first_seen, last_seen FROM nlogin_players WHERE key IN (SELECT value FROM json_each(?))').bind(JSON.stringify(list.slice(i, i + 90))).all()
+        await db
+          .prepare(
+            `SELECT np.key, np.name, np.created, COALESCE(np.uuid,
+               (SELECT pl.uuid FROM players pl WHERE pl.name_lower = np.key ORDER BY pl.last_seen DESC LIMIT 1)) AS uuid
+             FROM nlogin_players np WHERE np.key IN (SELECT value FROM json_each(?))`,
+          )
+          .bind(JSON.stringify(list.slice(i, i + 90)))
+          .all()
       ).results;
       for (const r of rows) {
         index.set(r.key, players.length);
-        players.push([r.name, r.created ? Math.floor(r.created / 1000) : null]);
+        players.push([r.name, r.created ? Math.floor(r.created / 1000) : null, r.uuid || null]);
       }
     }
     const idx = (key) => {
       if (!index.has(key)) {
         index.set(key, players.length);
-        players.push([key, null]);
+        players.push([key, null, null]);
       }
       return index.get(key);
     };
