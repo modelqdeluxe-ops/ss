@@ -28,6 +28,7 @@ import net.tierrasfantasticas.tfclient.claims.data.ClaimConfig;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimFlags;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimFlags.FlagId;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimGroup;
+import net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimManager;
 import net.tierrasfantasticas.tfclient.claims.data.ClaimTier;
 import net.tierrasfantasticas.tfclient.claims.gui.ClaimMenuHandler;
@@ -306,6 +307,7 @@ public final class PadClaims {
                 if (what.equals("entrar") || what.equals("salir")) TFPadNet.notice(player, "Mensaje guardado.");
             }
             case "noeditar" -> PadServer.put(player, "protecciones.editar", null);
+            case "modo" -> TFPadNet.notice(player, ClaimNesting.setMode(player, c, arg.equals("indep")));
             case "disolver" -> {
                 ClaimGroup g = manager.getGroupOf(c);
                 if (g == null || !c.isGroupMother() || !PadServer.confirm(player, "proteccion.disolver")) return null;
@@ -494,6 +496,8 @@ public final class PadClaims {
             lines.add(dim(c.getWorld()) + " · " + c.getX() + ", " + c.getY() + ", " + c.getZ());
             int m = c.getMembers().size();
             lines.add(m == 0 ? "Sin miembros" : m + (m == 1 ? " miembro" : " miembros"));
+            ClaimGroup around = ClaimNesting.groupAround(c);
+            if (around != null) lines.add((c.isNestedIndependent() ? "Independiente dentro de «" : "Unida a «") + around.getName() + "»");
             boolean inside = c.equals(here);
             b.row(new PadView.Row(icon(c), title(c), TEXT, lines, -1, inside ? "ESTÁS AQUÍ" : "", null, null)
                     .clickable("tab:z:" + c.getClaimId() + ":a").selected(inside));
@@ -515,7 +519,9 @@ public final class PadClaims {
                 .tab(base + "p", "PARTÍCULAS").tab(base + "u", "MÚSICA").tab(base + "x", "MÁS").selected(base + section);
         if (c.getGroupId() != null && !c.isGroupMother()) {
             Claim mother = c.getMother();
-            b.header("Esta piedra es del grupo de " + (mother != null ? mother.getOwnerName() : "?") + ": se administra desde su piedra principal.");
+            b.header("Esta piedra está unida al grupo de " + (mother != null ? mother.getOwnerName() : "?") + ": la zona se administra desde su piedra principal.");
+            // (1.3.170) o hacerla independiente: su propia zona dentro de la grande
+            nesting(b, c, c.getClaimId().toString());
             b.footer(PadView.Btn.of("ATRÁS", "volver", PadView.BLUE));
             return b.build();
         }
@@ -562,8 +568,24 @@ public final class PadClaims {
         b.text("Quien no la quiera oír: Ajustes del pad › Oír la música de otros.", MUTED, List.of());
     }
 
+    /**
+     * (1.3.170, el dueño: «que me dé a elegir si mi prote es independiente o la uno a la más grande») La piedra dentro de
+     * la zona de un grupo: UNIDA (una sola zona con la grande) o INDEPENDIENTE (su borde, su mensaje y sus reglas dentro
+     * de la grande). Nada si la piedra no está dentro de un grupo.
+     */
+    private static void nesting(PadView.Builder b, Claim c, String id) {
+        ClaimGroup g = ClaimNesting.groupAround(c);
+        if (g == null) return;
+        boolean indep = c.isNestedIndependent();
+        b.row(new PadView.Row(new ItemStack(Items.SLIME_BALL), "Dentro de la zona «" + g.getName() + "»", GOLD,
+                List.of(indep ? "Independiente: tu borde, tu mensaje y tus reglas dentro de la grande."
+                        : "Unida: una sola zona con la grande (sus reglas, su mensaje y su altura)."), -1, "",
+                answer("UNIDA", !indep, "modo:" + id + ":unir"), answer("INDEPENDIENTE", indep, "modo:" + id + ":indep")));
+    }
+
     private static void settings(PadView.Builder b, Claim c, String id) {
         b.header(title(c) + " · " + dim(c.getWorld()) + " · " + c.getX() + ", " + c.getY() + ", " + c.getZ());
+        nesting(b, c, id);
         ClaimFlags f = c.getFlags();
         int level = paidLevel(c.getTier());
         for (Section s : SECTIONS) {
@@ -650,7 +672,9 @@ public final class PadClaims {
                 List.of(f.messageAsTitle ? "Como título, en medio de la pantalla." : "Encima de la barra, como siempre."), -1, "",
                 answer("TÍTULO", f.messageAsTitle, "estilo:" + id + ":1"), answer("BARRA", !f.messageAsTitle, "estilo:" + id + ":0")));
         ClaimGroup g = ClaimManager.getInstance().getGroupOf(c);
-        if (g == null) {
+        if (c.isNestedIndependent() && ClaimNesting.groupAround(c) != null) {
+            nesting(b, c, id);
+        } else if (g == null) {
             b.row(new PadView.Row(new ItemStack(Items.SLIME_BALL), "Unir zonas en un grupo", TEXT,
                     List.of("Las piedras de los invitados dentro de esta zona se unen a ella."), -1, "",
                     PadView.Btn.of("CREAR", "editar:" + id + ":grupo", PadView.BLUE), null).selected(editing.equals("grupo")));

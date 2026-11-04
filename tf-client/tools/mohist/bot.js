@@ -1,7 +1,10 @@
 // Jugador de prueba para un servidor Forge/Mohist 1.20.1 (tf-client/tools/mohist/README.md): hace el apretón de manos de
 // Forge (FML3: contesta a fml:loginwrapper con la lista de mods y canales del servidor y acusa recibo de lo demás), entra
 // sin cuenta (online-mode=false), escribe en el chat lo que se añada a <carpeta>/<nombre>.cmd (una línea por mensaje o
-// comando; «quit» para salir) y apunta todo lo que le llega del chat (sistema y jugadores) en su salida.
+// comando; «quit» para salir) y apunta todo lo que le llega del chat (sistema y jugadores) en su salida. Líneas especiales:
+// «!usar x y z» (clic derecho con lo de la mano sobre la cara de arriba de ese bloque), «!hueco n» (hueco de la barra) y
+// «!pad app|pestaña|acción|texto» (pulsar en el pad, como el TF Client). Apunta los avisos del pad y cuándo se le abre.
+// Confirma los /tp como el juego.
 //   node bot.js <nombre> [puerto] [carpeta de los .cmd]
 const mc = require('minecraft-protocol');
 const fs = require('fs');
@@ -62,6 +65,17 @@ client.on('login_plugin_request', (p) => {
 });
 
 client.on('login', () => log('dentro del mundo'));
+// los teletransportes (/tp): confirmarlos como el juego (si no, el servidor no deja usar ni poner nada)
+let pos = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0 };
+client.on('position', (p) => {
+  pos = {
+    x: p.flags & 1 ? pos.x + p.x : p.x, y: p.flags & 2 ? pos.y + p.y : p.y, z: p.flags & 4 ? pos.z + p.z : p.z,
+    yaw: p.flags & 8 ? pos.yaw + p.yaw : p.yaw, pitch: p.flags & 16 ? pos.pitch + p.pitch : p.pitch,
+  };
+  client.write('teleport_confirm', { teleportId: p.teleportId });
+  client.write('position_look', { ...pos, onGround: true });
+});
+let sequence = 1;
 client.on('kick_disconnect', (p) => log('ECHADO:', JSON.stringify(p.reason)));
 client.on('end', (r) => { log('fin de la conexión', r || ''); process.exit(0); });
 client.on('error', (e) => log('error', e.message));
@@ -74,6 +88,15 @@ function plain(json) {
   } catch { return String(json); }
 }
 client.on('systemChat', (m) => log('CHAT sistema:', plain(m.formattedMessage)));
+client.on('set_title_text', (p) => log('TÍTULO:', plain(p.text)));
+// el pad del TF Client (canal tfclient:pad): los avisos (3) y cuando el servidor lo abre en una app (7)
+client.on('custom_payload', (p) => {
+  if (p.channel !== 'tfclient:pad' || !p.data || !p.data.length) return;
+  const o = { i: 1 };
+  if (p.data[0] === 3) log('PAD aviso:', readStr(p.data, o));
+  else if (p.data[0] === 7) log('PAD abre:', readStr(p.data, o), readStr(p.data, o));
+});
+client.on('set_title_subtitle', (p) => log('SUBTÍTULO:', plain(p.text)));
 client.on('playerChat', (m) => log('CHAT jugador:', plain(m.senderName), '→', m.plainMessage ?? plain(m.formattedMessage), m.unsignedContent ? '| ' + plain(m.unsignedContent) : ''));
 
 let done = 0;
@@ -82,6 +105,24 @@ setInterval(() => {
   for (; done < lines.length; done++) {
     const line = lines[done];
     if (line === 'quit') { client.end('fin'); return; }
+    if (line.startsWith('!usar ')) {
+      // clic derecho con lo que lleva en la mano sobre la cara de arriba del bloque x y z
+      const [x, y, z] = line.slice(6).trim().split(/\s+/).map(Number);
+      log('usa lo de la mano sobre', x, y, z);
+      client.write('block_place', { hand: 0, location: { x, y, z }, direction: 1, cursorX: 0.5, cursorY: 1, cursorZ: 0.5, insideBlock: false, sequence: sequence++ });
+      continue;
+    }
+    if (line.startsWith('!pad ')) {
+      // pulsar en el pad: «!pad app|pestaña|acción|texto» (TFPadNet.Action, índice 4)
+      const [app, tab = '', action = '', text = ''] = line.slice(5).split('|');
+      log('pad:', app, tab, action, text);
+      client.write('custom_payload', { channel: 'tfclient:pad', data: Buffer.concat([Buffer.from([4]), str(app), str(tab), str(action), str(text)]) });
+      continue;
+    }
+    if (line.startsWith('!hueco ')) {
+      client.write('held_item_slot', { slotId: Number(line.slice(7)) });
+      continue;
+    }
     log('escribe:', line);
     client.chat(line);
   }

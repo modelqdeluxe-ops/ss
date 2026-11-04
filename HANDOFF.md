@@ -285,6 +285,37 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (4 nov 2026, TF Client 1.3.170: LA PIEDRA DENTRO DE LA ZONA DE UN GRUPO, UNIDA O INDEPENDIENTE) — lee esto primero
+
+- El dueño: «quiero que las protecciones, bajo el feature de unir protecciones, me den a elegir si mi prote es
+  independiente o la uno a la más grande. Si pongo que es independiente estará dentro igual de la prote más grande, pero
+  se marcará la zona de mi prote más pequeña, mi mensaje y todo normal; y si le doy a unir a la más grande se hace una
+  sola».
+- Cómo era: la piedra de un invitado al grupo (o del dueño) puesta dentro de la zona del grupo se unía siempre (una sola
+  zona con las reglas, el mensaje y la altura de la principal).
+- **Ahora** (`claims/gui/ClaimNesting`, `Claim.insideGroup`, `ClaimManager.makeIndependent` / `joinFromInside`):
+  - Al ponerla sale **unida** (lo de siempre), en el chat «Tu piedra está dentro de la zona «X». Elige en el pad: UNIDA…
+    o INDEPENDIENTE…» y se le abre el pad en esa piedra con la fila «Dentro de la zona «X»» y los botones UNIDA /
+    INDEPENDIENTE (`PadClaims.nesting`: en AJUSTES, en MÁS y en la vista de una piedra unida). Se cambia cuando se
+    quiera; solo su dueño (o un OP). Staff: `/tf web claims modo <zona> unir|independiente` (también desde la consola).
+    **Sin `/tf claims`**: el dueño lo quitó para los jugadores en la 1.3.24 (ese árbol, `ClaimCommands.command()`, no
+    está registrado; no lo vuelvas a usar para botones).
+  - **Independiente**: una zona normal (su borde, sus mensajes, sus reglas, sus miembros y baneos) dentro de la grande.
+    En su cuadrado manda ella: `ClaimManager.getClaimAt` da la independiente más pequeña que contenga el punto (si no,
+    la primera, como siempre), y como todo (construir, PvP, mobs, mensajes al entrar, música, contorno) usa
+    `getClaimAt`, todo sigue. El dueño de la grande no construye dentro (salvo que lo haga miembro); fuera del
+    cuadrado, la grande como siempre. No puede crear su propio grupo (dentro de otro) y nadie puede poner una piedra que
+    la pise.
+  - Está ahí gracias al grupo: si su dueño sale del grupo, o se disuelve el grupo con la grande puesta, vuelve a su
+    dueño como las unidas (`leaveGroupBreaking`, `dissolveGroupBreaking`); si se quita la grande, se queda como zona
+    normal (ya no pisa nada).
+  - Se guarda como `insideGroup` en `claimblocks_data.json` (los datos de antes no cambian).
+- **Probado en un Mohist de verdad** (`tf-client/tools/mohist/probar_protecciones.sh`, README de esa carpeta): un bot pone
+  la piedra de verdad y pulsa el pad como el TF Client (`!pad`), con bloques puestos de verdad (`execute if block`),
+  los mensajes de entrar y `claimblocks_data.json`. Resultado con la 1.3.170: **22 de 22 bien** (y la del chat del clan, 22 de 22). Al dueño de la grande, dentro de una independiente le sale «No tienes ningún permiso de interacción en esta zona» (la zona nueva trae las interacciones bloqueadas a visitantes por la config de fábrica).
+- `tools/mohist/comun.sh`: lo común de las pruebas de Mohist (arrancar, bots, comprobar). El bot ya pone bloques
+  (`!usar x y z`), confirma los `/tp` y pulsa el pad (`!pad app|pestaña|acción|texto`).
+
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.169: EL CHAT DEL CLAN EN MOHIST, PROBADO EN UN MOHIST DE VERDAD) — lee esto primero
 
 - El dueño: «el chat del clan no funciona, no enviaba el mensaje, nada… haz lo posible por correr Mohist». Se montó un

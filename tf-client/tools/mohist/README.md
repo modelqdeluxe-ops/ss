@@ -19,9 +19,12 @@ gh run download <id de la ejecución> --repo modelqdeluxe-ops/ss -n tfclient-jar
 | Archivo | Qué hace |
 |---|---|
 | `montar.sh <carpeta> <jar>` | baja Mohist 1.20.1 (la última de `api.mohistmc.com`), LuckPerms, EssentialsX 2.20.1 y EssentialsXChat, pone el jar en `mods/`, `server.properties` sin cuentas (`online-mode=false`) y los bots (`npm install` de `minecraft-protocol`). Si ya está montado, solo cambia el jar |
-| `bot.js <nombre> [puerto] [carpeta]` | un jugador que entra en un servidor Forge: hace el apretón de manos de Forge (FML3: contesta a `fml:loginwrapper` con la lista de mods y canales del servidor y acusa recibo de los registros y la config). Escribe en el chat cada línea que se añada a `<carpeta>/<nombre>.cmd` (`quit` para salir) y apunta todo lo que le llega del chat |
+| `bot.js <nombre> [puerto] [carpeta]` | un jugador que entra en un servidor Forge: hace el apretón de manos de Forge (FML3: contesta a `fml:loginwrapper` con la lista de mods y canales del servidor y acusa recibo de los registros y la config). Escribe en el chat cada línea que se añada a `<carpeta>/<nombre>.cmd` (`quit` para salir), con dos especiales: `!usar x y z` (clic derecho con lo de la mano sobre la cara de arriba de ese bloque: poner una piedra o un bloque) y `!hueco n`. Confirma los `/tp` como el juego (si no, el servidor no le deja usar nada). Apunta todo lo que le llega del chat, los títulos y los subtítulos |
+| `comun.sh` | lo de todas las pruebas (con `source`): `arrancar`, `conectar <bots…>`, `consola <orden>`, `di <bot> <línea>`, `mira` / `comprueba` (apuntan `bien` / `MAL`), `parar` y `final`. Los `pkill` llevan el patrón entero (`[n]ode bot/bot.js`, `[j]ava -Xms1G …`): uno más corto puede matar la propia terminal que lanza la prueba |
 | `clanes_prueba.py <mundo>/tfclient/clanes.json` | los clanes de la prueba (con el servidor parado): [TF] Ana y Beto, [OTR] Carlos, Dani y Eva sin clan |
 | `probar_chat_clan.sh <carpeta> <jar>` | la prueba entera del chat del clan (abajo) |
+| `protecciones_prueba.py <mundo>/claimblocks_data.json` | la zona grande de Ana (100x100 en 0,-60,0) con el grupo «Reino de Ana» (Ana y Beto) |
+| `probar_protecciones.sh <carpeta> <jar>` | la piedra dentro de la zona de un grupo, unida o independiente (1.3.170, abajo) |
 
 El primer arranque baja 118 librerías de Mohist (un minuto); luego arranca en ~15 s. Java 21 del contenedor vale.
 
@@ -38,6 +41,19 @@ público; tras `disable` vuelve al público; en el registro sale `[Clan TF] Ana:
 `CHAT DEL CLAN EN MOHIST: TODO BIEN` (y sale con 0) o con el número de fallos. Deja `server.out` y `bots/*.log`.
 
 Con la 1.3.168 da 7 fallos (el fallo que vio el dueño: a nadie le llega nada); con la 1.3.169, todo bien.
+
+## La prueba de las protecciones dentro de un grupo (1.3.170)
+
+```bash
+tf-client/tools/mohist/probar_protecciones.sh /tmp/tf-mohist /tmp/jar/tfclient-1.20.1-<versión>.jar
+```
+
+Beto (del grupo de Ana) pone de verdad una piedra de 25x25 dentro de la zona grande de Ana (con `!usar`) y se comprueba
+con bloques puestos de verdad (`execute if block` por la consola), los mensajes de entrar (Carlos se teletransporta) y
+`claimblocks_data.json`: que sale la elección; unida, Ana construye en su cuadrado y al pasar no hay zona nueva;
+independiente, Ana no construye ahí (fuera sí), al entrar sale «Entrando a la zona Beto (25x25)» y al volver la
+bienvenida de Ana; otra vez unida; Carlos (fuera del grupo) no pone su piedra dentro; y al salir Beto del grupo, su
+piedra independiente se le devuelve. Termina con `PROTECCIONES DENTRO DE UN GRUPO EN MOHIST: TODO BIEN`.
 
 ## Lo que se aprendió de Mohist (1.20.1, build 921, Forge 47.4.23)
 

@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **4 nov 2026 — 1.3.170, PIEDRA UNIDA O INDEPENDIENTE**: la piedra dentro de la zona de un grupo se elige en el pad:
+> UNIDA (una sola zona) o INDEPENDIENTE (su zona dentro de la grande; manda en su cuadrado). Probado en Mohist con bots que
+> ponen la piedra y pulsan el pad (`tf-client/tools/mohist/probar_protecciones.sh`). CHECKPOINT en `HANDOFF.md`.
+>
 > **4 nov 2026 — 1.3.169, EL CHAT DEL CLAN EN MOHIST**: en Mohist el `ServerChatEvent` llega con el texto vacío; ahora
 > lo reparte el mixin de `broadcastChatMessage`. Probado en un **Mohist de verdad en el contenedor** con bots:
 > `tf-client/tools/mohist/` (README). CHECKPOINT en `HANDOFF.md`.

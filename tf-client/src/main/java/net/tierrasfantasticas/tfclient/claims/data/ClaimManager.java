@@ -233,12 +233,59 @@ public class ClaimManager {
         }
         List<Claim> list2 = list;
         synchronized (list2) {
+            // (1.3.170) una zona independiente dentro de la de un grupo manda en su cuadrado (la más pequeña si hubiera
+            // varias); en lo demás, como siempre: la primera que lo contiene
+            Claim first = null;
+            Claim nested = null;
             for (Claim claim : list) {
                 if (!claim.contains(blockpos)) continue;
-                return claim;
+                if (first == null) first = claim;
+                if (claim.isNestedIndependent() && (nested == null || claim.getRadius() < nested.getRadius())) nested = claim;
             }
-            return null;
+            return nested != null ? nested : first;
         }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // (1.3.170) Piedras dentro de la zona de un grupo: unidas (una sola zona) o independientes (su zona dentro de la grande)
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /** La deja independiente: su borde, sus mensajes y sus reglas, dentro de la zona del grupo. false si no se puede. */
+    public boolean makeIndependent(Claim claim) {
+        if (claim == null || claim.getGroupId() == null || claim.isGroupMother()) return false;
+        claim.setInsideGroup(claim.getGroupId());
+        claim.setGroupId(null);
+        this.save();
+        return true;
+    }
+
+    /** La une al grupo en cuya zona está (se hace una sola zona). false si ya no se puede (sin grupo o sin invitación). */
+    public boolean joinFromInside(Claim claim) {
+        if (claim == null || !claim.isNestedIndependent()) return false;
+        ClaimGroup claimgroup = this.groups.get(claim.getInsideGroup());
+        if (claimgroup == null || !claimgroup.isRegistered(claim.getOwnerUUID())) return false;
+        claim.setGroupId(claimgroup.getGroupId());
+        claim.setInsideGroup(null);
+        this.save();
+        return true;
+    }
+
+    /** Las piedras independientes que están dentro de la zona de ese grupo. */
+    public List<Claim> getNestedClaims(UUID uuid) {
+        ArrayList<Claim> out = new ArrayList<Claim>();
+        if (uuid == null) return out;
+        for (Claim claim : this.getAllClaims()) {
+            if (uuid.equals(claim.getInsideGroup())) out.add(claim);
+        }
+        return out;
+    }
+
+    /** ¿Se pisa con alguna otra zona de su mundo? */
+    private boolean overlapsAnother(Claim claim) {
+        for (Claim other : this.getClaimsInWorld(claim.getWorld())) {
+            if (other != claim && other.overlapsWith(claim.getCenter(), claim.getRadius(), claim.getHeight())) return true;
+        }
+        return false;
     }
 
     /*
@@ -368,6 +415,7 @@ public class ClaimManager {
     public void dissolveGroup(UUID uuid) {
         if (this.groups.remove(uuid) != null) {
             for (Claim claim : this.getAllClaims()) {
+                if (uuid.equals(claim.getInsideGroup())) claim.setInsideGroup(null);
                 if (!uuid.equals(claim.getGroupId())) continue;
                 claim.setGroupId(null);
             }
@@ -389,6 +437,12 @@ public class ClaimManager {
                 if (!uuid.equals(claim2.getGroupId())) continue;
                 claim2.setGroupId(null);
             }
+            // (1.3.170) las independientes estaban dentro gracias al grupo: si aún pisan otra zona (la grande sigue),
+            // vuelven a su dueño como las unidas; si ya no pisan nada (se quitó la grande), se quedan como zonas normales
+            for (Claim nested : this.getNestedClaims(uuid)) {
+                nested.setInsideGroup(null);
+                if (this.overlapsAnother(nested)) this.breakAndReturn(nested);
+            }
             this.save();
         }
     }
@@ -403,6 +457,10 @@ public class ClaimManager {
                 for (Claim claim : this.getGroupClaims(uuid)) {
                     if (!claim.isOwner(uuid1)) continue;
                     this.breakAndReturn(claim);
+                }
+                // (1.3.170) y sus piedras independientes dentro de la zona del grupo, igual
+                for (Claim nested : this.getNestedClaims(uuid)) {
+                    if (nested.isOwner(uuid1)) this.breakAndReturn(nested);
                 }
                 this.save();
             }
@@ -451,6 +509,9 @@ public class ClaimManager {
                 for (Claim claim : this.getGroupClaims(uuid)) {
                     if (!claim.isOwner(uuid1)) continue;
                     claim.setGroupId(null);
+                }
+                for (Claim nested : this.getNestedClaims(uuid)) {
+                    if (nested.isOwner(uuid1)) nested.setInsideGroup(null);
                 }
                 this.save();
             }
