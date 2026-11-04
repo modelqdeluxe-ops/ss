@@ -352,9 +352,9 @@ function render() {
   const lede = $('lede');
   lede.replaceChildren();
   if (!s.players) {
-    lede.textContent = data.lastEvent
+    lede.textContent = data.lastEvent || data.bridgeFrom
       ? 'Todavía no hay sesiones en este periodo.'
-      : 'Aún no llegó nada de nLogin. En cuanto el servidor tenga el TF Client 1.3.174 o más nuevo, el puente manda los registros desde el 26 de octubre y esto se llena solo en unos minutos.';
+      : 'Aún no hay datos. La web apunta quién entra y sale con lo que manda el puente: en cuanto entre alguien, sale aquí.';
   } else {
     // trozos de texto: los de [texto] van en negrita
     const parts = ['Desde el ', [dLong(m.desde)], ' jugaron ', [nf.format(s.players)], ' jugadores, ', [nf.format(s.active7)], ' en los últimos 7 días. '];
@@ -366,6 +366,14 @@ function render() {
     if (m.primeHours.length) parts.push('Más gente de ', [`${m.primeHours[0]} a ${(m.primeHours.at(-1) + 1) % 24} h`], '.');
     for (const t of parts) (Array.isArray(t) ? el('b', { text: t[0] }, lede) : lede.append(t));
   }
+
+  // De dónde salen los datos
+  const src = $('sources');
+  if (data.bridgeFrom) {
+    const nl = data.lastEvent ? Math.floor(data.lastEvent / 1000) : null;
+    src.textContent = `${nl ? `Hasta el ${when(nl)} los datos son de nLogin; desde el ${when(Math.floor(data.bridgeFrom / 1000))}` : `Desde el ${when(Math.floor(data.bridgeFrom / 1000))}`}, de los conectados que manda el puente cada 10 s: ahí no se ven los intentos con otra versión ni los fallos de Mojang, una reconexión de menos de 10 s no se nota y una cuenta nueva cuenta desde que entra por primera vez. Con el TF Client 1.3.174 en el servidor vuelve a ser todo de nLogin y se rellena lo que falte.`;
+    src.hidden = false;
+  } else src.hidden = true;
 
   // Las cifras
   $('k-players').textContent = nf.format(s.players);

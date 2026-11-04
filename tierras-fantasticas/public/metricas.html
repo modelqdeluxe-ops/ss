@@ -88,6 +88,8 @@
     /* Resumen */
     .lede { margin: 0 0 16px; font-size: 17px; max-width: 60rem; text-wrap: pretty; }
     .lede b { color: var(--accent-2); }
+    .sources { margin: -8px 0 16px; max-width: 60rem; font-size: 13px; color: var(--dim); background: var(--card); border: 1px solid var(--bd);
+      border-radius: 10px; padding: 8px 12px; }
     .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 165px), 1fr)); gap: 12px; margin-bottom: 16px; }
     .kpi { background: var(--card); border: 1px solid var(--bd); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
     .kpi .k { font-size: 13px; color: var(--dim); font-weight: 600; }
@@ -156,7 +158,6 @@
     .stab div { background: var(--card-2); border-radius: 10px; padding: 10px 12px; }
     .stab b { display: block; font: 700 20px/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
     .stab span { font-size: 13px; color: var(--dim); }
-    .how { margin: 26px 0 0; padding-left: 1.1em; color: var(--dim); font-size: 13px; display: grid; gap: 4px; max-width: 62rem; }
     .loading { text-align: center; color: var(--dim); padding: 40px 0; }
 
     @media (max-width: 560px) {
@@ -206,6 +207,7 @@
 
     <main id="panel" hidden>
       <p class="lede" id="lede"></p>
+      <p class="sources" id="sources" hidden></p>
       <div class="kpis">
         <div class="kpi"><span class="k">Jugadores en el periodo</span><span class="v" id="k-players">—</span><span class="s" id="k-players-s"></span></div>
         <div class="kpi"><span class="k">Jugaron los últimos 7 días</span><span class="v" id="k-active">—</span><span class="s" id="k-active-s"></span></div>
@@ -291,12 +293,6 @@
         </tr></thead><tbody></tbody></table></div>
       </section>
 
-      <ul class="how">
-        <li>Los datos salen de los registros del plugin nLogin del servidor: el TF Client los lee y los manda por el puente cada 10 segundos. La página se actualiza sola cada minuto.</li>
-        <li>Sesión: de la entrada al servidor a la siguiente salida del mismo jugador. Si el servidor se apagó sin apuntar su salida, termina en el apagado.</li>
-        <li>Cuenta nueva: creada dentro del periodo. «Volvieron otro día»: tienen una sesión en un día posterior al de su registro.</li>
-        <li>Solo se usan el nombre de la cuenta y sus horas: ni IP, ni contraseñas, ni correos. Quien no consiguió entrar con los mods nunca llega al login y no sale aquí.</li>
-      </ul>
     </main>
   </div>
   <script type="module" src="/metricas.js"></script>
