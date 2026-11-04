@@ -4,9 +4,13 @@
 
 const UI = { botones: [], joy: null, accion: null, teclas: new Set(), selInv: -1, scroll: 0, arrastre: null, confirmarNueva: 0, pestana: 'mochila', selCofre: -1 };
 // Madera oscura con canto claro, como los marcos de Core Keeper.
+// La interfaz con la construcción de la de Core Keeper (ESTUDIO-CK.md, «32x32_menu_border», «32x32_itemui_border»):
+// ventanas negras translúcidas con un borde lavanda de 1 px y gemas azules en dos esquinas, ranuras azul noche con
+// el borde claro y una muesca a media altura, y barras con marco de tierra. Los colores y el dibujo son nuestros.
 const COL = {
-  fondo: '#2a1b14', borde: '#8a5a36', luz: '#c89058', negro: '#100806', texto: '#f6ecda', suave: '#bba48a',
-  oro: '#f2c14e', rojo: '#d8343c', verde: '#8ef08a', hambre: '#e8903a', ranura: '#1c120d', boton: '#4a2f20', botonOff: '#2a1b14',
+  fondo: 'rgba(6,10,22,0.86)', borde: '#677fae', luz: '#a1aedd', negro: '#04070e', texto: '#f4f1e6', suave: '#a9b2cc',
+  oro: '#f2c14e', rojo: '#c0342a', verde: '#8ef08a', hambre: '#e2a12c', ranura: 'rgba(20,43,92,0.82)', boton: '#1c2c58', botonOff: '#0e1630',
+  gema: '#1885d8', gemaOsc: '#143eab', gemaLuz: '#d7dcfb', marcada: '#fff6c8',
 };
 
 function boton(x, y, w, h, fn, o = {}) { UI.botones.push({ x, y, w, h, fn, ...o }); }
@@ -90,12 +94,18 @@ function leerEntrada() {
 
 // ---------------------------------------------------------------- piezas
 
-function marco(ctx, x, y, w, h, fondo = COL.fondo) {
+function gema(ctx, x, y) { // la gema azul de las esquinas (3×3)
+  ctx.fillStyle = COL.gemaOsc; ctx.fillRect(x, y, 3, 3);
+  ctx.fillStyle = COL.gema; ctx.fillRect(x + 1, y, 2, 2);
+  ctx.fillStyle = COL.gemaLuz; ctx.fillRect(x + 1, y, 1, 1);
+}
+function marco(ctx, x, y, w, h, fondo = COL.fondo, o = {}) {
   ctx.fillStyle = COL.negro; ctx.fillRect(x - 1, y, w + 2, h); ctx.fillRect(x, y - 1, w, h + 2);
-  ctx.fillStyle = COL.borde; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = COL.luz; ctx.fillRect(x + 1, y, w - 2, 1); ctx.fillRect(x, y + 1, 1, h - 2);
-  ctx.fillStyle = '#5a3822'; ctx.fillRect(x + 1, y + h - 1, w - 2, 1); ctx.fillRect(x + w - 1, y + 1, 1, h - 2);
+  ctx.clearRect(x + 1, y + 1, w - 2, h - 2);
   ctx.fillStyle = fondo; ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+  ctx.fillStyle = COL.luz; ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y, 1, h);
+  ctx.fillStyle = COL.borde; ctx.fillRect(x + 1, y + h - 1, w - 1, 1); ctx.fillRect(x + w - 1, y + 1, 1, h - 1);
+  if (w >= 24 && h >= 16 && !o.sinGemas) { gema(ctx, x, y); gema(ctx, x + w - 3, y + h - 3); }
 }
 function botonTexto(ctx, x, y, w, h, txt, fn, o = {}) {
   const activo = o.activo !== false;
@@ -105,24 +115,29 @@ function botonTexto(ctx, x, y, w, h, txt, fn, o = {}) {
 }
 function ranura(ctx, x, y, s, marcada, o = {}) {
   const it = s && asegurarItem(s.id), rar = it ? it.rareza || 0 : 0;
-  ctx.fillStyle = marcada ? '#fff4d8' : rar ? RAREZA[rar].color : COL.borde; ctx.fillRect(x, y, 18, 18);
-  ctx.fillStyle = marcada ? '#c8b088' : '#5a3822'; ctx.fillRect(x + 1, y + 17, 17, 1); ctx.fillRect(x + 17, y + 1, 1, 16);
+  ctx.clearRect(x + 1, y + 1, 16, 16);
   ctx.fillStyle = o.fondo || COL.ranura; ctx.fillRect(x + 1, y + 1, 16, 16);
-  ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(x + 1, y + 1, 16, 1);
+  // borde claro arriba y a la izquierda, medio abajo y a la derecha, y la muesca a media altura (como las suyas)
+  ctx.fillStyle = marcada ? COL.marcada : rar ? RAREZA[rar].color : COL.luz; ctx.fillRect(x, y, 18, 1); ctx.fillRect(x, y, 1, 18);
+  ctx.fillStyle = marcada ? '#e8c85a' : rar ? RAREZA[rar].color : COL.borde; ctx.fillRect(x + 1, y + 17, 17, 1); ctx.fillRect(x + 17, y + 1, 1, 17);
+  if (!marcada) { ctx.fillStyle = COL.gemaLuz; ctx.fillRect(x, y + 8, 1, 2); ctx.fillRect(x + 17, y + 8, 1, 2); }
+  else { ctx.fillStyle = COL.marcada; ctx.fillRect(x - 1, y - 1, 20, 1); ctx.fillRect(x - 1, y + 18, 20, 1); ctx.fillRect(x - 1, y - 1, 1, 20); ctx.fillRect(x + 18, y - 1, 1, 20); }
   if (s && it) {
     sprCentro(ctx, it.icono, x + 9, y + 9);
     if (s.n > 1) texto(ctx, s.n, x + 17, y + 12, COL.texto, { alin: 'd', borde: COL.negro, mini: true });
   } else if (o.vacio) { ctx.globalAlpha = 0.3; sprCentro(ctx, o.vacio, x + 9, y + 9); ctx.globalAlpha = 1; }
 }
-function barra(ctx, x, y, w, h, v, col, fondo = '#3a1a14') {
-  ctx.fillStyle = COL.negro; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
-  ctx.fillStyle = COL.borde; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+// barra con marco de tierra (como la vida y el hambre de Core Keeper): canto claro arriba, oscuro abajo, el lleno con
+// su brillo arriba y su sombra abajo, y separadores finos
+function barra(ctx, x, y, w, h, v, col, fondo = '#3a1c18') {
+  ctx.fillStyle = '#16100a'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
+  ctx.fillStyle = '#b58047'; ctx.fillRect(x - 1, y - 1, w + 2, 1); ctx.fillRect(x - 1, y - 1, 1, h + 2);
+  ctx.fillStyle = '#614822'; ctx.fillRect(x - 1, y + h, w + 2, 1); ctx.fillRect(x + w, y - 1, 1, h + 2);
   ctx.fillStyle = fondo; ctx.fillRect(x, y, w, h);
   const lleno = Math.round(w * Math.max(0, Math.min(1, v)));
   ctx.fillStyle = col; ctx.fillRect(x, y, lleno, h);
-  ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(x, y, lleno, 1);
-  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x, y + h - 1, lleno, 1);
-  ctx.fillStyle = 'rgba(16,8,6,0.75)'; for (let k = 1; k < 4; k++) ctx.fillRect(x + Math.round((w * k) / 4), y, 1, h);
+  if (h > 2) { ctx.fillStyle = 'rgba(255,255,255,0.32)'; ctx.fillRect(x, y, lleno, 1); ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(x, y + h - 1, lleno, 1); }
+  ctx.fillStyle = 'rgba(22,16,10,0.8)'; for (let k = 1; k < 4; k++) ctx.fillRect(x + Math.round((w * k) / 4), y, 1, h);
 }
 function circulo(ctx, cx, cy, r) { for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y)); ctx.fillRect(Math.round(cx - w), Math.round(cy + y), w * 2 + 1, 1); } }
 function anillo(ctx, cx, cy, r) {
@@ -214,7 +229,7 @@ function dibujarHUD(ctx) {
   ctx.globalAlpha = pulsado ? 0.9 : 0.65;
   ctx.fillStyle = COL.negro; circulo(ctx, ax, ay, 17);
   ctx.fillStyle = COL.borde; circulo(ctx, ax, ay, 16);
-  ctx.fillStyle = pulsado ? '#6a4630' : COL.boton; circulo(ctx, ax, ay, 15);
+  ctx.fillStyle = pulsado ? '#2a4a8a' : COL.boton; circulo(ctx, ax, ay, 15);
   ctx.globalAlpha = 1;
   const icono = iconoAccion();
   if (icono) sprCentro(ctx, icono, ax, ay);
@@ -222,8 +237,8 @@ function dibujarHUD(ctx) {
   const o = !J.pesca && interactivoCerca(), esp = !J.pesca && !o ? usoCercano() : null;
   if (o) {
     const que = OBJ[o.tipo].interactua, txt = { crear: 'Crear', cofre: 'Abrir', olla: 'Cocinar', cama: 'Dormir', corazon: 'Hablar', estatua: o.extra ? 'Mirar' : 'Ofrecer', altar_titan: o.extra ? 'Mirar' : 'Ofrecer', altar_cielo: 'Ofrecer', tablilla: 'Leer', incubadora: 'Incubar', idolo: 'Mirar', brasero: o.extra ? 'Mirar' : 'Encender', palanca: 'Tirar', empujar: 'Empujar', sellada: 'Mirar', paso: J.pasos && J.pasos[o.datos && o.datos.nombre] ? 'Viajar' : 'Tocar', restos: o.datos && o.datos.visto ? 'Mirar' : 'Registrar', hablar: 'Hablar' }[que] || 'Usar';
-    botonTexto(ctx, ax - 30, ay - 40, 52, 14, txt, () => interactuar(o), { color: '#3e6a2a' });
-  } else if (esp) botonTexto(ctx, ax - 30, ay - 40, 52, 14, esp.txt, esp.fn, { color: '#3e6a2a' });
+    botonTexto(ctx, ax - 30, ay - 40, 52, 14, txt, () => interactuar(o), { color: '#2a5a3e' });
+  } else if (esp) botonTexto(ctx, ax - 30, ay - 40, 52, 14, esp.txt, esp.fn, { color: '#2a5a3e' });
   if (J.cartel) { // nombre de la región al entrar por primera vez
     ctx.globalAlpha = Math.min(1, J.cartel.t, (3.5 - J.cartel.t) * 2);
     texto(ctx, J.cartel.txt.toUpperCase(), LW / 2, Math.round(LH * 0.3), '#f6ecda', { alin: 'c', esc: 2, borde: COL.negro });
@@ -275,7 +290,7 @@ function fondoPanel(ctx, cerrar = true) {
   boton(0, 0, LW, LH, cerrar ? () => { J.panel = null; UI.selInv = -1; } : () => {}, { mudo: true });
 }
 function cruz(ctx, x, y) {
-  marco(ctx, x, y, 13, 13, '#3a1e2e');
+  marco(ctx, x, y, 13, 13, '#2a1c3e');
   texto(ctx, '×', x + 4, y + 3, COL.texto);
   boton(x - 3, y - 3, 19, 19, () => { J.panel = null; UI.selInv = -1; });
 }
@@ -285,7 +300,7 @@ function pestanas(ctx, x, y, lista, ancho = 1e9) {
   const textos = lista.reduce((a, [, t]) => a + anchoTexto(t), 0), pad = Math.max(2, Math.min(10, Math.floor((ancho - textos - 2 * (lista.length - 1)) / lista.length)));
   for (const [id, txt] of lista) {
     const w = anchoTexto(txt) + pad, activa = UI.pestana === id;
-    botonTexto(ctx, px, y, w, 12, txt, () => { UI.pestana = id; UI.selInv = -1; }, { color: activa ? '#7a4a2a' : COL.botonOff, colTexto: activa ? COL.oro : COL.suave });
+    botonTexto(ctx, px, y, w, 12, txt, () => { UI.pestana = id; UI.selInv = -1; }, { color: activa ? '#2a4a9a' : COL.botonOff, colTexto: activa ? COL.oro : COL.suave });
     px += w + 2;
   }
 }
@@ -293,7 +308,7 @@ function pestanas(ctx, x, y, lista, ancho = 1e9) {
 function rejilla(ctx, inv, x, y, cols, marcada, al, desde = 0, hasta = inv.length) {
   for (let i = desde; i < hasta; i++) {
     const k = i - desde, cx = x + (k % cols) * 19, cy = y + Math.floor(k / cols) * 19;
-    ranura(ctx, cx, cy, inv[i], i === marcada, { fondo: inv === J.inv && i < N_BARRA ? '#2e2018' : COL.ranura });
+    ranura(ctx, cx, cy, inv[i], i === marcada, { fondo: inv === J.inv && i < N_BARRA ? 'rgba(34,62,124,0.85)' : COL.ranura });
     boton(cx, cy, 18, 18, () => al(i), { mudo: true });
   }
 }
@@ -314,7 +329,7 @@ function panelMochila(ctx) {
   const vacios = { mano2: 'i_antorcha', casco: 'i_casco_cobre', peto: 'i_peto_cobre', botas: 'i_botas_cobre', acc1: 'i_anillo_cobre', acc2: 'i_anillo_cobre', mascota: 'i_mascota_topito' };
   RANURAS_EQUIPO.forEach((r, k) => {
     const ex = x + 6 + k * 19;
-    ranura(ctx, ex, ey, J.equipo[r], false, { fondo: '#2e2018', vacio: vacios[r] });
+    ranura(ctx, ex, ey, J.equipo[r], false, { fondo: 'rgba(40,52,96,0.85)', vacio: vacios[r] });
     boton(ex, ey, 18, 18, () => {
       if (UI.selInv >= 0) { ponerEquipo(UI.selInv, r); return; }
       if (J.equipo[r] && agregar(J.equipo[r].id, 1) === 0) { J.equipo[r] = null; Sonido.sfx.metal(); }
@@ -328,11 +343,11 @@ function panelMochila(ctx) {
   rejilla(ctx, J.inv, x + 6, gy, N_BARRA, UI.selInv, tocarRanura);
   // la ficha de lo que tocas
   const dx = x + 6 + gw + 6, dw = x + w - 6 - dx, dy = gy, dh = 4 * 19 - 1;
-  marco(ctx, dx, dy, dw, dh, '#1e140e');
+  marco(ctx, dx, dy, dw, dh, 'rgba(10,16,34,0.9)');
   const s = UI.selInv >= 0 ? J.inv[UI.selInv] : null;
   if (s) {
     const it = asegurarItem(s.id);
-    marco(ctx, dx + 4, dy + 4, 22, 22, '#120c08'); sprCentro(ctx, it.icono, dx + 15, dy + 15);
+    marco(ctx, dx + 4, dy + 4, 22, 22, 'rgba(20,43,92,0.82)', { sinGemas: true }); sprCentro(ctx, it.icono, dx + 15, dy + 15);
     partirTexto(it.nombre, dw - 34).slice(0, 2).forEach((l, k) => texto(ctx, l, dx + 30, dy + 5 + k * ALTO_LINEA, RAREZA[it.rareza || 0].color));
     infoObjeto(ctx, s, dx + 4, dy + 30 - ALTO_LINEA - 1, dw - 8, Math.max(1, Math.floor((dh - 30 - 19) / ALTO_LINEA)), true);
     const ops = [];
@@ -370,7 +385,7 @@ function panelHabilidades(ctx, x, y, w, h) {
   ids.forEach((id, k) => {
     const hb = HABILIDADES[id], n = nivel(id), xp = (J.hab[id] && J.hab[id].xp) || 0;
     const fx = x + 6 + (dos ? Math.floor(k / filas) * (cw + 4) : 0), fy = y + 21 + (k % filas) * 15, sel = UI.selHab === id;
-    ctx.fillStyle = sel ? '#4a2f20' : '#24170f'; ctx.fillRect(fx, fy, cw, 14);
+    ctx.fillStyle = sel ? '#2a4a9a' : 'rgba(20,43,92,0.7)'; ctx.fillRect(fx, fy, cw, 14);
     texto(ctx, hb.nombre, fx + 3, fy + 3, sel ? COL.oro : COL.texto);
     texto(ctx, String(n), fx + cw - 3, fy + 3, COL.oro, { alin: 'd' });
     barra(ctx, fx + cw - 40, fy + 6, 22, 2, n >= NIVEL_MAX ? 1 : xp / xpNivel(n), '#6ab0ff', '#14243a');
@@ -386,12 +401,14 @@ function panelHabilidades(ctx, x, y, w, h) {
 // los yunques, ascuas para el horno), pestañas por tipo de objeto, la rejilla de lo que se hace ahí y, al lado, la
 // ficha de lo elegido con sus materiales y los botones de crear (uno o cinco). Sin estación (el botón de crear), lo
 // básico y lo de las estaciones que tengas cerca.
+const BASE_TEMA = { fondo: 'rgba(6,10,22,0.88)', borde: '#677fae', luz: '#a1aedd', sombra: '#3a4a72', hondo: '#0a1020', boton: '#1c2c58' };
+// todas con la ventana de Core Keeper; cada estación se distingue por el color del título y de la luz del borde
 const TEMAS_ESTACION = {
-  madera: { fondo: '#2a1b14', borde: '#8a5a36', luz: '#c89058', sombra: '#5a3822', hondo: '#1a110c', titulo: '#f2c14e', boton: '#4a2f20' },
-  metal: { fondo: '#1a1d24', borde: '#5c6474', luz: '#a8b2c4', sombra: '#2e3440', hondo: '#0f1116', titulo: '#d8e6f8', boton: '#2e3644' },
-  horno: { fondo: '#221410', borde: '#7a3e22', luz: '#e8803c', sombra: '#3e1a0e', hondo: '#140a06', titulo: '#ffc060', boton: '#4a2216' },
-  cocina: { fondo: '#261a12', borde: '#8a5236', luz: '#d0905a', sombra: '#4a2a18', hondo: '#160e08', titulo: '#ffcf7a', boton: '#5a3420' },
-  incubar: { fondo: '#14201e', borde: '#3e7068', luz: '#8ad0c4', sombra: '#1e3a36', hondo: '#0a1210', titulo: '#b8ffe8', boton: '#244a44' },
+  madera: Object.assign({}, BASE_TEMA, { titulo: '#f2c14e' }),
+  metal: Object.assign({}, BASE_TEMA, { titulo: '#d8e6f8', luz: '#c4cee4' }),
+  horno: Object.assign({}, BASE_TEMA, { titulo: '#ffc060', luz: '#d8b0a0' }),
+  cocina: Object.assign({}, BASE_TEMA, { titulo: '#ffcf7a' }),
+  incubar: Object.assign({}, BASE_TEMA, { titulo: '#b8ffe8', luz: '#a8d8d0' }),
 };
 const CATEGORIAS = [
   ['todo', 'Todo', () => true],
@@ -411,10 +428,11 @@ function familiaEstacion(e) {
 }
 function marcoTema(ctx, x, y, w, h, t, fondo) {
   ctx.fillStyle = COL.negro; ctx.fillRect(x - 1, y, w + 2, h); ctx.fillRect(x, y - 1, w, h + 2);
-  ctx.fillStyle = t.borde; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = t.luz; ctx.fillRect(x + 1, y, w - 2, 1); ctx.fillRect(x, y + 1, 1, h - 2);
-  ctx.fillStyle = t.sombra; ctx.fillRect(x + 1, y + h - 1, w - 2, 1); ctx.fillRect(x + w - 1, y + 1, 1, h - 2);
+  ctx.clearRect(x + 1, y + 1, w - 2, h - 2);
   ctx.fillStyle = fondo || t.fondo; ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+  ctx.fillStyle = t.luz; ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y, 1, h);
+  ctx.fillStyle = t.borde; ctx.fillRect(x + 1, y + h - 1, w - 1, 1); ctx.fillRect(x + w - 1, y + 1, 1, h - 1);
+  if (w >= 24 && h >= 16) { gema(ctx, x, y); gema(ctx, x + w - 3, y + h - 3); }
 }
 function botonTema(ctx, x, y, w, h, txt, fn, t, o = {}) {
   const activo = o.activo !== false;
@@ -470,7 +488,7 @@ function panelCrear(ctx) {
     const cx = gx + 1 + (k % cols) * 19, cy = gy + 1 + Math.floor(k / cols) * 19 - Math.round(UI.scroll);
     if (cy + 19 < gy || cy > gy + gh) return;
     const sel = r === UI.selReceta;
-    ranura(ctx, cx, cy, null, sel, { fondo: ok ? '#2a3a22' : t.hondo });
+    ranura(ctx, cx, cy, null, sel, { fondo: ok ? 'rgba(30,70,60,0.85)' : t.hondo });
     ctx.globalAlpha = ok ? 1 : hayEst ? 0.55 : 0.3; sprCentro(ctx, it.icono, cx + 9, cy + 9); ctx.globalAlpha = 1;
     if (r.n > 1) texto(ctx, r.n, cx + 17, cy + 12, COL.texto, { alin: 'd', borde: COL.negro, mini: true });
     if (ok) { ctx.fillStyle = COL.oro; ctx.fillRect(cx + 1, cy + 1, 3, 1); ctx.fillRect(cx + 1, cy + 1, 1, 3); }
@@ -510,8 +528,8 @@ function panelCrear(ctx) {
   if (!hayEst) texto(ctx, 'Se hace en: ' + (NOMBRE_ESTACION[r.est] || r.est), dx + 5, by + 3, '#ffb070');
   else {
     const puede5 = ok && Object.entries(r.ing).every(([id, n]) => cuentaTotal(id, ctxEst) >= n * 5);
-    botonTema(ctx, dx + 5, by, dw - 46, 15, F.verbo || 'Crear', () => { if (!crearVarias(r, 1)) aviso('Te faltan materiales'); }, t, { activo: ok, color: '#3e6a2a' });
-    botonTema(ctx, dx + dw - 38, by, 33, 15, '×5', () => crearVarias(r, 5), t, { activo: puede5, color: '#3e6a2a' });
+    botonTema(ctx, dx + 5, by, dw - 46, 15, F.verbo || 'Crear', () => { if (!crearVarias(r, 1)) aviso('Te faltan materiales'); }, t, { activo: ok, color: '#2a5a3e' });
+    botonTema(ctx, dx + dw - 38, by, 33, 15, '×5', () => crearVarias(r, 5), t, { activo: puede5, color: '#2a5a3e' });
   }
 }
 
@@ -571,7 +589,7 @@ function panelOlla(ctx) {
     partirTexto(it.nombre, dw - 34).slice(0, 2).forEach((l, k) => texto(ctx, l, dx + 30, dy + 5 + k * ALTO_LINEA, RAREZA[it.rareza || 0].color));
     partirTexto(it.desc || '', dw - 8).slice(0, Math.floor((y + h - 6 - dy - 52) / ALTO_LINEA)).forEach((l, k) => texto(ctx, l, dx + 4, dy + 30 + k * ALTO_LINEA, COL.suave));
   } else partirTexto('Toca dos ingredientes de abajo. Puedes repetir el mismo.', dw - 8).forEach((l, k) => texto(ctx, l, dx + 4, dy + 4 + k * ALTO_LINEA, COL.suave));
-  botonTema(ctx, dx + 4, y + h - 25, dw - 8, 15, 'Cocinar', () => cocinar(o), t, { activo: !!plato, color: '#3e6a2a' });
+  botonTema(ctx, dx + 4, y + h - 25, dw - 8, 15, 'Cocinar', () => cocinar(o), t, { activo: !!plato, color: '#2a5a3e' });
 }
 
 function panelMapa(ctx) {
