@@ -495,6 +495,67 @@ const CRI_PX2 = (() => {
     tiempos: { q: { fps: 3 }, a: { fps: 13 }, p: { fps: 10, bucle: true }, g: { fps: 13, bucle: true } },
     W: EW, H: EH, ox: EOX, oy: EOY, px: 1, yaw: 0, zancada: 14, fpsQuieta: 3, vistas: true,
   };
+  // ---------------------------------------------------------------- el sapo hueco de la Ciénaga
+  // Flaco, de piel verde oscura y vientre pálido, ojos rojos arriba y bultos de Podre en la espalda que brillan.
+  // Salta como las babas (agacharse, estirarse en el aire, aplastarse al caer).
+  function cuadroSapo(v, k, o) {
+    const L = new Lienzo(EW, EH), luz = new Lienzo(EW, EH), R = o.rampas, pal = o.pal;
+    const sy = k.sy || 1, sx = k.sx || 1, x = EOX, y = EOY, aire = !!k.aire, cy = y - 6 * sy - (k.alto || 0);
+    const formas = [], bultos = [];
+    const lumps = (pts) => { for (const [dx, dy, r] of pts) bultos.push({ e: [x + dx * sx, cy + dy * sy, r, r * Math.min(1.1, sy)], rampa: R.podre, luz }); };
+    if (v === 'de') {
+      if (aire) formas.push({ c: [x - 6, cy + 2, x - 12, cy + 6, 2.2, 1.4], rampa: R.piel }, { c: [x - 12, cy + 6, x - 16, cy + 8, 1.3, 1], rampa: R.piel });
+      else formas.push({ e: [x - 6, y - 3 * sy, 4.2 * sx, 3 * sy], rampa: R.piel }, { c: [x - 4, y - 0.5, x + 1, y - 0.5, 1.2], rampa: R.piel });
+      formas.push({ e: [x, cy, 9 * sx, 5.6 * sy], rampa: R.piel }, { e: [x + 2, cy + 2.6 * sy, 6 * sx, 2.6 * sy], rampa: R.vientre, sinSurco: true });
+      formas.push({ e: [x + 7.5 * sx, cy - 1.5 * sy, 4.6 * sx, 3.6 * sy], rampa: R.piel });
+      formas.push({ c: [x + 5, cy + 2, x + 6.5 + (aire ? 2 : 0), aire ? cy + 5 : y - 0.5, 1.3, 1.1], rampa: R.piel });
+      lumps([[-4, -5, 2], [0, -5.6, 2.4], [3.6, -4.6, 1.6], [-7, -2.6, 1.5]]);
+      masas(L, formas, EW, EH); masas(L, bultos, EW, EH);
+      const hx = Math.round(x + 7.5 * sx), hy = Math.round(cy - 1.5 * sy);
+      CRI_PX.linea(L, [hx - 1, hy + 1], [hx + 4, hy + 1], pal.boca);
+      if (!k.ojosC) for (const [dx, dy] of [[-1, -3], [2, -3]]) { L.px(hx + dx, hy + dy, pal.ojo); luz.px(hx + dx, hy + dy, pal.ojo); }
+    } else {
+      const ab = v === 'ab';
+      for (const s of [-1, 1]) {
+        if (aire) formas.push({ c: [x + s * 6, cy + 1, x + s * 10, cy + 6, 2, 1.3], rampa: R.piel });
+        else formas.push({ e: [x + s * 7 * sx, y - 2.5 * sy, 3.6 * sx, 2.6 * sy], rampa: R.piel });
+      }
+      formas.push({ e: [x, cy, 8.5 * sx, 5.8 * sy], rampa: R.piel });
+      if (ab) formas.push({ e: [x, cy + 2.4 * sy, 5.5 * sx, 2.6 * sy], rampa: R.vientre, sinSurco: true });
+      if (ab) formas.push({ e: [x, cy - 3 * sy, 5.2 * sx, 3.6 * sy], rampa: R.piel });
+      for (const s of [-1, 1]) formas.push({ c: [x + s * 4, cy + 3, x + s * 5, y - 0.5, 1.2, 1], rampa: R.piel });
+      if (!ab) lumps([[-3, -4, 2.2], [2.5, -4.6, 2.4], [0, -1.4, 1.8], [-5.5, 0, 1.4], [5, -1, 1.3]]);
+      else lumps([[-5, -6.5, 1.5], [4.6, -6.6, 1.4]]);
+      masas(L, formas, EW, EH); masas(L, bultos, EW, EH);
+      if (ab) {
+        const hy = Math.round(cy - 3 * sy);
+        CRI_PX.linea(L, [x - 4, hy + 2], [x + 3, hy + 2], pal.boca);
+        if (!k.ojosC) for (const dx of [-3, 2]) { L.px(x + dx, hy - 2, pal.ojo); luz.px(x + dx, hy - 2, pal.ojo); L.px(x + dx, hy - 3, pal.ojoOsc); }
+      }
+    }
+    contorno2(L, pal.K, EW, EH);
+    if (k.tumbado) { const d = L.d.slice(); L.d.fill(null); let fondo = 0, techo = EH; for (let yy = 0; yy < EH; yy++) for (let xx = 0; xx < EW; xx++) if (d[yy * EW + xx]) { fondo = Math.max(fondo, yy); techo = Math.min(techo, yy); } for (let yy = techo; yy <= fondo; yy++) for (let xx = 0; xx < EW; xx++) { const y2 = EOY - (yy - techo); if (y2 >= 0) L.d[y2 * EW + xx] = d[yy * EW + xx]; } luz.d.fill(null); }
+    if (k.hundido) { const d = L.d.slice(); L.d.fill(null); for (let yy = 0; yy < EH; yy++) for (let xx = 0; xx < EW; xx++) { const y2 = yy + k.hundido; if (y2 <= EOY && y2 < EH) L.d[y2 * EW + xx] = d[yy * EW + xx]; } luz.d.fill(null); }
+    return { color: MANO.normales(L), luz, puntos: { cabeza: [x + 7, cy - 2] } };
+  }
+  const SAPO = {
+    q: (v, f) => ({ sy: [1, 1.04][f], sx: [1, 0.98][f] }),
+    a: (v, f) => [{ sy: 0.85, sx: 1.08 }, { sy: 1.12, sx: 0.94, alto: 2, aire: true }, { sy: 1.05, alto: 3, aire: true }, { sy: 0.9, sx: 1.06 }][f],
+    p: (v, f) => ({ sy: [0.9, 0.82, 0.76][f], sx: [1.05, 1.1, 1.14][f] }),
+    g: (v, f) => ({ aire: true, sy: [1.18, 1.1, 1.0, 0.95][f], sx: [0.9, 0.94, 1, 1.03][f] }),
+    r: (v, f) => (f === 0 ? { sy: 0.85, sx: 1.1, ojosC: true } : {}),
+    m: (v, f) => [{ sy: 0.8, sx: 1.12, ojosC: true }, { sy: 0.7, sx: 1.15, ojosC: true }, { tumbado: true, ojosC: true }, { tumbado: true, ojosC: true, sy: 0.8 }][f],
+    n: (v, f) => ({ hundido: [14, 9, 4, 0][f] }),
+  };
+  FICHAS.sapo_hueco = {
+    manual: (anim, f, v) => cuadroSapo(v, SAPO[anim](v, f), {
+      pal: { K: '#060804', boca: '#0e0a08', ojo: '#ff3a2a', ojoOsc: '#3a0a06' },
+      rampas: { piel: [0, '#1e2616', '#36442a', '#52623a', '#6e7e50'], vientre: [0, '#4a4230', '#6a5c40', '#9a8a62', '#c4b48a'], podre: [0, '#5a0a40', '#b0207a', '#ff3cb4', '#ffb0e4'] },
+    }),
+    anims: { q: { n: 2, bucle: true }, a: { n: 4, bucle: true }, p: { n: 3 }, g: { n: 4 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 3 }, a: { fps: 8 }, p: { fps: 10, pausas: [0, 0, 3] } },
+    W: EW, H: EH, ox: EOX, oy: EOY, px: 1, yaw: 0, zancada: 16, fpsQuieta: 3, vistas: true,
+  };
   function registrar() { for (const [t, d] of Object.entries(FICHAS)) CRI.DEF[t] = d; }
   registrar();
   return { gusano, cuadro, FICHAS, W, H, OX, OY };
