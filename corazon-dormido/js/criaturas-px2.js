@@ -556,6 +556,106 @@ const CRI_PX2 = (() => {
     tiempos: { q: { fps: 3 }, a: { fps: 8 }, p: { fps: 10, pausas: [0, 0, 3] } },
     W: EW, H: EH, ox: EOX, oy: EOY, px: 1, yaw: 0, zancada: 16, fpsQuieta: 3, vistas: true,
   };
+  // ---------------------------------------------------------------- humanoides de la Ciénaga y la Ciudad (masas)
+  const HW = 56, HH = 60, HOX = 28, HOY = 56;
+  function acabarH(L, luz, k, pal) {
+    contorno2(L, pal.K, HW, HH);
+    if (k.disuelve) { for (let y = 0; y < HH; y++) for (let x = 0; x < HW; x++) if (L.d[y * HW + x] && ((x * 7 + y * 13) % 10) / 10 < k.disuelve) L.d[y * HW + x] = null; if (k.disuelve > 0.5) luz.d.fill(null); }
+    if (k.tumbado) { tumbar(L, HW, HH, HOX, HOY); luz.d.fill(null); }
+    if (k.hundido) { const d = L.d.slice(); L.d.fill(null); for (let yy = 0; yy < HH; yy++) for (let xx = 0; xx < HW; xx++) { const y2 = yy + k.hundido; if (y2 <= HOY && y2 < HH) L.d[y2 * HW + xx] = d[yy * HW + xx]; } luz.d.fill(null); }
+    return MANO.normales(L);
+  }
+  // el Velado: una túnica que flota, la capucha sin cara (dos ojos fríos) y mangas que se alzan al conjurar
+  function cuadroVelado(v, k, o) {
+    const L = new Lienzo(HW, HH), luz = new Lienzo(HW, HH), R = o.rampas, pal = o.pal;
+    const x = HOX, y = HOY - 6 + (k.bob || 0), alza = k.alza || 0, ab = v === 'ab', ar = v === 'ar';
+    const formas = [];
+    // la túnica: se ensancha hacia abajo y acaba en flecos que ondulan
+    const tunica = { c: [x, y - 24, x + (v === 'de' ? -2 : 0), y - 6, 4.5, 8.5], rampa: R.tunica };
+    const manga = (s) => ({ c: [x + s * 5, y - 22, x + s * (7 + alza * 2) + (v === 'de' && s > 0 ? alza * 4 : 0), y - 14 - alza * 12, 2.4, 2.8], rampa: s < 0 && v === 'de' ? R.tunicaAtras : R.tunica });
+    if (v === 'de') formas.push(manga(-1));
+    formas.push(tunica);
+    formas.push({ e: [x + (v === 'de' ? 1 : 0), y - 30, 5.2, 5.6], rampa: R.tunica });
+    if (v !== 'de') formas.push(manga(-1), manga(1)); else formas.push(manga(1));
+    masas(L, formas, HW, HH);
+    // los flecos de abajo
+    for (let i = -8; i <= 8; i++) { const yy = y - 1 + Math.round(Math.sin(i * 1.3 + (k.bob || 0) * 2) * 1.2); if (L.get(x + i, y - 3)) for (let j = y - 2; j <= yy; j++) L.px(x + i, j, (i + j) % 2 ? R.tunica[2] : R.tunica[1]); }
+    // la cara: un hueco negro con dos ojos
+    if (!ar) {
+      const fx = x + (v === 'de' ? 3 : 0), fy = y - 30;
+      for (let yy = fy - 2; yy <= fy + 3; yy++) for (let xx = fx - (v === 'de' ? 1 : 3); xx <= fx + (v === 'de' ? 2 : 3); xx++) if (L.get(xx, yy)) L.px(xx, yy, pal.hueco);
+      const ojos = v === 'de' ? [[fx + 1, fy]] : [[fx - 2, fy], [fx + 1, fy]];
+      if (!k.ojosC) for (const [ex, ey] of ojos) { L.px(ex, ey, pal.ojo); L.px(ex + 1, ey, pal.ojo2); luz.px(ex, ey, pal.ojo); luz.px(ex + 1, ey, pal.ojo2); }
+    }
+    // el orbe frío que junta al conjurar
+    if (alza > 0.3) { const ox = x + (v === 'de' ? 8 + alza * 4 : 0), oy = y - 38 - alza * 4; for (let yy = -2; yy <= 2; yy++) for (let xx = -2; xx <= 2; xx++) if (xx * xx + yy * yy <= 4 + alza) { const c = xx * xx + yy * yy <= 1 ? pal.orbe[2] : pal.orbe[1]; L.px(ox + xx, oy + yy, c); luz.px(ox + xx, oy + yy, c); } }
+    return { color: acabarH(L, luz, k, pal), luz, puntos: { cabeza: [x, y - 30], orbe: [x + 8, y - 40] } };
+  }
+  const VELADO = {
+    q: (v, f) => ({ bob: [0, -1, -1, 0][f] }), a: (v, f) => ({ bob: [0, -1, -1, 0][f] }),
+    p: (v, f) => ({ alza: [0.4, 0.8, 1][f], bob: -1 }), g: (v, f) => ({ alza: [1, 0.6, 0.2][f] }),
+    r: (v, f) => (f === 0 ? { bob: 1, ojosC: true } : {}),
+    m: (v, f) => ({ disuelve: [0.2, 0.45, 0.7, 0.9][f], ojosC: f > 1 }), n: (v, f) => ({ disuelve: [0.8, 0.55, 0.3, 0][f] }),
+  };
+  FICHAS.velado = {
+    manual: (anim, f, v) => cuadroVelado(v, VELADO[anim](v, f), {
+      pal: { K: '#0a0c18', hueco: '#04050a', ojo: '#bfe0ff', ojo2: '#6aa0e0', orbe: ['#1a3a8a', '#6a9aff', '#e8f4ff'] },
+      rampas: { tunica: [0, '#2a3048', '#424a68', '#5e6890', '#8a94b8'], tunicaAtras: [0, '#1c2034', '#2e3450', '#424a6c', '#5a6488'] },
+    }),
+    anims: { q: { n: 4, bucle: true }, a: { n: 4, bucle: true }, p: { n: 3 }, g: { n: 3 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 4 }, a: { fps: 5 }, p: { fps: 6 }, g: { fps: 10 } },
+    W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, zancada: 30, fpsQuieta: 4, vistas: true,
+  };
+  // el Farolero: alto y flaco, encorvado, con un farol de cebo colgando de una vara (como un rape de la Ciénaga)
+  function cuadroFarolero(v, k, o) {
+    const L = new Lienzo(HW, HH), luz = new Lienzo(HW, HH), R = o.rampas, pal = o.pal;
+    const x = HOX, y = HOY, f = k.fase || 0, alza = k.alza || 0, b = k.bob || 0, det = [], del = [];
+    const sw = Math.sin(f), cw = Math.cos(f);
+    if (v === 'de') {
+      det.push({ c: [x - 1, y - 20, x - 3 - sw * 4, y - 1, 2, 1.6], rampa: R.atras });
+      det.push({ c: [x + 3, y - 34 + b, x - 6 - alza * 3, y - 24 + b - alza * 6, 2, 1.6], rampa: R.atras });
+      det.push({ c: [x, y - 22 + b, x + 4, y - 34 + b, 4, 4.6], rampa: R.cuerpo });
+      det.push({ c: [x + 1, y - 20, x + 1 + sw * 4, y - 1, 2.2, 1.8], rampa: R.cuerpo });
+      det.push({ e: [x + 7, y - 36 + b, 4, 3.4], rampa: R.cabeza });
+      del.push({ c: [x + 4, y - 32 + b, x + 10 + alza * 4, y - 22 + b - alza * 14, 2.2, 1.8], rampa: R.cuerpo });
+    } else {
+      const ab = v === 'ab';
+      for (const s of [-1, 1]) det.push({ c: [x + s * 2, y - 20, x + s * 3 + (s > 0 ? sw : -sw) * 1.5, y - 1, 2.2, 1.8], rampa: R.cuerpo });
+      det.push({ c: [x, y - 22 + b, x, y - 34 + b, 4.6, 5], rampa: R.cuerpo });
+      det.push({ e: [x, y - 38 + b, 4, 3.6], rampa: R.cabeza });
+      for (const s of [-1, 1]) del.push({ c: [x + s * 5, y - 33 + b, x + s * 7 + (s > 0 ? alza * 3 : 0), y - 18 + b - (s > 0 ? alza * 16 : 0), 2.2, 1.8], rampa: R.cuerpo });
+      void ab;
+    }
+    masas(L, det, HW, HH);
+    // los ojos pequeños y la boca cosida
+    const hx = v === 'de' ? x + 8 : x, hy = y - (v === 'de' ? 36 : 38) + b;
+    if (v !== 'ar') { const ojos = v === 'de' ? [[hx + 1, hy - 1]] : [[hx - 2, hy - 1], [hx + 1, hy - 1]]; if (!k.ojosC) for (const [ex, ey] of ojos) { L.px(ex, ey, pal.ojo); luz.px(ex, ey, pal.ojo); } for (let i = -2; i <= 2; i++) L.px(hx + i + (v === 'de' ? 1 : 0), hy + 2, i % 2 ? pal.boca : R.cabeza[1]); }
+    masas(L, del, HW, HH);
+    // la vara del farol y el farol que brilla
+    const mano = v === 'de' ? [x + 10 + alza * 4, y - 22 + b - alza * 14] : [x + 7 + alza * 3, y - 18 + b - alza * 16];
+    const punta = [mano[0] + (v === 'de' ? 6 : 3), mano[1] - 10];
+    CRI_PX.linea(L, mano, punta, pal.vara);
+    const lx = Math.round(punta[0] + (v === 'de' ? 2 : 1)), ly = Math.round(punta[1] + 3 + Math.round(Math.sin(f * 2)));
+    L.px(lx, ly - 2, pal.vara);
+    for (let yy = -1; yy <= 2; yy++) for (let xx = -1; xx <= 1; xx++) { const c = Math.abs(xx) + Math.abs(yy - 0.5) < 1.2 ? pal.luz[2] : pal.luz[1]; L.px(lx + xx, ly + yy, c); if (!k.ojosC) luz.px(lx + xx, ly + yy, c); }
+    return { color: acabarH(L, luz, k, pal), luz, puntos: { cabeza: [hx, hy], farol: [lx, ly] } };
+  }
+  const FAROLERO = {
+    q: (v, f) => ({ bob: [0, 0, 1, 1][f] }), a: (v, f) => ({ fase: (f / 8) * Math.PI * 2, bob: f % 4 === 1 || f % 4 === 2 ? 1 : 0 }),
+    p: (v, f) => ({ alza: [0.4, 0.8, 1][f] }), g: (v, f) => ({ alza: [0.6, 0.1, 0][f], bob: f ? 1 : 0 }),
+    r: (v, f) => (f === 0 ? { bob: 2, ojosC: true } : {}),
+    m: (v, f) => [{ bob: 2, ojosC: true }, { bob: 5, ojosC: true }, { tumbado: true, ojosC: true }, { tumbado: true, ojosC: true }][f],
+    n: (v, f) => ({ hundido: [30, 20, 10, 0][f] }),
+  };
+  FICHAS.farolero = {
+    manual: (anim, f, v) => cuadroFarolero(v, FAROLERO[anim](v, f), {
+      pal: { K: '#060806', ojo: '#e0ff90', boca: '#0a0806', vara: '#3a2c1c', luz: ['#2a8a2a', '#6ae04a', '#e4ffb0'] },
+      rampas: { cuerpo: [0, '#1a1e16', '#2e3626', '#465238', '#5e6c4a'], atras: [0, '#101410', '#1e241a', '#2c3426', '#3a4432'], cabeza: [0, '#3a3a2c', '#6a6852', '#948e72', '#bab296'] },
+    }),
+    anims: { q: { n: 4, bucle: true }, a: { n: 8, bucle: true }, p: { n: 3 }, g: { n: 3 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 3 }, a: { fps: 9 }, p: { fps: 6 }, g: { fps: 10 } },
+    W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, zancada: 30, fpsQuieta: 3, vistas: true,
+  };
   function registrar() { for (const [t, d] of Object.entries(FICHAS)) CRI.DEF[t] = d; }
   registrar();
   return { gusano, cuadro, FICHAS, W, H, OX, OY };
