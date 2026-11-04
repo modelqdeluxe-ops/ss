@@ -115,11 +115,11 @@ const GL = (() => {
     l = l * l * 2.4;
     // junto al fuego no se quema el dibujo: la luz fuerte se comprime (el personaje no se vuelve una mancha)
     l = min(l, 1.0) + max(l - 1.0, 0.0) * 0.35;
+    // la luz es continua, como en Core Keeper (sin escalones: dejaban anillos); solo una trama mínima en lo muy
+    // oscuro para que el degradado no haga bandas
     vec2 m = mod(texel, 4.0);
     float b = (BAYER[int(m.y) * 4 + int(m.x)] + 0.5) / 16.0;
-    // escalones de luz con trama: 12 y la trama solo en la mitad del escalón (con 7 escalones y trama entera, lo
-    // oscuro se veía como una rejilla)
-    vec3 lq = floor(l * 12.0 + 0.25 + b * 0.5) / 12.0;
+    vec3 lq = l + (b - 0.5) / 64.0;
     vec3 c = base * mix(lq, vec3(1.0), vExtra.x);
     color = vec4(c * mix(1.0, vTinte.a, uAditivo) * 0.5, t.a * vTinte.a);
   }`;
@@ -356,7 +356,7 @@ const GL = (() => {
 
   // ---------------------------------------------------------------- trozos del mundo
 
-  const AO = [0.42, 0.6, 0.8, 1.0];
+  const AO = [0.66, 0.78, 0.9, 1.0]; // suave: el borde oscuro del suelo hace de sombra (como Core Keeper)
   function ocupado(x, y) { return muroEn(x, y) ? 1 : 0; }
   function aoVertice(l1, l2, esq) { return AO[l1 && l2 ? 0 : 3 - (l1 + l2 + esq)]; }
 
@@ -370,7 +370,7 @@ const GL = (() => {
         const b = M.piso[i], h = hash2(tx, ty), info = INFO_SUELO[b];
         const n = ocupado(tx, ty - 1), s = ocupado(tx, ty + 1), o = ocupado(tx - 1, ty), e = ocupado(tx + 1, ty);
         const liquido = info.liquido, orillaN = liquido && !INFO_SUELO[M.piso[idx(tx, ty - 1)]].liquido && !n;
-        const sombraN = n ? 0.78 : orillaN ? 0.55 : 1;
+        const sombraN = n ? 0.86 : orillaN ? 0.55 : 1;
         T4[0] = aoVertice(o, n, ocupado(tx - 1, ty - 1)) * sombraN; T4[1] = aoVertice(e, n, ocupado(tx + 1, ty - 1)) * sombraN;
         T4[2] = aoVertice(e, s, ocupado(tx + 1, ty + 1)); T4[3] = aoVertice(o, s, ocupado(tx - 1, ty + 1));
         LZ[0] = tx; LZ[1] = ty; LZ[2] = tx + 1; LZ[3] = ty; LZ[4] = tx + 1; LZ[5] = ty + 1; LZ[6] = tx; LZ[7] = ty + 1;
@@ -386,6 +386,12 @@ const GL = (() => {
           const vn = vecino(tx, ty - 1), ve = vecino(tx + 1, ty), vs = vecino(tx, ty + 1), vo = vecino(tx - 1, ty);
           if (vn) poner(vn, 'n'); if (ve) poner(ve, 'e'); if (vs) poner(vs, 's'); if (vo) poner(vo, 'o');
           for (const [dx, dy, lado, a, c] of [[-1, -1, 'no', vn, vo], [1, -1, 'ne', vn, ve], [1, 1, 'se', vs, ve], [-1, 1, 'so', vs, vo]]) { const d = vecino(tx + dx, ty + dy); if (d && d !== a && d !== c) poner(d, lado); }
+          // el borde oscuro del suelo junto a las paredes, con sus raíces (como Core Keeper; suelos-ck.js)
+          const ar = info.arte, pv = hash2(tx, ty, 21) < 0.5 ? 0 : 1;
+          const pp = (nom) => { if (!SPR[nom]) return; const uv = uvDe(nom); if (!uv) return; const yy = 0.0015 + 0.001 * capa++; L.qEsq([tx, yy, ty, tx + 1, yy, ty, tx + 1, yy, ty + 1, tx, yy, ty + 1], uv, false, T4, LZ, 0); };
+          if (n) pp(`pared_${ar}_n_${pv}`); if (s) pp(`pared_${ar}_s_${pv}`); if (e) pp(`pared_${ar}_e_${pv}`); if (o) pp(`pared_${ar}_o_${pv}`);
+          if (!n && !o && ocupado(tx - 1, ty - 1)) pp(`pared_${ar}_no`); if (!n && !e && ocupado(tx + 1, ty - 1)) pp(`pared_${ar}_ne`);
+          if (!s && !e && ocupado(tx + 1, ty + 1)) pp(`pared_${ar}_se`); if (!s && !o && ocupado(tx - 1, ty + 1)) pp(`pared_${ar}_so`);
         }
         if (liquido || M.objetos.has(i) || M.bloqueo[i]) continue;
         // adornos de pie (guijarros, hierba, setas, estalagmitas…), más junto a las paredes

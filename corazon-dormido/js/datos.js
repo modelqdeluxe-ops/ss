@@ -241,7 +241,7 @@ receta('botas_hierro', 1, { lingote_hierro: 8 }, 'yunque_hierro');
 // bloquea: no se pasa. luz: [radio, r, g, b]. vida: golpes. suelta: lo que da al romperse. estacion: para crear.
 // interactua: abre algo al tocar «Usar». nivel: poder de minado necesario.
 const OBJ = {
-  antorcha: { arte: 'antorcha', brillo: true, luz: [7, 1.0, 0.78, 0.52], fuego: true, vida: 1, suelta: [['antorcha', 1, 1]], mapa: '#ffd060' },
+  antorcha: { arte: 'antorcha', brillo: true, luz: [8, 1.0, 0.93, 0.8], fuego: true, vida: 1, suelta: [['antorcha', 1, 1]], mapa: '#ffd060' },
   lampara: { arte: 'lampara', brillo: true, luz: [9, 0.75, 0.95, 1.0], vida: 3, suelta: [['lampara', 1, 1]], mapa: '#b8fbff' },
   farol: { arte: 'farol', brillo: true, luz: [11, 1.0, 0.86, 0.55], vida: 3, suelta: [['farol_oro', 1, 1]], mapa: '#ffe090' },
   mesa: { arte: 'mesa', bloquea: true, vida: 3, suelta: [['mesa', 1, 1]], estacion: 'mesa', interactua: 'crear', mapa: '#c28a52' },

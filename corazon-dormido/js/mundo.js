@@ -374,7 +374,8 @@ function bfsLuz(f, X0, Y0, W, H, R, G, B, marca, cola, selloObj) {
     const li = cola[ini++], lx = li % W, ly = (li - lx) / W, cx = lx + X0, cy = ly + Y0;
     const dist = Math.hypot((cx + 0.5) * T - f.x, (cy + 0.5) * T - f.y) / T;
     if (dist > fr) continue;
-    let a = 1 - dist / fr; a = a * a * (3 - 2 * a);
+    // caída suave como la de Core Keeper: casi entera cerca y se apaga al final (no un foco con un punto brillante)
+    const q = dist / fr; let a = 1 - q * q; a = a * Math.sqrt(a);
     R[li] += cr * a; G[li] += cg * a; B[li] += cb * a;
     if (!(cx === sx && cy === sy) && (!enMundo(cx, cy) || M.muro[idx(cx, cy)])) continue;
     if (lx > 0 && marca[li - 1] !== sello) { marca[li - 1] = sello; cola[fin++] = li - 1; }

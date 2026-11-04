@@ -286,8 +286,8 @@ function fuentesDinamicas() {
   if (J.estado !== 'titulo' && J.estado !== 'muerto') {
     const s = J.inv[J.sel], extra = J.st ? J.st.luz : 0;
     // la luz del personaje (0.8: más grande y más cálida; con antorcha, mucho más)
-    if ((s && s.id === 'antorcha') || (J.equipo.mano2 && J.equipo.mano2.id === 'antorcha')) f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 11 + extra, c: [1.0, 0.74, 0.44], k: 1.08 + 0.08 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) });
-    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 8.5 + extra, c: [1.0, 0.82, 0.6], k: 0.8 });
+    if ((s && s.id === 'antorcha') || (J.equipo.mano2 && J.equipo.mano2.id === 'antorcha')) f.push({ x: J.jug.x + J.jug.fx * 4, y: J.jug.y - 2, r: 10 + extra, c: [1.0, 0.93, 0.8], k: 1.05 + 0.05 * Math.sin(J.t * 14) * Math.sin(J.t * 6.1) }); // el color de la antorcha de Core Keeper
+    else f.push({ x: J.jug.x, y: J.jug.y - 2, r: 7.5 + extra, c: [0.96, 0.92, 0.86], k: 0.72 });
   }
   for (const j of Object.values(J.jefes)) {
     if (!j.activo) continue;
