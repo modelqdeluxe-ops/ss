@@ -20,6 +20,12 @@ CHECKPOINT de `HANDOFF.md`). Si el dueño pide más cosas de clanes, mira las id
 - **Clan Coins sin inflar**: «no pongas esa moneda inflada, que sea como las de gacha: 1 o 2 máximo en recompensas».
   Todo lo que da Clan Coins da 1–2 y los precios de la tienda/banco van en esa escala.
 
+### El chat del clan en Mohist (1.3.169)
+
+`/clan chat` no repartía nada en el Mohist del dueño: el `ServerChatEvent` de Mohist llega con `getRawText()` vacío y se
+cancelaba. Ahora lo reparte el mixin de `broadcastChatMessage` (con Bukkit, ese evento no se toca). Se prueba en un
+Mohist de verdad con `tools/mohist/probar_chat_clan.sh` (ver `tools/mohist/README.md`); si se toca el chat del clan, pásala.
+
 ## 1. Lo que pidió el dueño (literal, para no perder nada)
 
 > Meteremos un nuevo coin, este sera azul, pero este sera llamado Fantastic Clan Coin, y solo lo tendra el lider y el
