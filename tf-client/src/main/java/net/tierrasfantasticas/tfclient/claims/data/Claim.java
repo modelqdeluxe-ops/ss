@@ -100,6 +100,29 @@ public class Claim {
         return this.groupId != null;
     }
 
+    /**
+     * (1.3.170, el dueño: «que al unir protecciones me dé a elegir si mi prote es independiente o la uno a la más grande;
+     * si es independiente estará dentro de la más grande pero se marcará la zona de mi prote más pequeña, mi mensaje y
+     * todo normal; y si le doy a unir a la más grande se hace una sola») El grupo dentro de cuya zona está esta piedra
+     * cuando su dueño la dejó INDEPENDIENTE (no unida: groupId null). Es una zona normal (su borde, sus mensajes, sus
+     * reglas, sus miembros) que está dentro de la grande gracias al grupo; donde las dos se pisan, manda la pequeña
+     * ({@link ClaimManager#getClaimAt}). null en las demás.
+     */
+    private UUID insideGroup;
+
+    public UUID getInsideGroup() {
+        return this.insideGroup;
+    }
+
+    public void setInsideGroup(UUID uuid) {
+        this.insideGroup = uuid;
+    }
+
+    /** ¿Independiente dentro de la zona de un grupo? */
+    public boolean isNestedIndependent() {
+        return this.groupId == null && this.insideGroup != null;
+    }
+
     public Claim getMother() {
         return this.groupId == null ? null : ClaimManager.getInstance().getMotherClaim(this.groupId);
     }
@@ -331,6 +354,9 @@ public class Claim {
         if (this.groupId != null) {
             jsonobject.addProperty("groupId", this.groupId.toString());
         }
+        if (this.insideGroup != null) {
+            jsonobject.addProperty("insideGroup", this.insideGroup.toString());
+        }
         if (this.clanId != null) {
             jsonobject.addProperty("clanId", this.clanId);
         }
@@ -427,6 +453,9 @@ public class Claim {
         long l1 = claim.createdAt = jsonobject.has("createdAt") ? jsonobject.get("createdAt").getAsLong() : 0L;
         if (jsonobject.has("groupId") && !jsonobject.get("groupId").getAsString().isEmpty()) {
             claim.groupId = UUID.fromString(jsonobject.get("groupId").getAsString());
+        }
+        if (jsonobject.has("insideGroup") && !jsonobject.get("insideGroup").getAsString().isEmpty()) {
+            claim.insideGroup = UUID.fromString(jsonobject.get("insideGroup").getAsString());
         }
         if (jsonobject.has("clanId")) {
             claim.setClanId(jsonobject.get("clanId").getAsString());

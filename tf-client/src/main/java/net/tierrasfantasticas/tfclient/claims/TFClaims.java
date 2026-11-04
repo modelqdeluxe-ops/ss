@@ -116,7 +116,20 @@ public class TFClaims {
             ServerPlayer serverplayer = commandcontext.getSource().getPlayerOrException();
             ClaimMenuHandler.leaveMerge(serverplayer);
             return 1;
-        }));
+        })).then(Commands.literal("modo").then(Commands.argument("zona", StringArgumentType.word())
+                // (1.3.170) los botones del chat: la piedra dentro de un grupo, unida o independiente
+                .then(Commands.literal("unir").executes(ctx -> mergeMode(ctx.getSource().getPlayerOrException(), StringArgumentType.getString(ctx, "zona"), false)))
+                .then(Commands.literal("independiente").executes(ctx -> mergeMode(ctx.getSource().getPlayerOrException(), StringArgumentType.getString(ctx, "zona"), true)))));
+    }
+
+    private static int mergeMode(ServerPlayer player, String zone, boolean independent) {
+        net.tierrasfantasticas.tfclient.claims.data.Claim claim = net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting.byId(zone);
+        String out = net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting.setMode(player, claim, independent);
+        boolean ok = out.startsWith("Tu zona ahora") || out.startsWith("Tu piedra se unió");
+        player.sendSystemMessage(net.minecraft.network.chat.Component.literal((ok ? "\u2714 " : "[!] ") + out)
+                .withStyle(ok ? net.minecraft.ChatFormatting.GREEN : net.minecraft.ChatFormatting.YELLOW));
+        if (ok) net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting.offer(player, claim);
+        return ok ? 1 : 0;
     }
 
     @SubscribeEvent

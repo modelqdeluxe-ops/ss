@@ -146,7 +146,11 @@ extends ChestMenu {
         if (this.page < LAST_PAGE) {
             this.chest.setItem(53, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.ARROW), (Component)Component.literal((String)"P\u00e1gina siguiente >>").withStyle(ChatFormatting.AQUA)), List.of(Component.literal((String)("P\u00e1gina " + (this.page + 1) + " de " + (LAST_PAGE + 1))).withStyle(ChatFormatting.DARK_GRAY))));
         }
-        if ((claimgroup = ClaimManager.getInstance().getGroupOf(this.claim)) == null) {
+        ClaimGroup around = ClaimNesting.groupAround(this.claim);
+        if (this.claim.isNestedIndependent() && around != null) {
+            // (1.3.170) independiente dentro de la zona de un grupo: unirla a la grande (no crea su propio grupo)
+            this.chest.setItem(43, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.SLIME_BALL), (Component)Component.literal((String)ClaimMenuHandler.truncate("Unir a " + around.getName(), 30)).withStyle(new ChatFormatting[]{ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD})), List.of(Component.literal((String)"Ahora: independiente dentro de su zona").withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic: hacerla una sola zona con la grande").withStyle(ChatFormatting.GRAY))));
+        } else if ((claimgroup = ClaimManager.getInstance().getGroupOf(this.claim)) == null) {
             this.chest.setItem(43, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.SLIME_BALL), (Component)Component.literal((String)"Unir protecci\u00f3n").withStyle(new ChatFormatting[]{ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD})), List.of(Component.literal((String)"Crea un grupo y une zonas de tu equipo").withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic: elegir nombre e invitar jugadores").withStyle(ChatFormatting.GRAY))));
         } else {
             this.chest.setItem(43, ClaimMenuHandler.withLore(ClaimMenuHandler.withName(new ItemStack((ItemLike)Items.SLIME_BALL), (Component)Component.literal((String)ClaimMenuHandler.truncate("Grupo: " + claimgroup.getName(), 30)).withStyle(new ChatFormatting[]{ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD})), List.of(Component.literal((String)("Miembros registrados: " + claimgroup.getRegisteredPlayers().size())).withStyle(ChatFormatting.GRAY), Component.literal((String)"Clic: invitar mas jugadores").withStyle(ChatFormatting.GRAY))));
@@ -783,7 +787,10 @@ extends ChestMenu {
                     }
                 } else if (i == 43) {
                     ClaimGroup claimgroup = ClaimManager.getInstance().getGroupOf(this.claim);
-                    if (claimgroup == null) {
+                    if (this.claim.isNestedIndependent() && ClaimNesting.groupAround(this.claim) != null) {
+                        this.viewer.displayClientMessage((Component)Component.literal((String)ClaimNesting.setMode(this.viewer, this.claim, false)).withStyle(ChatFormatting.GREEN), false);
+                        this.viewer.closeContainer();
+                    } else if (claimgroup == null) {
                         ClaimMenuHandler.requestMergeName(this.viewer, this.claim, this.page);
                         this.viewer.closeContainer();
                     } else if (this.claim.isGroupMother()) {
@@ -851,6 +858,8 @@ extends ChestMenu {
             Claim claim1 = claim.getMother();
             String s2 = claim1 != null ? claim1.getOwnerName() : "?";
             serverplayer.displayClientMessage((Component)Component.literal((String)("[!] Esta piedra pertenece al grupo de " + s2 + ". Solo la piedra nodriza gestiona el grupo. Puedes romperla para recuperarla.")).withStyle(ChatFormatting.YELLOW), false);
+            // (1.3.170) o dejarla independiente: su propia zona dentro de la grande
+            if (claim.isOwner(serverplayer.getUUID()) || serverplayer.hasPermissions(2)) ClaimNesting.offer(serverplayer, claim);
         } else {
             final int j = Math.max(0, Math.min(LAST_PAGE, i));
             ClaimGroup claimgroup = ClaimManager.getInstance().getGroupOf(claim);
@@ -1207,6 +1216,10 @@ extends ChestMenu {
      */
     public static String inviteToGroup(ServerPlayer owner, Claim claim, String groupName, String names) {
         ClaimManager manager = ClaimManager.getInstance();
+        if (claim.isNestedIndependent()) {
+            ClaimGroup around = ClaimNesting.groupAround(claim);
+            return "Esta zona está dentro de «" + (around != null ? around.getName() : "otro grupo") + "»: no puede tener su propio grupo.";
+        }
         ClaimGroup group = manager.getGroupOf(claim);
         if (group == null) {
             String name = groupName == null || groupName.isBlank() ? "Grupo de " + owner.getName().getString() : groupName.trim();

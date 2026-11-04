@@ -273,6 +273,8 @@ public final class BlockProtectionEvents {
                 ClaimGroup claimgroup = claimmanager.getGroup(uuid);
                 String s = claimgroup != null ? claimgroup.getName() : "grupo";
                 ((ServerPlayer)player).displayClientMessage((Component)Component.literal((String)("\u2714 Piedra unida a la zona \"" + s + "\".")).withStyle(ChatFormatting.GREEN), false);
+                // (1.3.170) y que elija: unida (una sola zona) o independiente (su zona dentro de la grande)
+                if (claim2 != null) net.tierrasfantasticas.tfclient.claims.gui.ClaimNesting.offer((ServerPlayer)player, claim2);
             } else {
                 ((ServerPlayer)player).displayClientMessage((Component)Component.literal((String)(clanId != null
                         ? "\u2714 Territorio del clan creado: " + claimtier.label().substring(5) + " bloques | todos los del clan construyen aqu\u00ed"
