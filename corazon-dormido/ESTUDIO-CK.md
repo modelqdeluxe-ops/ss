@@ -97,8 +97,25 @@ nosotros (ver `ARTE.md`).
 - Objetos del mundo a mano (`js/objetos-px.js`, `MUNDO`): casi todos; faltan la tienda, el trono, el altar del
   cielo, la fuente seca, el Archivero, Muda, la raíz y el árbol muerto.
 
+## Hecho en la 0.10.0 (rework de lo que se ve en toda la pantalla)
+- **Suelos** (`js/suelos-ck.js`), medidos de `tileset_Dirt_ground`: 5 colores por bioma (base, trama, brillo, borde,
+  borde oscuro); la trama es un ajedrezado del tono claro que solo sale en trazos cortos en diagonal; un brillo suelto;
+  una grieta del color del borde de vez en cuando. Donde el suelo da a una pared, un borde oscuro de 2 px con
+  goterones de 0 a 3 px hacia dentro y alguna piedrecita clara (`pared_<arte>_<lado>`, `gl.js`). La sombra de las
+  esquinas se suaviza (el borde hace de sombra).
+- **Luz**: el color de su antorcha (1; 0,93; 0,8) en la antorcha en la mano y la puesta; caída suave (1 − d²)^1,5 en
+  vez de un foco; sin escalones (la luz es continua, como la suya).
+- **Interfaz** (`js/ui.js`), medida de `32x32_menu_border`, `32x32_itemui_border`, `health_bar_expandable`: ventanas
+  negras translúcidas con borde lavanda de 1 px (#a1aedd arriba e izquierda, #677fae abajo y derecha) y gemas azules
+  en dos esquinas; ranuras azul noche (#142b5c al 80 %) con muesca a media altura; barras con marco de tierra.
+- **Armas** (`js/armas-px.js`), de `sword_copper` y `pickaxe_scarlet` (hojas de 3×3 celdas de 40×40): el arma en la
+  mano no se gira libremente; se lleva en 8 posiciones fijas (cada 45°) hechas a nivel de píxel (las de su diagonal
+  girando 90° sin pérdida; las otras con un giro de 45° a 8 aumentos con suavizado, como RotSprite) y en lo rápido
+  del golpe se pone un abanico del color del arma (como su «smear»). Iconos de espadas, picos, mazas, azadas, lanzas,
+  cañas y arcos redibujados a mano por material.
+
 ## Lo que queda (por orden)
-1. Las demás criaturas a mano en tres vistas: voladores (avispa, moscarda), escarabajo, sapo, necrófago, velados,
+1. Las demás criaturas a mano en tres vistas: escarabajo, sapo, necrófago, velados,
    farolero, planta trampa, tentáculo, guardián de piedra, setón y velador caído; y los jefes por piezas a mano.
 2. Los ataques de las criaturas también de frente y de espaldas (ahora solo de lado).
 3. Suelos con el borde oscuro de cada zona y objetos con cuatro orientaciones.

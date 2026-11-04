@@ -423,6 +423,35 @@ function ponerEnMano(p, n, cual, x, z, o) {
   const phi = (recto ? 0 : Math.PI / 4) - ang, c = Math.cos(phi), sn = Math.sin(phi);
   const hx = x + mano.x / px, hy = (mano.y / px) * KY, hz = z + (mano.delante ? 0.03 : -0.03);
   const punto = (u, v) => { const X = (u - gx) * esc, Y = -(v - gy) * esc, rx = X * c - Y * sn, ry = X * sn + Y * c; return [hx + ((izq ? -rx : rx) / px), hy + (ry / px) * KY]; };
+  // las armas y herramientas: su dibujo en la posición fija más cercana (armas-px.js; como Core Keeper, sin girar el
+  // dibujo) con el agarre en la mano, y en lo rápido del golpe el abanico de su color
+  const poses = !antorcha && typeof ARMAS_PX !== 'undefined' && ARMAS_PX.POSES[icono];
+  if (poses) {
+    const pt = punto(recto ? r.w / 2 : r.w - 2, recto ? 0 : 2), pg = punto(gx, gy);
+    const a = Math.atan2(pt[0] - pg[0], (pt[1] - pg[1]) / KY), k = ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8, P = poses[k];
+    const esquina = (u, v) => [pg[0] + (u - P.g[0]) / px, pg[1] - ((v - P.g[1]) / px) * KY];
+    const q = [];
+    for (const [u, v] of [[0, 0], [P.w, 0], [P.w, P.h], [0, P.h]]) { const [aa, bb] = esquina(u, v); q.push(aa, bb, hz); }
+    GL.libre(`${icono}_p${k}`, q, T4, x, z);
+    if (cual === 'D' && p.swing > 0) {
+      const H = p.armaHist || (p.armaHist = []);
+      if (!H.length || H[H.length - 1][1] !== k) H.push([J.t, k]);
+      let viejo = H[0][1];
+      for (const [t0, k0] of H) if (t0 <= J.t - 0.09) viejo = k0;
+      let dk = k - viejo; if (dk > 4) dk -= 8; if (dk < -4) dk += 8;
+      if (dk) {
+        const pasos = Math.min(3, Math.abs(dk)), nom = `abanico_${viejo}_${pasos}_${dk > 0 ? 'd' : 'i'}`, ra = SPR[nom];
+        if (ra) {
+          const c = ARMAS_PX.COLOR[icono] || [1, 1, 1], m = ra.w / 2, zz = hz + 0.004;
+          const e2 = (u, v) => [pg[0] + (u - m) / px, pg[1] - ((v - m) / px) * KY];
+          const qa = [];
+          for (const [u, v] of [[0, 0], [ra.w, 0], [ra.w, ra.h], [0, ra.h]]) { const [aa, bb] = e2(u, v); qa.push(aa, bb, zz); }
+          GL.libre(nom, qa, [Math.min(1, c[0] * 1.15), Math.min(1, c[1] * 1.15), Math.min(1, c[2] * 1.15), 0.92], x, z, 0.45);
+        }
+      }
+    } else if (cual === 'D') p.armaHist = null;
+    return;
+  }
   const pts = [];
   for (const [u, v] of [[0, 0], [r.w, 0], [r.w, r.h], [0, r.h]]) { const [a, b] = punto(u, v); pts.push(a, b, hz); }
   GL.libre(icono, pts, T4, x, z);
