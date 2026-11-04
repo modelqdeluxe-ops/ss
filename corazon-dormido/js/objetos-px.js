@@ -610,6 +610,137 @@ const OBJ_PX = (() => {
     }, MET.piedra, MET.hierro),
   };
   Object.assign(MUNDO, OTROS2);
+
+  // ---- tercera tanda: ruinas, Ciudad Velada (estatuas, sarcófago, braseros de runas, piedra de paso) y la Podre
+  const RUINA = ['#1a1612', '#3a3028', '#5a4a3c', '#7a6a58', '#9a8a74'];
+  const MUSGO_P = ['#1a1c14', '#3a3e32', '#5a5a4a', '#7a7a64', '#9a9a86'];
+  const RUNA = Object.assign(['#1a0a4a', '#5a2ab0', '#9a58f0', '#d0a8ff', '#f8ecff'], { luz: true });
+  const RUNA_VERDE = Object.assign(['#0a3a2a', '#1a9a6a', '#4af0b0', '#b0ffe0', '#f0fff8'], { luz: true });
+  const ROSA = Object.assign(['#3a0428', '#a01a6a', '#ff3cb4', '#ffa0dc', '#fff0f8'], { luz: true });
+  const PODRE = ['#0a060e', '#1c0e20', '#2e1834', '#42244a', '#5a3460'];
+  // los cuatro glifos de las runas (hueso, raíz, ojo, llama), 5×5
+  const GLIFOS = [
+    ['.666.', '..6..', '..6..', '..6..', '.666.'],
+    ['6...6', '.6.6.', '..6..', '.66..', '..6..'],
+    ['..6..', '.6.6.', '6.7.6', '.6.6.', '..6..'],
+    ['..6..', '.66..', '6..6.', '6..6.', '.66..'],
+  ];
+  function columna(R, x0, x1, alto, t) { // capitel, fuste con juntas y basa
+    R.r(x0 - 2, 0, x1 + 2, 2, '3'); R.r(x0 - 2, 0, x1 + 2, 0, '4'); R.r(x0 - 2, 3, x1 + 2, 3, '1');
+    cil(R, x0, 4, x1, alto - 5, ['1', '2', '3', '4']);
+    for (let y = 9; y < alto - 5; y += 6) R.r(x0, y, x1, y, '1');
+    R.r(x0 - 1, alto - 4, x1 + 1, alto - 4, '3'); R.r(x0 - 2, alto - 3, x1 + 2, alto - 1, '2'); R.r(x0 - 2, alto - 3, x1 + 2, alto - 3, '3'); R.r(x0 - 2, alto - 1, x1 + 2, alto - 1, '1');
+  }
+  function velador(R, roto) { // figura encapuchada de piedra con las manos juntas
+    if (!roto) {
+      bola(R, 7, 5, 4.6, 5, ['1', '2', '3', '4']); R.r(5, 4, 8, 9, '1'); R.r(6, 5, 7, 8, '1'); R.p(4, 3, '4');
+      for (let y = 9; y <= 27; y++) { const w = Math.min(6, 3 + Math.floor((y - 9) / 4)); R.r(7 - w, y, 6 + w, y, '3'); R.p(7 - w, y, '4'); R.p(6 + w, y, '1'); R.p(5 + w, y, '2'); }
+      R.r(5, 14, 8, 16, '4'); R.r(5, 16, 8, 16, '2'); for (const x of [4, 9]) R.r(x, 17, x, 27, '2'); R.r(7, 18, 7, 27, '2');
+    } else {
+      for (let y = 15; y <= 27; y++) { const w = Math.min(6, 3 + Math.floor((y - 9) / 4)); R.r(7 - w, y, 6 + w, y, '3'); R.p(7 - w, y, '4'); R.p(6 + w, y, '1'); }
+      for (let x = 2; x <= 11; x++) R.p(x, 15 + ((x * 5) % 3) - 1, '.'); R.r(3, 16, 10, 16, '4');
+      for (const x of [4, 9]) R.r(x, 18, x, 27, '2');
+    }
+    R.r(0, 28, 13, 33, '2'); R.r(0, 28, 13, 28, '3'); R.r(0, 29, 0, 33, '3'); R.r(13, 29, 13, 33, '1'); R.r(0, 33, 13, 33, '1');
+    R.p(1, 27, '6'); R.p(2, 28, '7'); R.p(12, 28, '6');
+  }
+  function brasero(k, on) {
+    return dibujoRej(16, on ? 24 : 16, (R) => {
+      const y0 = on ? 8 : 0;
+      R.r(1, y0, 14, y0 + 2, 'n'); R.r(1, y0, 14, y0, 'o'); R.p(1, y0, 'p'); R.r(2, y0 + 3, 13, y0 + 3, 'm');
+      if (on) { R.r(3, y0, 12, y0 + 1, '7'); R.r(5, y0, 10, y0, '8'); sobre(R, LLAMA[k % 3], 4, 0); }
+      else R.r(3, y0, 12, y0 + 1, '1');
+      cil(R, 4, y0 + 4, 11, y0 + 11, ['1', '2', '3', '4']);
+      sobre(R, GLIFOS[k].map((f) => on ? f : f.replace(/[67]/g, '1')), 5, y0 + 5);
+      R.r(2, y0 + 12, 13, y0 + 15, '2'); R.r(2, y0 + 12, 13, y0 + 12, '3'); R.r(2, y0 + 15, 13, y0 + 15, '1');
+    }, VELADA, MET.hierro, on ? RUNA : RUNA);
+  }
+  function piedraPaso(on) {
+    return dibujoRej(14, 28, (R) => {
+      R.r(3, 0, 10, 0, '3'); R.r(2, 1, 11, 2, '3'); R.r(1, 3, 12, 24, '3'); R.r(1, 3, 1, 24, '4'); R.r(2, 1, 2, 2, '4'); R.r(11, 3, 12, 24, '2'); R.r(12, 4, 12, 24, '1');
+      R.r(4, 3, 9, 7, on ? '6' : '1'); R.r(5, 4, 8, 6, on ? '7' : '2'); if (on) R.r(6, 4, 7, 5, '8'); else R.r(5, 4, 8, 4, '1');
+      for (let k = 0; k < 3; k++) sobre(R, GLIFOS[(k + 1) % 4].map((f) => on ? f : f.replace(/[67]/g, '2')), 4, 9 + k * 5);
+      R.r(0, 24, 13, 27, '2'); R.r(0, 24, 13, 24, '3'); R.r(0, 27, 13, 27, '1'); R.p(1, 23, 'n'); R.p(2, 24, 'o'); R.p(1, 22, 'n');
+    }, VELADA, VERDE, RUNA_VERDE);
+  }
+  const OTROS3 = {
+    columna: () => dibujoRej(14, 30, (R) => { columna(R, 3, 10, 30); R.p(6, 12, '1'); R.p(7, 13, '1'); R.p(7, 14, '1'); R.r(10, 20, 10, 22, '1'); }, RUINA, MET.piedra),
+    columna_selva: () => dibujoRej(14, 30, (R) => {
+      columna(R, 3, 10, 30);
+      let x = 4; for (let y = 1; y < 28; y++) { R.p(x, y, 'n'); if (y % 3 === 0) { R.p(x + 1, y, 'o'); R.p(x - 1, y - 1, 'p'); x = 4 + ((y / 3) % 2) * 4; } }
+      R.r(1, 0, 4, 0, 'o'); R.p(2, 1, 'n'); R.r(9, 26, 12, 27, 'n'); R.p(10, 26, 'o');
+    }, MUSGO_P, VERDE),
+    columna_rota: () => dibujoRej(26, 18, (R) => {
+      R.r(1, 3, 8, 14, '3'); R.r(1, 3, 2, 14, '4'); R.r(7, 3, 8, 14, '2'); R.r(8, 4, 8, 14, '1'); for (let x = 1; x <= 8; x++) R.p(x, 2 + ((x * 3) % 4), x % 2 ? '4' : '3'); for (let x = 1; x <= 8; x++) for (let y = 0; y < 2 + ((x * 3) % 4); y++) R.p(x, y, '.');
+      R.r(0, 14, 9, 17, '2'); R.r(0, 14, 9, 14, '3'); R.r(0, 17, 9, 17, '1'); R.r(4, 9, 4, 10, '1');
+      R.r(11, 9, 23, 15, '3'); R.r(11, 9, 23, 10, '4'); R.r(11, 14, 23, 15, '2'); R.r(11, 15, 23, 15, '1'); for (const x of [15, 19]) R.r(x, 9, x, 15, '2');
+      R.r(23, 9, 25, 15, '2'); R.r(24, 10, 25, 14, '3'); R.p(24, 11, '4'); R.r(10, 11, 10, 13, '1');
+      R.p(2, 15, 'n'); R.p(3, 16, 'o'); R.p(12, 15, 'n'); R.p(13, 16, 'n');
+    }, VELADA, VERDE),
+    estatua_velador: () => dibujoRej(14, 34, (R) => velador(R, false), MET.piedra, MET.piedra, VERDE),
+    estatua_rota: () => dibujoRej(22, 34, (R) => {
+      velador(R, true);
+      R.r(15, 27, 21, 31, '3'); R.r(15, 27, 21, 27, '4'); R.r(16, 28, 19, 30, '1'); R.r(21, 28, 21, 31, '2'); R.r(15, 31, 21, 31, '1');
+    }, MET.piedra, MET.piedra, VERDE),
+    // el pozo: brocal de piedra, agua oscura, dos postes, el tejadillo, la cuerda y el cubo
+    pozo: () => dibujoRej(18, 26, (R) => {
+      R.r(0, 0, 17, 2, '3'); R.r(0, 0, 17, 0, '4'); R.r(0, 3, 17, 3, '1'); for (let x = 2; x < 17; x += 3) R.p(x, 1, '2');
+      for (const x of [1, 15]) { R.r(x, 4, x + 1, 14, '2'); R.r(x, 4, x, 14, '3'); }
+      R.r(3, 6, 14, 6, '2'); R.r(3, 5, 14, 5, '3'); R.r(9, 7, 9, 10, '4'); R.r(8, 10, 10, 12, 'n'); R.r(8, 10, 10, 10, 'o'); R.p(8, 11, 'p');
+      R.r(1, 12, 16, 14, 'm'); R.r(2, 12, 15, 12, '6'); R.r(4, 13, 13, 13, '5');
+      R.r(0, 14, 17, 25, 'n'); R.r(0, 14, 17, 14, 'o'); R.r(0, 15, 0, 25, 'o'); R.r(17, 15, 17, 25, 'm'); R.r(0, 25, 17, 25, 'm');
+      for (let y = 17; y < 25; y += 3) { R.r(1, y, 16, y, 'm'); for (let x = 2 + (y % 2) * 3; x < 16; x += 6) R.p(x, y + 1, 'm'); }
+    }, MET.madera, MET.piedra, ['#04080e', '#0a1626', '#1a3a5a', '#3a6a8a', '#6a9ab8']),
+    sarcofago: () => dibujoRej(28, 16, (R) => {
+      R.r(0, 0, 27, 9, '3'); R.r(0, 0, 27, 0, '4'); R.r(0, 0, 0, 9, '4'); R.r(27, 1, 27, 9, '2');
+      R.r(2, 2, 25, 7, '2'); R.r(3, 3, 24, 6, '3'); bola(R, 6, 4.5, 2, 1.6, ['2', '3', '4', '4']); R.r(9, 3, 22, 6, '4'); R.r(9, 6, 22, 6, '2'); R.r(13, 4, 15, 5, 'o'); R.p(13, 4, 'p');
+      R.r(0, 10, 27, 15, '2'); R.r(0, 10, 27, 10, '1'); R.r(0, 11, 0, 15, '3'); R.r(27, 11, 27, 15, '1'); R.r(0, 15, 27, 15, '1');
+      for (const x of [6, 13, 20]) { R.r(x, 12, x + 2, 13, '1'); R.p(x + 1, 12, 'n'); }
+    }, VELADA, MET.plata),
+    restos_velador: () => dibujoRej(20, 10, (R) => {
+      R.r(2, 4, 15, 9, '2'); R.r(3, 3, 13, 4, '3'); R.r(4, 3, 9, 3, '4'); R.r(15, 6, 17, 9, '1'); R.r(2, 9, 15, 9, '1'); for (const x of [6, 10]) R.r(x, 5, x, 8, '1');
+      bola(R, 16.5, 3.5, 2.8, 2.8, ['m', 'n', 'o', 'p']); R.p(15, 3, '1'); R.p(17, 3, '1'); R.r(16, 5, 17, 5, 'm');
+      R.r(0, 6, 2, 6, 'o'); R.p(0, 7, 'n'); R.p(1, 5, 'p'); R.p(12, 2, '7');
+    }, VELADA, MET.medula, LUZ_VELADA),
+    estante_roto: () => dibujoRej(16, 22, (R) => {
+      R.r(0, 4, 13, 21, '2'); R.r(0, 4, 0, 21, '3'); R.r(13, 6, 13, 21, '1'); R.r(0, 21, 13, 21, '1');
+      R.r(0, 2, 6, 4, '3'); R.r(0, 2, 6, 2, '4'); R.r(7, 4, 9, 4, '3'); R.r(10, 6, 13, 6, '3');
+      for (const y of [10, 15, 20]) { R.r(1, y, 12, y, '3'); R.r(1, y - 4, 12, y - 1, '1'); }
+      R.r(9, 11, 15, 11, '3'); R.p(15, 12, '2');
+      for (const [x, y, c] of [[1, 6, 'm'], [2, 7, 'n'], [3, 6, 'o'], [7, 12, '6'], [8, 13, '5'], [2, 17, 'n'], [3, 16, 'm'], [10, 17, '7']]) R.r(x, y, x, y + (10 - y % 5) % 4 + 1, c);
+    }, RUINA, ['#1a2a5a', '#2a4aa0', '#4a7ad0', '#8ab0f0', '#d0e0ff'], ['#4a1010', '#8a2020', '#c84a2a', '#e8b040']),
+    bloque_empuje: () => dibujoRej(16, 20, (R) => {
+      R.r(0, 0, 15, 5, '3'); R.r(0, 0, 15, 0, '4'); R.r(0, 0, 0, 5, '4'); R.r(15, 1, 15, 5, '2'); R.r(1, 1, 14, 4, '4'); R.r(2, 2, 13, 3, '3');
+      R.r(0, 6, 15, 19, '2'); R.r(0, 6, 15, 6, '1'); R.r(0, 7, 0, 19, '3'); R.r(15, 7, 15, 19, '1'); R.r(0, 19, 15, 19, '1');
+      sobre(R, ['...1...', '...1...', '...1...', '1..1..1', '.1.1.1.', '..111..', '...1...'], 4, 9);
+    }, VELADA, MET.plata),
+    puerta_sellada: () => dibujoRej(18, 32, (R) => {
+      R.r(0, 0, 17, 4, '3'); R.r(0, 0, 17, 0, '4'); R.r(0, 4, 17, 4, '1');
+      for (const x of [0, 14]) { R.r(x, 5, x + 3, 31, '2'); R.r(x, 5, x, 31, '3'); R.r(x + 3, 5, x + 3, 31, '1'); for (let y = 10; y < 31; y += 6) R.r(x, y, x + 3, y, '1'); }
+      R.r(4, 5, 13, 31, '3'); R.r(4, 5, 4, 31, '4'); R.r(13, 5, 13, 31, '2'); R.r(4, 5, 13, 5, '1');
+      for (let k = 0; k < 4; k++) sobre(R, GLIFOS[k], 6, 7 + k * 6);
+      R.r(0, 31, 17, 31, '1');
+    }, VELADA, MET.plata, RUNA),
+    bulto_podre: () => dibujoRej(18, 15, (R) => {
+      bola(R, 9, 8.5, 8.6, 6.4, ['1', '2', '3', '4']); bola(R, 5, 5, 3.4, 3, ['1', '2', '3', '4']); bola(R, 12.5, 4.5, 3.6, 3.2, ['1', '2', '3', '4']);
+      for (const [x, y] of [[4, 5], [12, 4], [9, 9], [6, 11], [14, 10]]) { R.p(x, y, '7'); R.p(x + 1, y, '6'); R.p(x, y + 1, '5'); } R.p(12, 3, '8'); R.p(4, 4, '8');
+      linea(R, 6, 7, 10, 12, '6'); linea(R, 13, 7, 11, 11, '5');
+    }, PODRE, MET.piedra, ROSA),
+    capullo_podre: () => dibujoRej(13, 22, (R) => {
+      R.r(6, 0, 6, 3, 'n'); R.p(5, 1, 'm'); R.p(7, 2, 'm');
+      bola(R, 6.5, 11, 5.6, 8.4, ['1', '2', '3', '4']); for (let y = 5; y < 19; y += 3) linea(R, 2, y, 10, y + 2, '1'); R.r(5, 8, 7, 12, '5'); R.p(6, 9, '6'); R.p(6, 10, '7');
+      R.r(2, 20, 10, 21, 'm'); R.r(3, 20, 9, 20, 'n');
+    }, ['#1a1418', '#3a2e34', '#5e4e54', '#86767a', '#aa9a9c'], ['#0a060e', '#1c0e20', '#2e1834', '#42244a', '#583060'], ROSA),
+    idolo_podre: () => dibujoRej(16, 32, (R) => {
+      for (const [cy, rx, ry] of [[24, 7.6, 7], [14, 6, 6], [5.5, 4.6, 5]]) bola(R, 8, cy, rx, ry, ['1', '2', '3', '4']);
+      R.r(5, 4, 10, 7, '5'); R.r(6, 5, 9, 6, '7'); R.r(7, 5, 8, 6, '8');
+      for (const [x, y] of [[4, 13], [11, 15], [7, 21], [3, 25], [12, 26]]) { R.p(x, y, '6'); R.p(x + 1, y, '7'); }
+      linea(R, 8, 9, 6, 30, '5'); R.r(0, 30, 15, 31, '1');
+    }, PODRE, MET.piedra, ROSA),
+  };
+  for (let k = 0; k < 4; k++) { OTROS3[`brasero_runa_${k}`] = () => brasero(k, false); OTROS3[`brasero_runa_${k}_on`] = () => brasero(k, true); }
+  OTROS3.piedra_paso = () => piedraPaso(false); OTROS3.piedra_paso_on = () => piedraPaso(true);
+  Object.assign(MUNDO, OTROS3);
   function antorcha(f, fuego) {
     return dibujoRej(5, 14, ({ g }) => {
       llama[f].forEach((fila, j) => [...fila].forEach((c, i) => { if (c !== '.') g[j][i] = c; }));
@@ -619,7 +750,7 @@ const OBJ_PX = (() => {
     }, MET.madera, MET.cobre, fuego);
   }
   // dónde va el pie de cada objeto (casillas al sur del centro de su casilla)
-  const PIE = { horno_0: 0.4, horno_1: 0.4, olla_0: 0.35, olla_1: 0.35, cofre: 0.3, cofre_ruinas: 0.3, cama: 0.45, puerta: 0.15, puerta_abierta: 0.15, farol: 0.15, lampara: 0.15, cofre_moho: 0.3, cofre_selva: 0.3, cofre_velado: 0.3, hoguera_0: 0.3, hoguera_1: 0.3, hoguera_2: 0.3, silla_selva: 0.3, valla: 0.2, maceta_grande: 0.2, panal: 0.15, tablilla: 0.2, idolo_barbas: 0.2, idolo_pesca: 0.2, idolo_misterioso: 0.2, urna_velada: 0.2, atril: 0.2, palanca: 0.25 };
+  const PIE = { horno_0: 0.4, horno_1: 0.4, olla_0: 0.35, olla_1: 0.35, cofre: 0.3, cofre_ruinas: 0.3, cama: 0.45, puerta: 0.15, puerta_abierta: 0.15, farol: 0.15, lampara: 0.15, cofre_moho: 0.3, cofre_selva: 0.3, cofre_velado: 0.3, hoguera_0: 0.3, hoguera_1: 0.3, hoguera_2: 0.3, silla_selva: 0.3, valla: 0.2, maceta_grande: 0.2, panal: 0.15, tablilla: 0.2, idolo_barbas: 0.2, idolo_pesca: 0.2, idolo_misterioso: 0.2, urna_velada: 0.2, atril: 0.2, palanca: 0.25, columna: 0.2, columna_selva: 0.2, columna_rota: 0.2, estatua_velador: 0.2, estatua_rota: 0.2, pozo: 0.25, sarcofago: 0.3, bloque_empuje: 0.35, puerta_sellada: 0.2, piedra_paso: 0.2, piedra_paso_on: 0.2, bulto_podre: 0.2, idolo_podre: 0.15 };
 
   function registrar() {
     for (const [n, f] of Object.entries(Object.assign({}, ICONOS_MESA, ICONOS_YUNQUE))) sustituir(n, mundoDe({ color: f() }), 0.3);
