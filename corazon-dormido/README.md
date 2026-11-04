@@ -5,7 +5,7 @@ propios. Como Core Keeper, el mundo es **3D**: bloques con texturas de pixel art
 luz de colores que no atraviesa las paredes, y personajes y objetos de pie dentro del mundo. Cavas paredes, sacas mineral, creas herramientas, enciendes la
 oscuridad con antorchas y derrotas a los guardianes para despertar el Corazón que duerme en el centro del mundo.
 
-Estado: **versión 0.10.0, construido como Core Keeper**. Es un juego para **Android** (app nativa que lleva
+Estado: **versión 0.10.1, construido como Core Keeper**. Es un juego para **Android** (app nativa que lleva
 el juego dentro; va a la Play Store) que también se puede abrir en el navegador. Fantasía oscura: el mundo es el
 cuerpo de un dios muerto, Ásor, y su Corazón duerme enfermo de la Podre (la historia, la dirección de arte, el
 bestiario y los jefes están en **`LORE.md`**, que manda sobre todo lo demás). Mundo de 2048×2048 con la Selva
@@ -73,6 +73,12 @@ y para la música; vibra al recibir golpes. `js/app.js` es el puente con el jueg
   ese AAB es el que se sube a la Play Console (con «Firma de apps de Google Play»). Guarda `subida.jks` y sus
   contraseñas fuera del repo: sin ellas no se pueden subir actualizaciones.
 - Paquete: `com.corazondormido.juego` (se puede cambiar antes de la primera subida a la tienda, no después).
+
+## Lo nuevo de la 0.10.1
+
+- **Iconos nuevos a mano**: lingotes, minerales, cascos, petos, botas y bloques (`js/iconos-px.js`).
+- **Más criaturas a mano en tres vistas**: la Lápida, el sapo hueco, el Velado, el Farolero, el Necrófago, el
+  Guardián de piedra, la Fauce y el Brazo de la Podre.
 
 ## Lo nuevo de la 0.10.0
 

@@ -114,9 +114,17 @@ nosotros (ver `ARTE.md`).
   del golpe se pone un abanico del color del arma (como su «smear»). Iconos de espadas, picos, mazas, azadas, lanzas,
   cañas y arcos redibujados a mano por material.
 
+## Hecho en la 0.10.1
+- Iconos a mano (`js/iconos-px.js`): lingotes, minerales, cascos, petos, botas y bloques, cada familia con el mismo
+  dibujo y la paleta de su material.
+- Criaturas a mano en tres vistas (`js/criaturas-px2.js`): la Lápida (escarabajo; boca arriba al morir), el sapo
+  hueco (salta como las babas), el Velado (túnica que flota, se deshace al morir), el Farolero (con el farol de
+  cebo), el Necrófago (a cuatro patas), el Guardián de piedra (duerme como estatua y despierta), la Fauce y el Brazo
+  de la Podre (salen del suelo, se curvan y muerden o golpean).
+
 ## Lo que queda (por orden)
-1. Las demás criaturas a mano en tres vistas: escarabajo, sapo, necrófago, velados,
-   farolero, planta trampa, tentáculo, guardián de piedra, setón y velador caído; y los jefes por piezas a mano.
+1. Lo que aún es de esqueleto: el setón y el velador caído, las mascotas, los mercaderes y los siete jefes (por
+   piezas a mano, con masas como el mole).
 2. Los ataques de las criaturas también de frente y de espaldas (ahora solo de lado).
 3. Suelos con el borde oscuro de cada zona y objetos con cuatro orientaciones.
 4. Leer el código del juego (`Pug.Other.dll`) para las fórmulas del jugador (velocidad, picar, empuje): hace falta

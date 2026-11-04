@@ -731,6 +731,74 @@ const CRI_PX2 = (() => {
     tiempos: { q: { fps: 2 }, a: { fps: 6 }, p: { fps: 5 }, g: { fps: 10 } },
     W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, zancada: 30, fpsQuieta: 2, vistas: true,
   };
+  // ---------------------------------------------------------------- las que no se mueven: la Fauce y el Brazo de la Podre
+  // Un tallo (o un tentáculo) de anillos que sale del suelo y se curva; arriba, la boca. Igual en las tres vistas.
+  function tallo(base, n, largo, curva, alzado) { // puntos a lo largo, de abajo arriba
+    const pts = [];
+    let x = base[0], y = base[1], a = -Math.PI / 2;
+    for (let i = 0; i < n; i++) { pts.push([x, y]); a += curva / n + (alzado || 0) / n; x += Math.cos(a) * largo / n; y += Math.sin(a) * largo / n; }
+    pts.push([x, y]);
+    return pts;
+  }
+  function cuadroFauce(v, k, o) {
+    const L = new Lienzo(HW, HH), luz = new Lienzo(HW, HH), R = o.rampas, pal = o.pal, x = HOX, y = HOY;
+    const formas = [];
+    // las hojas de la base
+    for (const [dx, rx] of [[-7, 6], [7, 6], [0, 5]]) formas.push({ e: [x + dx, y - 2, rx, 2.6], rampa: R.hoja });
+    const esc = k.escondida;
+    if (!esc) {
+      const pts = tallo([x, y - 3], 6, 18 * (k.sale ?? 1), (k.mece || 0) * 0.8 + (k.lanza || 0) * 1.4, 0);
+      for (let i = 0; i < pts.length - 1; i++) formas.push({ c: [pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], 2.2 - i * 0.12], rampa: R.tallo });
+      const [hx, hy] = pts[pts.length - 1], ab = (k.abre || 0) * 4;
+      formas.push({ e: [hx + 1, hy - 3 - ab * 0.6, 6, 3.4], rampa: R.boca }, { e: [hx + 1, hy + 2 + ab * 0.4, 6, 3], rampa: R.boca });
+      masas(L, formas, HW, HH);
+      // el hueco de la boca y los dientes
+      for (let xx = -4; xx <= 5; xx++) { for (let yy = Math.round(hy - 1 - ab * 0.4); yy <= Math.round(hy + ab * 0.3); yy++) L.px(Math.round(hx + 1 + xx), yy, pal.boca); if (xx % 2 === 0) { L.px(Math.round(hx + 1 + xx), Math.round(hy - 1 - ab * 0.4), pal.diente); L.px(Math.round(hx + 1 + xx), Math.round(hy + ab * 0.3), pal.diente); } }
+      for (const [dx, dy] of [[-3, -5], [2, -6], [5, -4]]) { const c = pal.punto; L.px(Math.round(hx + dx), Math.round(hy + dy - ab * 0.6), c); luz.px(Math.round(hx + dx), Math.round(hy + dy - ab * 0.6), c); }
+    } else { formas.push({ e: [x, y - 4, 4, 3], rampa: R.boca }); masas(L, formas, HW, HH); }
+    return { color: acabarH(L, luz, k, pal), luz, puntos: { cabeza: [x, y - 20] } };
+  }
+  const FAUCE = {
+    e: (v, f) => ({ escondida: true }), q: (v, f) => ({ mece: [0, 0.3, 0, -0.3][f] }),
+    p: (v, f) => ({ abre: [0.3, 0.6, 0.9, 1][f], mece: -0.4 - f * 0.1 }), g: (v, f) => ({ abre: [1, 0.2, 0][f], lanza: [0.5, 0.9, 0.4][f] }),
+    r: (v, f) => (f === 0 ? { mece: -0.6 } : {}), m: (v, f) => ({ mece: 0.5 + f * 0.5, sale: 1 - f * 0.15, disuelve: f > 1 ? (f - 1) * 0.35 : 0 }),
+    n: (v, f) => ({ sale: [0.25, 0.5, 0.75, 1][f] }),
+  };
+  FICHAS.planta_trampa = {
+    manual: (anim, f, v) => cuadroFauce(v, FAUCE[anim](v, f), {
+      pal: { K: '#060a04', boca: '#2a0610', diente: '#efe4c4', punto: '#ffd040' },
+      rampas: { hoja: [0, '#1e3a1a', '#346028', '#4e8434', '#72aa4a'], tallo: [0, '#0e1a0c', '#1e3a1a', '#346028', '#4e8434'], boca: [0, '#4a0a1a', '#8a1a2a', '#c43a3a', '#e8705a'] },
+    }),
+    anims: { e: { n: 1, bucle: true }, q: { n: 4, bucle: true }, p: { n: 4 }, g: { n: 3 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 3 }, p: { fps: 7 }, g: { fps: 12 } },
+    W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, fpsQuieta: 3, vistas: true,
+  };
+  function cuadroTentaculo(v, k, o) {
+    const L = new Lienzo(HW, HH), luz = new Lienzo(HW, HH), R = o.rampas, pal = o.pal, x = HOX, y = HOY;
+    const formas = [{ e: [x, y - 2, 7, 2.6], rampa: R.suelo }];
+    if (!k.escondida) {
+      const pts = tallo([x, y - 2], 8, 30 * (k.sale ?? 1), (k.mece || 0) + (k.atras || 0) * -1.6 + (k.golpe || 0) * 2.6, 0);
+      for (let i = 0; i < pts.length - 1; i++) formas.push({ c: [pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], 3.6 - i * 0.36], rampa: R.piel });
+      masas(L, formas, HW, HH);
+      for (let i = 1; i < pts.length - 1; i += 2) { const [px, py] = pts[i], c = pal.ventosa; L.px(Math.round(px + 1), Math.round(py), c); luz.px(Math.round(px + 1), Math.round(py), c); }
+    } else { formas.push({ e: [x, y - 4, 4.6, 3], rampa: R.piel }); masas(L, formas, HW, HH); L.px(x, y - 5, pal.ventosa); luz.px(x, y - 5, pal.ventosa); }
+    return { color: acabarH(L, luz, k, pal), luz, puntos: { cabeza: [x, y - 28] } };
+  }
+  const TENTACULO = {
+    e: (v, f) => ({ escondida: true }), q: (v, f) => ({ mece: [0, 0.25, 0.4, 0.25, 0, -0.25][f] }),
+    p: (v, f) => ({ atras: [0.3, 0.6, 0.85, 1][f] }), g: (v, f) => ({ golpe: [0.4, 0.9, 1][f] }),
+    r: (v, f) => (f === 0 ? { mece: -0.5 } : {}), m: (v, f) => ({ golpe: 0.6 + f * 0.2, sale: 1 - f * 0.18, disuelve: f > 1 ? (f - 1) * 0.35 : 0 }),
+    n: (v, f) => ({ sale: [0.2, 0.45, 0.7, 1][f] }),
+  };
+  FICHAS.tentaculo_moho = {
+    manual: (anim, f, v) => cuadroTentaculo(v, TENTACULO[anim](v, f), {
+      pal: { K: '#040306', ventosa: '#ff3cb4' },
+      rampas: { piel: [0, '#14101c', '#241c30', '#382c48', '#544264'], suelo: [0, '#0a080c', '#1a1420', '#2a2032', '#3a2c44'] },
+    }),
+    anims: { e: { n: 1, bucle: true }, q: { n: 6, bucle: true }, p: { n: 4 }, g: { n: 3 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 4 }, p: { fps: 8 }, g: { fps: 12 } },
+    W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, fpsQuieta: 4, vistas: true,
+  };
   function registrar() { for (const [t, d] of Object.entries(FICHAS)) CRI.DEF[t] = d; }
   registrar();
   return { gusano, cuadro, FICHAS, W, H, OX, OY };
