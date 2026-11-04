@@ -450,6 +450,166 @@ const OBJ_PX = (() => {
     seta_podre: () => dibujoRej(11, 11, (R) => { R.r(4, 6, 6, 10, '2'); R.r(4, 6, 4, 10, '3'); bola(R, 5.5, 4.5, 5.2, 3.8, ['m', 'n', 'o', 'p']); for (const [x, y] of [[3, 3], [7, 4], [5, 2]]) R.p(x, y, '7'); }, ['#1a1418', '#2a2024', '#4a3a40', '#6a5a5e', '#8a7a7c'], ['#0a060e', '#1c0e20', '#2e1834', '#42244a', '#583060'], Object.assign(['#5a0a40', '#b0207a', '#ff3cb4', '#ffb0e4'], { luz: true })),
   };
   Object.assign(MUNDO, OTROS);
+
+  // ---- segunda tanda: cofres de bioma, hoguera, faroles, muebles de la selva, ídolos y lo de la Ciudad Velada
+  function linea(R, x0, y0, x1, y1, c, arriba) { // línea gruesa de 1 px; con «arriba», otro tono encima (luz)
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) || 1;
+    for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); if (arriba) R.p(x, y - 1, arriba); R.p(x, y, c); }
+  }
+  function cil(R, x0, y0, x1, y1, t) { // cilindro de pie: claro a la izquierda, oscuro a la derecha
+    const w = x1 - x0 + 1;
+    for (let x = x0; x <= x1; x++) { const f = (x - x0 + 0.5) / w; R.r(x, y0, x, y1, f < 0.2 ? t[2] : f < 0.42 ? t[3] : f < 0.75 ? t[1] : t[0]); }
+  }
+  function sobre(R, filas, x0, y0) { filas.forEach((f, j) => [...f].forEach((c, i) => { if (c !== '.') R.p(x0 + i, y0 + j, c); })); }
+  const FUEGO5 = Object.assign(['#5a0a04', '#b02a0c', '#f06a1c', '#ffb440', '#fff2b0'], { luz: true });
+  const LLAMA = [
+    ['...5...', '..565..', '..575..', '.56765.', '.67876.', '5678876', '5788875', '.67886.', '..666..'],
+    ['..5....', '..65...', '.5675..', '.5776..', '.67875.', '5678876', '5788876', '.67886.', '..666..'],
+    ['....5..', '...56..', '..5765.', '..6775.', '.57876.', '5678876', '6788875', '.68876.', '..666..'],
+  ];
+  function hoguera(f) {
+    return dibujoRej(16, 14, (R) => {
+      for (const [x, y] of [[1, 9], [4, 8], [10, 8], [13, 9]]) { R.r(x, y, x + 1, y + 1, 'n'); R.p(x, y, 'o'); }
+      linea(R, 2, 12, 13, 8, '2', '3'); linea(R, 13, 12, 2, 8, '1', '2'); R.p(2, 12, '4'); R.p(13, 12, '4');
+      sobre(R, LLAMA[f], 4, 1);
+      for (const [x, y] of [[0, 11], [3, 12], [7, 13], [11, 12], [14, 11]]) { R.r(x, y, x + 1, y + 1, 'n'); R.p(x, y, 'p'); R.p(x + 1, y + 1, 'm'); }
+      R.p(6, 12, '6'); R.p(9, 12, '5');
+    }, MET.madera, MET.piedra, FUEGO5);
+  }
+  const VELADA = ['#0c0e18', '#222838', '#363e56', '#4e5a7c', '#7080a8'];
+  const LUZ_VELADA = Object.assign(['#0a1440', '#2a50c0', '#6a9aff', '#c0d8ff', '#f4f8ff'], { luz: true });
+  const PAJA = ['#3a3010', '#6a5a24', '#a89040', '#d8c070', '#f0e0a0'];
+  const ORO = ['#3a2a08', '#a8701c', '#e8b040', '#ffe68a', '#fffbe0'];
+  const PIEDRA_V = ['#14140e', '#2e2e24', '#4a4a3e', '#6a6a5a', '#8a8a76'];
+  const OTROS2 = {
+    hoguera_0: () => hoguera(0), hoguera_1: () => hoguera(1), hoguera_2: () => hoguera(2),
+    // cofres de cada bioma: el mismo cofre con otra madera, otro metal y lo suyo encima
+    cofre_moho: () => dibujoRej(15, 12, (R) => {
+      ICONOS_MAS_PINTA.cofre(R);
+      R.r(1, 0, 5, 0, '7'); R.r(0, 1, 3, 1, '6'); R.p(1, 2, '6'); R.p(1, 3, '5'); R.r(9, 0, 12, 0, '7'); R.p(10, 1, '6'); R.p(13, 1, '6'); R.p(13, 2, '5');
+      R.p(4, 6, '6'); R.p(4, 7, '5'); R.r(10, 10, 13, 11, '6'); R.p(11, 10, '7');
+    }, MET.muerta, MET.hierro, VERDE),
+    cofre_selva: () => dibujoRej(15, 12, (R) => {
+      ICONOS_MAS_PINTA.cofre(R);
+      for (const [x, y] of [[0, 0], [5, 0], [11, 1]]) { R.p(x, y, '7'); R.p(x + 1, y, '8'); R.p(x + 1, y + 1, '6'); R.p(x + 2, y + 1, '5'); }
+      linea(R, 0, 6, 3, 10, '6'); R.p(1, 7, '7'); R.p(3, 9, '7');
+    }, MET.selva, MET.cobre, VERDE),
+    cofre_velado: () => dibujoRej(15, 12, (R) => {
+      ICONOS_MAS_PINTA.cofre(R);
+      R.r(6, 4, 8, 7, '6'); R.p(7, 5, '8'); R.p(6, 4, '7'); R.p(8, 7, '5');
+      for (const x of [4, 10]) { R.p(x, 2, '7'); R.p(x, 9, '6'); }
+    }, VELADA, MET.plata, LUZ_VELADA),
+    // faroles
+    farol_carmesi: () => dibujoRej(10, 24, (R) => {
+      R.r(2, 0, 7, 1, 'n'); R.r(3, 0, 6, 0, 'o'); R.p(4, 0, 'p');
+      R.r(2, 2, 7, 7, '6'); R.r(3, 3, 6, 6, '7'); R.r(4, 4, 5, 5, '8'); R.r(2, 2, 2, 7, 'm'); R.r(7, 2, 7, 7, 'm'); R.r(2, 8, 7, 8, 'n');
+      cil(R, 4, 9, 5, 21, ['m', 'n', 'o', 'p']); R.r(3, 14, 6, 14, 'n'); R.p(3, 14, 'o');
+      R.r(2, 21, 7, 23, 'm'); R.r(2, 21, 7, 21, 'o'); R.p(2, 21, 'p'); R.r(1, 23, 8, 23, 'm');
+    }, MET.madera, MET.carmesi, Object.assign(['#4a0408', '#b01a1a', '#ff4a3a', '#ffb0a0', '#fff0e8'], { luz: true })),
+    farol_pantano: () => dibujoRej(11, 24, (R) => {
+      linea(R, 2, 23, 3, 12, '2'); linea(R, 3, 12, 2, 4, '2'); R.r(1, 6, 1, 20, '3'); R.p(2, 3, '3'); R.r(2, 2, 7, 2, '2'); R.r(3, 1, 6, 1, '3'); R.p(8, 3, '1');
+      R.p(8, 4, 'm'); R.r(6, 5, 10, 5, 'n'); R.r(6, 6, 10, 10, '6'); R.r(7, 7, 9, 9, '7'); R.p(8, 8, '8'); R.r(6, 6, 6, 10, 'm'); R.r(10, 6, 10, 10, 'm'); R.r(6, 11, 10, 11, 'n');
+      R.r(0, 22, 4, 23, '1'); R.p(4, 21, 'o'); R.p(0, 20, 'o');
+    }, MET.muerta, VERDE, Object.assign(['#0a2a0a', '#2a8a2a', '#6ae04a', '#c8ff90', '#f4ffe0'], { luz: true })),
+    farola_velada: () => dibujoRej(10, 32, (R) => {
+      R.r(3, 0, 6, 0, 'n'); R.r(2, 1, 7, 1, 'o'); R.p(2, 1, 'p');
+      R.r(2, 2, 7, 7, '6'); R.r(3, 3, 6, 6, '7'); R.r(4, 3, 5, 5, '8'); for (const x of [2, 7]) R.r(x, 2, x, 7, 'm'); R.r(2, 8, 7, 8, 'n'); R.r(3, 9, 6, 9, 'm');
+      cil(R, 4, 10, 5, 27, ['1', '2', '3', '4']); for (const y of [14, 20]) { R.r(3, y, 6, y + 1, 'n'); R.p(3, y, 'p'); R.r(6, y, 6, y + 1, 'm'); }
+      R.r(2, 26, 7, 27, '3'); R.r(2, 26, 7, 26, '4'); R.r(1, 28, 8, 31, '2'); R.r(1, 28, 8, 28, '3'); R.r(1, 28, 1, 31, '3'); R.r(8, 29, 8, 31, '1'); R.r(1, 31, 8, 31, '1');
+    }, VELADA, MET.plata, LUZ_VELADA),
+    lampara_pie: () => dibujoRej(9, 22, (R) => {
+      R.r(3, 0, 5, 0, '6'); R.r(2, 1, 6, 1, '6'); R.r(1, 2, 7, 5, '6'); R.r(1, 2, 1, 5, '7'); R.r(7, 2, 7, 5, '5'); R.r(0, 6, 8, 6, '5'); R.r(3, 6, 5, 6, '8'); R.p(4, 7, '8');
+      R.r(4, 8, 4, 19, '3'); R.r(5, 8, 5, 19, '2'); R.r(2, 12, 6, 12, 'n');
+      linea(R, 4, 19, 1, 21, '2'); linea(R, 5, 19, 8, 21, '1'); R.r(4, 20, 4, 21, '2');
+    }, MET.madera, MET.cobre, Object.assign(['#5a2a08', '#c87a2a', '#f8b860', '#ffe0a0', '#fff8e0'], { luz: true })),
+    // muebles de madera de la selva
+    silla_selva: () => dibujoRej(12, 16, (R) => {
+      R.r(1, 0, 10, 1, '3'); R.r(1, 0, 10, 0, '4'); R.r(10, 1, 10, 1, '2');
+      for (const x of [1, 4, 7, 10]) { R.r(x, 2, x, 8, '2'); R.p(x, 2, '3'); }
+      R.r(0, 9, 11, 11, '3'); R.r(0, 9, 11, 9, '4'); R.r(0, 11, 11, 11, '1'); R.r(11, 10, 11, 10, '2');
+      for (const x of [1, 9]) { R.r(x, 12, x + 1, 15, '2'); R.p(x, 12, '3'); R.p(x + 1, 15, '1'); }
+      R.p(5, 0, '7'); R.p(6, 0, '8'); R.p(6, 1, '6');
+    }, MET.selva, MET.cobre, VERDE),
+    valla: () => dibujoRej(16, 12, (R) => {
+      for (const y of [3, 8]) { R.r(0, y, 15, y + 1, '3'); R.r(0, y, 15, y, '4'); R.r(0, y + 1, 15, y + 1, '2'); }
+      for (const x of [0, 7, 14]) { R.r(x, 1, x + 1, 11, '2'); R.r(x, 1, x, 11, '3'); R.p(x, 0, '4'); R.p(x + 1, 0, '3'); R.r(x, 11, x + 1, 11, '1'); R.p(x + 1, 5, '1'); }
+    }, MET.madera, MET.hierro),
+    banderin: () => dibujoRej(11, 24, (R) => {
+      R.r(1, 1, 2, 23, '2'); R.r(1, 1, 1, 23, '3'); R.r(1, 0, 2, 0, 'o'); R.p(1, 0, 'p'); R.r(0, 22, 3, 23, '1');
+      R.r(3, 2, 10, 11, '6'); R.r(3, 2, 10, 2, '7'); R.r(3, 3, 3, 11, '7'); R.r(10, 3, 10, 11, '5'); R.r(3, 12, 5, 12, '6'); R.r(8, 12, 10, 12, '5'); R.p(3, 13, '5'); R.p(10, 13, '5');
+      R.r(3, 2, 10, 2, 'n'); R.p(3, 2, 'o');
+      sobre(R, ['.o.o.', 'oonnn', 'onnnm', '.nnm.', '..m..'], 4, 5);
+    }, MET.madera, ORO, TELA),
+    // la maceta grande con su arbolito y unas flores
+    maceta_grande: () => dibujoRej(14, 22, (R) => {
+      R.r(6, 9, 7, 13, '1'); R.p(6, 10, '2');
+      bola(R, 7, 6, 6.6, 5.6, ['m', 'n', 'o', 'p']); for (const [x, y] of [[3, 4], [9, 3], [6, 8], [10, 7]]) { R.p(x, y, '7'); R.p(x + 1, y, '6'); R.p(x, y - 1, '8'); }
+      for (let y = 12; y <= 21; y++) { const a = Math.floor((y - 12) / 4), x0 = 1 + a, x1 = 12 - a; R.r(x0, y, x1, y, '2'); R.p(x0, y, '3'); R.p(x0 + 1, y, '3'); R.p(x1, y, '1'); }
+      R.r(0, 12, 13, 13, '3'); R.r(0, 12, 13, 12, '4'); R.r(0, 13, 13, 13, '2'); R.r(3, 21, 10, 21, '1'); R.r(3, 16, 10, 16, '1');
+    }, BARRO, VERDE, ['#3a0a20', '#9a2050', '#e04a7a', '#ff9ab8', '#ffd8e4']),
+    avena_silvestre: () => dibujoRej(11, 18, (R) => {
+      for (const [x, top, l] of [[2, 4, -1], [5, 1, 0], [8, 3, 1]]) {
+        for (let y = top + 4; y <= 17; y++) R.p(x, y, y % 3 ? '2' : '3');
+        for (let i = 0; i < 5; i++) { const xx = x + (i > 2 ? l : 0); R.p(xx, top + i, i % 2 ? '3' : '4'); R.p(xx + (i % 2 ? 1 : -1), top + i + 1, '3'); }
+      }
+      R.r(1, 13, 1, 17, 'n'); R.p(0, 12, 'o'); R.r(9, 14, 9, 17, 'n'); R.p(10, 13, 'o'); R.r(6, 15, 6, 17, 'm'); R.p(7, 14, 'o');
+    }, PAJA, VERDE),
+    hongo_explosivo: () => dibujoRej(11, 13, (R) => {
+      R.r(3, 12, 8, 12, '2'); R.r(4, 7, 7, 12, '3'); R.r(4, 7, 4, 12, '4'); R.r(7, 8, 7, 12, '2');
+      bola(R, 5.5, 4.5, 5.5, 4.2, ['m', 'n', 'o', 'p']); R.r(1, 7, 10, 7, 'm');
+      for (const [x, y] of [[3, 2], [7, 2], [5, 4], [2, 5], [9, 5]]) { R.p(x, y, '7'); R.p(x + 1, y, '6'); }
+      R.p(3, 2, '8'); R.p(5, 4, '8');
+    }, LANA, ['#2a0606', '#6a1010', '#b02020', '#e04a3a', '#ff8a70'], Object.assign(['#5a1a00', '#c84a10', '#ff8a2a', '#ffd060', '#fff4c0'], { luz: true })),
+    huevo_larva: () => dibujoRej(10, 12, (R) => {
+      R.r(0, 10, 9, 11, '3'); R.r(1, 10, 8, 10, '4'); R.r(0, 11, 9, 11, '2');
+      bola(R, 5, 5.5, 4.4, 5.2, ['5', '6', '7', '8']); R.r(4, 5, 6, 7, '2'); R.p(5, 4, '2'); R.p(3, 6, '2'); R.p(6, 8, '1'); R.p(2, 3, '8');
+    }, ['#0e1a06', '#24400e', '#3a6a16', '#5a9a24', '#8ad040'], MET.piedra, Object.assign(['#1a3a04', '#4a9a10', '#8ae030', '#d8ff90', '#fbffe8'], { luz: true })),
+    // el panal de la colmena: anillos de cera uno sobre otro, la boca y la miel que gotea
+    panal: () => dibujoRej(13, 19, (R) => {
+      for (const [cy, rx] of [[2.5, 3], [5.5, 4.6], [9, 5.8], [12.5, 5.4], [15.5, 3.8]]) { bola(R, 6.5, cy, rx, 2.2, ['1', '2', '3', '4']); R.r(Math.ceil(6.5 - rx + 1), Math.round(cy + 1.6), Math.floor(6.5 + rx - 1), Math.round(cy + 1.6), '1'); }
+      R.r(5, 10, 7, 11, 'm'); R.p(5, 10, 'n'); R.p(9, 17, '7'); R.p(9, 18, '6'); R.p(3, 14, '7');
+    }, ['#3a2004', '#8a5010', '#d08a20', '#f8c040', '#fff0a0'], ['#0a0602', '#1a1006', '#2a1a0a', '#3a2610', '#4a3218'], ['#5a3004', '#d08a10', '#ffc030', '#ffe890', '#fff8d0']),
+    // la tablilla: piedra con las letras grabadas y musgo
+    tablilla: () => dibujoRej(12, 16, (R) => {
+      R.r(3, 0, 8, 0, '4'); R.r(2, 1, 9, 1, '3'); R.p(2, 1, '4'); R.r(1, 2, 10, 12, '3'); R.r(1, 2, 1, 12, '4'); R.r(10, 2, 10, 12, '2');
+      for (const y of [3, 5, 7, 9, 11]) for (let x = 3; x <= 8; x++) if ((x * 7 + y * 3) % 5 !== 0) R.p(x, y, '1');
+      R.r(0, 13, 11, 15, '2'); R.r(0, 13, 11, 13, '3'); R.r(0, 15, 11, 15, '1'); R.p(1, 12, '6'); R.p(2, 13, '7'); R.p(10, 11, '6'); R.p(9, 13, '6');
+    }, PIEDRA_V, MET.piedra, VERDE),
+    // ídolos: figuritas sobre un pedestal
+    idolo_barbas: () => dibujoRej(12, 20, (R) => {
+      bola(R, 6, 4, 4.4, 4, ['1', '2', '3', '4']); R.r(3, 0, 8, 1, 'n'); R.p(3, 0, 'p'); R.p(5, 0, 'o'); R.p(8, 0, 'o');
+      R.r(4, 3, 4, 4, 'm'); R.r(7, 3, 7, 4, 'm'); R.r(5, 6, 6, 6, '1');
+      for (let y = 7; y <= 14; y++) { const w = y < 11 ? 4 : 14 - y + 1; R.r(6 - w, y, 5 + w, y, '3'); R.p(6 - w, y, '4'); R.p(5 + w, y, '2'); if (y % 2) R.p(6, y, '2'); }
+      R.r(1, 15, 10, 19, '2'); R.r(1, 15, 10, 15, '3'); R.r(1, 16, 1, 19, '3'); R.r(10, 16, 10, 19, '1'); R.r(1, 19, 10, 19, '1'); R.r(4, 17, 7, 17, 'n');
+    }, MET.piedra, ORO),
+    idolo_pesca: () => dibujoRej(12, 20, (R) => {
+      sobre(R, ['...67...', '..6776..', '.567776.', '.5677765', '.56nn765', '.567776.', '.567765.', '..5665..', '...56...', '..5..5..', '.55..55.'], 2, 0);
+      R.p(4, 3, 'm'); R.p(4, 2, '8'); for (let y = 5; y < 8; y++) R.p(6, y, '5');
+      R.r(1, 11, 10, 11, '6'); R.r(1, 12, 10, 12, 'o');
+      R.r(1, 13, 10, 19, '2'); R.r(1, 13, 10, 13, '3'); R.r(1, 14, 1, 19, '3'); R.r(10, 14, 10, 19, '1'); R.r(1, 19, 10, 19, '1'); R.r(3, 15, 8, 16, '4'); R.p(3, 15, 'p');
+    }, MET.piedra, MET.estano, ['#0a2a3a', '#1a6a7a', '#3aa8b0', '#8ae0d8', '#e0fff8']),
+    idolo_misterioso: () => dibujoRej(12, 20, (R) => {
+      for (let y = 0; y <= 14; y++) { const w = Math.min(4, 1 + Math.floor(y / 2)); R.r(6 - w, y, 5 + w, y, '3'); R.p(6 - w, y, '4'); R.p(5 + w, y, '2'); R.p(4 + w, y, y > 3 ? '2' : '3'); }
+      R.r(4, 4, 7, 7, '1'); R.r(5, 5, 6, 6, '6'); R.p(5, 5, '8'); R.p(6, 6, '5'); R.r(4, 10, 7, 10, '7'); R.p(4, 12, '6'); R.p(7, 12, '6');
+      R.r(1, 15, 10, 19, '2'); R.r(1, 15, 10, 15, '3'); R.r(1, 16, 1, 19, '3'); R.r(10, 16, 10, 19, '1'); R.r(1, 19, 10, 19, '1');
+    }, VELADA, MET.plata, Object.assign(['#2a0a4a', '#7a2ab0', '#c060ff', '#e8b0ff', '#fff0ff'], { luz: true })),
+    // la Ciudad Velada: urna, atril y la palanca
+    urna_velada: () => dibujoRej(10, 16, (R) => {
+      R.r(3, 0, 6, 0, 'n'); R.r(2, 1, 7, 1, 'o'); R.p(2, 1, 'p'); R.r(3, 2, 6, 3, '2'); R.r(3, 2, 3, 3, '3');
+      bola(R, 5, 9, 4.9, 5.4, ['1', '2', '3', '4']); for (const y of [6, 11]) { R.r(1, y, 8, y, 'n'); R.p(1, y, 'o'); R.p(8, y, 'm'); }
+      R.p(3, 8, '7'); R.p(5, 9, '6'); R.p(7, 8, '7'); R.r(3, 14, 6, 15, '1');
+    }, VELADA, MET.plata, LUZ_VELADA),
+    atril: () => dibujoRej(12, 16, (R) => {
+      R.r(0, 1, 11, 4, '3'); R.r(0, 1, 11, 1, '4'); R.r(0, 5, 11, 5, '1');
+      R.r(1, 0, 5, 3, 'p'); R.r(6, 0, 10, 3, 'o'); R.r(5, 0, 6, 3, 'n'); for (const y of [1, 2]) { R.r(2, y, 4, y, 'n'); R.r(7, y, 9, y, 'n'); } R.p(10, 3, 'm');
+      cil(R, 4, 6, 7, 13, ['1', '2', '3', '4']); R.r(1, 13, 10, 15, '2'); R.r(1, 13, 10, 13, '3'); R.r(1, 15, 10, 15, '1');
+    }, MET.madera, LANA),
+    palanca: () => dibujoRej(12, 14, (R) => {
+      linea(R, 4, 9, 8, 1, 'n', 'o'); R.r(7, 0, 9, 2, 'o'); R.p(7, 0, 'p'); R.r(9, 1, 9, 2, 'm');
+      R.r(1, 8, 10, 13, '2'); R.r(1, 8, 10, 9, '3'); R.r(1, 8, 10, 8, '4'); R.r(10, 10, 10, 13, '1'); R.r(1, 13, 10, 13, '1'); R.r(3, 10, 8, 11, '1'); R.r(4, 10, 5, 10, 'm');
+    }, MET.piedra, MET.hierro),
+  };
+  Object.assign(MUNDO, OTROS2);
   function antorcha(f, fuego) {
     return dibujoRej(5, 14, ({ g }) => {
       llama[f].forEach((fila, j) => [...fila].forEach((c, i) => { if (c !== '.') g[j][i] = c; }));
@@ -459,7 +619,7 @@ const OBJ_PX = (() => {
     }, MET.madera, MET.cobre, fuego);
   }
   // dónde va el pie de cada objeto (casillas al sur del centro de su casilla)
-  const PIE = { horno_0: 0.4, horno_1: 0.4, olla_0: 0.35, olla_1: 0.35, cofre: 0.3, cofre_ruinas: 0.3, cama: 0.45, puerta: 0.15, puerta_abierta: 0.15, farol: 0.15, lampara: 0.15 };
+  const PIE = { horno_0: 0.4, horno_1: 0.4, olla_0: 0.35, olla_1: 0.35, cofre: 0.3, cofre_ruinas: 0.3, cama: 0.45, puerta: 0.15, puerta_abierta: 0.15, farol: 0.15, lampara: 0.15, cofre_moho: 0.3, cofre_selva: 0.3, cofre_velado: 0.3, hoguera_0: 0.3, hoguera_1: 0.3, hoguera_2: 0.3, silla_selva: 0.3, valla: 0.2, maceta_grande: 0.2, panal: 0.15, tablilla: 0.2, idolo_barbas: 0.2, idolo_pesca: 0.2, idolo_misterioso: 0.2, urna_velada: 0.2, atril: 0.2, palanca: 0.25 };
 
   function registrar() {
     for (const [n, f] of Object.entries(Object.assign({}, ICONOS_MESA, ICONOS_YUNQUE))) sustituir(n, mundoDe({ color: f() }), 0.3);
