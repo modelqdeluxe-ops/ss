@@ -318,8 +318,16 @@ encantamientos). Revisa desencantar, y lo de las protes también».
   colores solo con los efectos arcoíris comprados; sin ellos, ONDA de un color (un brillo que la recorre, sin cambiar
   de tono). `ClanTagFx.of` baja a un color las guardadas antes; el servidor no deja guardarla; el editor pone candado
   al «+».
-- **Probado**: prueba en el juego `[prueba-jefes=v171]` (`bosses/BossTestV171`, resultados abajo) y en el Mohist del
-  contenedor con la 1.3.171: protecciones 22 de 22 y chat del clan 22 de 22.
+- **Probado**: prueba en el juego `[prueba-jefes=v171]` (`bosses/BossTestV171`, commit e45022f8): **22 de 22 bien**.
+  ONDA sin comprar (un color, el tono no se mueve más de 0,2°) y comprada (3 colores); 62 mazas; golpe normal 11,
+  aplastante cayendo 4 bloques 37,5 ((11 + 14) × 1,5 crítico), Densidad V 52,5, Brecha IV contra diamante 2,5 → 7,6,
+  Ráfaga III 2,22 hacia arriba, el zombi de al lado empujado; yunque y piedra de afilar con mazas (crate sí, rango no,
+  la maldición se queda); la lanza lanzada con su modelo (capturas en el aire y clavada); la piedra del invitado unida,
+  INDEPENDIENTE pulsado en el pad (manda en su cuadrado, el dueño de la grande no construye), disolver con la grande
+  puesta (vuelve a su dueño) y quitar la grande (se queda); el borde de la independiente en el suelo dentro de la grande;
+  el reproductor (pausa, repetir, volumen, saltar, «una vez» termina). Ojo al escribir pruebas: con el chunk sin cargar,
+  `level.getHeight` da el mínimo (−64): ir primero y medir el suelo unos ticks después. Y en el Mohist del contenedor con
+  la 1.3.171: protecciones 22 de 22 y chat del clan 22 de 22.
 
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.170: LA PIEDRA DENTRO DE LA ZONA DE UN GRUPO, UNIDA O INDEPENDIENTE) — lee esto primero
 
