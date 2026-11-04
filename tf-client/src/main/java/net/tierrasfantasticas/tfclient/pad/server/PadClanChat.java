@@ -214,13 +214,26 @@ public final class PadClanChat {
         return true;
     }
 
-    /** Si llega por el ServerChatEvent de Forge (por si el mixin no estuviera): tampoco va al público. */
+    /**
+     * Si llega por el ServerChatEvent de Forge (por si el mixin no estuviera): tampoco va al público.
+     * <p>
+     * (1.3.169, el dueño: «el chat del clan no funciona, no enviaba el mensaje, nada»; reproducido en un Mohist 1.20.1 de
+     * verdad con EssentialsX y LuckPerms) En Mohist este evento NO lo lanza Forge con lo escrito: sale del decorador del
+     * chat de Mohist ({@code ForgeHooks.getServerChatSubmittedDecorator}) solo cuando un plugin cambió el formato o el
+     * nombre, y entonces {@code getRawText()} viene VACÍO (Mohist lo saca de un texto con formato cuya raíz es ""). Antes
+     * se cancelaba aquí (por eso no salía en el público) y se repartía un texto vacío, que se tiraba sin avisar: a nadie
+     * le llegaba nada. Con Bukkit (Mohist) o sin texto, aquí ya no se toca: el mensaje sigue a broadcastChatMessage, donde
+     * el mixin lo reparte con lo escrito de verdad ({@code signedContent}), o al AsyncPlayerChatEvent de Bukkit
+     * ({@link #divertFromBukkit}). En Forge sin Bukkit, como siempre.
+     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onServerChat(ServerChatEvent event) {
-        if (event.getPlayer() != null && enabled(event.getPlayer().getUUID())) {
-            event.setCanceled(true);
-            intercept(event.getPlayer(), event.getRawText(), "Forge");
-        }
+        ServerPlayer player = event.getPlayer();
+        if (player == null || !enabled(player.getUUID())) return;
+        String raw = event.getRawText();
+        if (raw == null || raw.isBlank() || net.tierrasfantasticas.tfclient.server.TFBukkit.present()) return;
+        event.setCanceled(true);
+        intercept(player, raw, "Forge");
     }
 
     /** Desde el AsyncPlayerChatEvent de Bukkit (Mohist): true = cancelarlo (es del chat del clan). */
@@ -262,8 +275,14 @@ public final class PadClanChat {
 
     private static void route(ServerPlayer sender, String raw) {
         UUID uuid = sender.getUUID();
-        String text = raw.strip();
-        if (text.isEmpty()) return;
+        String text = raw == null ? "" : raw.strip();
+        if (text.isEmpty()) {
+            // (1.3.169) nunca en silencio: así se perdían los mensajes en Mohist
+            TFClient.LOGGER.warn("TF Clanes: chat del clan de {}: llegó sin texto; no se reparte", sender.getGameProfile().getName());
+            sender.sendSystemMessage(Component.literal("[Clan] Tu mensaje llegó vacío al servidor y no se mandó. Vuelve a escribirlo; si sigue, avisa al staff.")
+                    .withStyle(ChatFormatting.RED));
+            return;
+        }
         // el mismo mensaje por dos caminos (mixin y evento) en el mismo instante: una sola vez
         long now = System.currentTimeMillis();
         Last last = LAST_ROUTED.get(uuid);
