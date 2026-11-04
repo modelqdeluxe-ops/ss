@@ -40,8 +40,8 @@ import net.tierrasfantasticas.tfclient.TFClient;
  *   los rangos que pasan del máximo de Minecraft se quedan); nunca «demasiado caro». El resultado es la misma pieza
  *   copiada (sus atributos, su dueño y todo lo demás), solo con más encantamientos.</li>
  *   <li>Nunca Irrompibilidad ni Reparación (no se gastan: no sirven de nada). Una pieza nuestra no se repara, no se
- *   junta con otra ni se sacrifica en el yunque, y no va a la piedra de afilar (quitaría los de su rango y daría
- *   experiencia gratis).</li>
+ *   junta con otra ni se sacrifica en el yunque. En la piedra de afilar (1.3.168) solo se desencantan las de las crates
+ *   ({@link #onGrindstone}); las de los rangos, no (quitaría los de su rango).</li>
  * </ul>
  * Los sets de rango que ya llevan todos al máximo (Celestial y Fantástico) no tienen nada que añadir: ni la mesa ni el
  * yunque les hacen nada.
@@ -59,11 +59,28 @@ public final class TFEnchanting {
         return !stack.isEmpty() && stack.getItem() instanceof TFItem;
     }
 
-    /** ¿Puede llevar este encantamiento ahora (lo admite, no lo tiene y no choca con los que tiene)? */
+    /** ¿Puede llevar este encantamiento ahora (lo admite, no lo tiene y no choca con los que tiene)? En la mesa. */
     private static boolean fits(ItemStack stack, Map<Enchantment, Integer> have, Enchantment e) {
         if (e == null || useless(e) || have.containsKey(e) || !stack.canApplyAtEnchantingTable(e)) return false;
+        return compatible(have, e);
+    }
+
+    private static boolean compatible(Map<Enchantment, Integer> have, Enchantment e) {
         for (Enchantment o : have.keySet()) if (o != e && !e.isCompatibleWith(o)) return false;
         return true;
+    }
+
+    /**
+     * (1.3.168, el dueño: «los encantamientos de algunas armaduras de los sets no son compatibles, por ejemplo el de espinas
+     * solo me dejó ponerlo al peto») ¿Lo admite con un libro en el yunque? Con las reglas del YUNQUE de Minecraft
+     * (Enchantment.canEnchant), no las de la mesa: Espinas en cualquier pieza de armadura (en la mesa solo sale para el
+     * peto), Filo, Castigo y Perdición de los artrópodos en las hachas, Pies de escarcha y demás de libro… Y Espinas también
+     * en los cascos 3D que dan armadura (Cosmetic con armadura: el yelmo del Void, el casco de Eterno…).
+     */
+    static boolean anvilAccepts(ItemStack stack, Enchantment e) {
+        if (e == null || useless(e)) return false;
+        if (e.canEnchant(stack)) return true;
+        return e == Enchantments.THORNS && stack.canApplyAtEnchantingTable(Enchantments.ALL_DAMAGE_PROTECTION);
     }
 
     /** Mesa de encantamientos: ¿la acepta? null = la decide Minecraft (no es nuestra). */
@@ -98,12 +115,12 @@ public final class TFEnchanting {
         int cost = 0;
         for (Map.Entry<Enchantment, Integer> en : EnchantmentHelper.getEnchantments(right).entrySet()) {
             Enchantment e = en.getKey();
-            if (e == null || useless(e) || !left.canApplyAtEnchantingTable(e)) continue;
+            if (!anvilAccepts(left, e)) continue;
             int book = Math.min(en.getValue(), e.getMaxLevel());
             Integer cur = out.get(e);
             int level;
             if (cur == null) {
-                if (!fits(left, out, e)) continue;
+                if (!compatible(out, e)) continue;
                 level = book;
             } else {
                 // como Minecraft (iguales: uno más; si no, el mayor), sin pasar del máximo y sin bajar nunca lo que lleva
@@ -137,8 +154,46 @@ public final class TFEnchanting {
         event.setMaterialCost(1);
     }
 
+    /**
+     * (1.3.168, el dueño: «haz que se puedan desencantar sin perder los atributos; ojo, esta feature es solo para las
+     * crates, para los rangos no») La piedra de afilar con una pieza de una crate, sola: sale la MISMA pieza (sus
+     * atributos —que son del objeto, no de los encantamientos—, su dueño, su pedido, su nombre: todo lo que lleva) sin los
+     * encantamientos, menos las maldiciones (como en Minecraft), y da la experiencia de Minecraft. Nunca:
+     * <ul>
+     *   <li>las de los rangos (perderían los encantamientos de su rango; set con {@code "rank": true});</li>
+     *   <li>dos piezas a la vez (Minecraft las funde en un objeto NUEVO: se perdería el dueño, el pedido y todo);</li>
+     *   <li>una pieza sin nada que quitar.</li>
+     * </ul>
+     */
     @SubscribeEvent
     public static void onGrindstone(GrindstoneEvent.OnPlaceItem event) {
-        if (ours(event.getTopItem()) || ours(event.getBottomItem())) event.setCanceled(true);
+        ItemStack top = event.getTopItem(), bottom = event.getBottomItem();
+        if (!ours(top) && !ours(bottom)) return;
+        ItemStack piece = ours(top) ? top : bottom;
+        ItemStack other = piece == top ? bottom : top;
+        if (!other.isEmpty() || !grindable(piece)) {
+            event.setCanceled(true);
+            return;
+        }
+        Map<Enchantment, Integer> keep = new LinkedHashMap<>();
+        for (Map.Entry<Enchantment, Integer> en : EnchantmentHelper.getEnchantments(piece).entrySet()) {
+            if (en.getKey() != null && en.getKey().isCurse()) keep.put(en.getKey(), en.getValue());
+        }
+        ItemStack result = piece.copy();
+        result.setCount(1);
+        EnchantmentHelper.setEnchantments(keep, result);
+        result.setRepairCost(0);
+        event.setOutput(result);
+        // -1: la experiencia la calcula Minecraft al sacarla (la de los encantamientos quitados)
+        event.setXp(-1);
+    }
+
+    /** ¿Se puede desencantar en la piedra de afilar? Una pieza de una crate (no de un rango) con algo que no sea maldición. */
+    public static boolean grindable(ItemStack stack) {
+        if (!ours(stack) || stack.getCount() != 1) return false;
+        TFSets.SetDef set = TFItemTypes.setOf(stack.getItem());
+        if (set == null || set.rank()) return false;
+        for (Enchantment e : EnchantmentHelper.getEnchantments(stack).keySet()) if (e != null && !e.isCurse()) return true;
+        return false;
     }
 }

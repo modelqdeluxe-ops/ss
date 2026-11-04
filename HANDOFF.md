@@ -285,6 +285,39 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (3 nov 2026, TF Client 1.3.168: LOS OBJETOS DE TF FUERA DEL CREATIVO, ESPINAS EN TODA LA ARMADURA Y DESENCANTAR LAS CRATES) — lee esto primero
+
+El dueño: «elimina por completo que los items del mod salgan en el inventario creativo… ni operadores ni miembros con
+creativo… solo por comando del tf… persistente entre mundos (Multiverse)… una rata fue a un mundo creativo de
+construcción y podía sacar los items y yo siendo op no los veía»; «los encantamientos de algunas armaduras de los sets
+no son compatibles, el de espinas solo me dejó ponerlo al peto»; «que se puedan desencantar sin perder los atributos,
+solo las crates, los rangos no».
+- **Por qué pasaba lo del creativo**: la 1.3.139 escondía la pestaña TF y JEI solo a quien NO era OP ni estaba en
+  creativo (o sea, en creativo sí salían), y además el creativo de Minecraft deja que el CLIENTE diga qué objeto pone en
+  cada hueco (`ServerboundSetCreativeModeSlotPacket`): con un cliente viejo o trucado se saca lo que sea aunque no se vea.
+- **Arreglo**: sin pestaña TF (`TFItems` ya no registra `TABS`) y JEI sin nada nuestro para nadie (`TFHiddenItems`,
+  `compat/jei/TFJeiPlugin`). Lo que de verdad lo impide es el **servidor** (`items/TFCreativeGuard`, en todos los
+  mundos): `mixin/items/CreativeSlotGuardMixin` (al principio de `handleSetCreativeModeSlot`, en el hilo del servidor,
+  antes que el InventoryCreativeEvent de Mohist) rechaza poner, tirar o quitar de un hueco cualquier objeto `tfclient:*`
+  (lo que ya se tiene no se puede mover en creativo: se perdería; en supervivencia sí) y le reenvía al cliente su
+  inventario de verdad; `mixin/items/ContainerCloneGuardMixin` (`AbstractContainerMenu.doClick`, ClickType.CLONE) no
+  copia lo nuestro con el botón central. Registro: «TF Creativo: <jugador> intentó sacar/mover <objeto>…» (uno cada 10 s
+  por jugador) y un aviso en rojo al jugador. El `/give` de Minecraft no se toca (lo usa la web desde la consola para las
+  protecciones; es de OP). Los objetos no se borran.
+- **Espinas**: el yunque de los sets (`TFEnchanting.onAnvil`, 1.3.150) usaba la regla de la MESA
+  (`canApplyAtEnchantingTable`: Espinas solo en el peto). Ahora la del yunque de Minecraft (`Enchantment.canEnchant`):
+  Espinas en casco, grebas y botas, Filo/Castigo/Perdición en las hachas…, y Espinas también en los cascos 3D con
+  armadura (`Cosmetic` de cabeza con armadura). La mesa sigue como Minecraft.
+- **Piedra de afilar**: una pieza de crate sola → la misma pieza (atributos —son del objeto, no de los encantamientos—,
+  dueño, pedido, nombre) sin encantamientos menos las maldiciones, y la experiencia de Minecraft (`setXp(-1)`). Las de
+  los rangos no (`"rank": true` en `tf_sets.json` para patrick, beats, darkworld, malika, necros, eagle y starlight;
+  `build_mod_items.py` lo pone con `mark_rank` desde `crates.py RANKS`). Dos piezas juntas, no (Minecraft las fundiría en
+  un objeto nuevo: se perdería el dueño y el pedido).
+- **Prueba en el juego**: `[prueba-jefes=encantar,oficios] [jei]`: «encantar 7, 11–16» (espinas en las 4 piezas y el
+  casco 3D, filo en el hacha, piedra de afilar de crate/rango/dos piezas/maldición) y «creativo 1–6» (sacar, mover, tirar
+  y copiar lo nuestro en creativo: rechazado; los diamantes, sí); en «oficios», JEI y todas las pestañas del creativo
+  (buscador incluido) siendo OP: 0 objetos nuestros.
+
 ### CHECKPOINT (2 nov 2026, TF Client 1.3.167: EL CHAT DEL CLAN EN MOHIST Y EL HAMBRE DE BETTER FLIGHT) — lee esto primero
 
 - El dueño, con su servidor (Mohist + EssentialsX) en la 1.3.166: «puse el chat [`/clan chat enable`] y cuando mandé

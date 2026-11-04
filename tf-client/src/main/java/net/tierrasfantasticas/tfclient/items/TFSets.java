@@ -35,9 +35,10 @@ public final class TFSets {
      *  de un casco de su nivel (el set Void: su yelmo es el modelo 3D y no tiene otro casco). */
     public record ItemDef(String id, String type, String slot, String worn, boolean glide, boolean armor) {}
 
-    /** tier: nivel de atributos del set (ver TFTier). cosmetic: set de cosméticos (sus objetos no se vinculan, TFBinding). */
+    /** tier: nivel de atributos del set (ver TFTier). cosmetic: set de cosméticos (sus objetos no se vinculan, TFBinding).
+     *  rank: (1.3.168) set de un rango (sus piezas no se desencantan en la piedra de afilar; las de las crates sí). */
     public record SetDef(String id, String name, int color, List<ItemDef> items, int armorFrames, int armorFrametime, TFTier tier,
-                         boolean cosmetic, String classId) {}
+                         boolean cosmetic, String classId, boolean rank) {}
 
     private static final Map<String, SetDef> SETS = new LinkedHashMap<>();
 
@@ -86,7 +87,8 @@ public final class TFSets {
                             s.has("armorFrametime") ? Math.max(1, s.get("armorFrametime").getAsInt()) : 2,
                             TFTier.parse(s.has("tier") ? s.get("tier").getAsString() : null),
                             s.has("cosmetic") && s.get("cosmetic").getAsBoolean(),
-                            s.has("clase") ? s.get("clase").getAsString() : null));
+                            s.has("clase") ? s.get("clase").getAsString() : null,
+                            s.has("rank") && s.get("rank").getAsBoolean()));
                 }
             }
         } catch (Exception e) {
