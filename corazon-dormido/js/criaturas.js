@@ -289,7 +289,8 @@ function actualizarCriaturas(dt) {
           if (e.saltoX !== undefined) mover(e, e.saltoX * dt, e.saltoY * dt);
           if (e.z <= 0) { e.z = 0; e.vz = 0; e.t = 0; e.aplasta = 0.15; if (e.ataque) { e.ataque = false; e.cd = 0.4 + Math.random() * 0.5; } if (c.veneno) J.charcos.push({ x: e.x, y: e.y, t: 3.5, dano: c.dano * 0.6, tipo: 'veneno' }); }
         } else if (e.estado === 'prepara') {
-          if (e.t > 0.55) { const d = Math.min(lejos, 3.5 * T) / 0.45; e.estado = 'anda'; e.ataque = true; e.vz = 94; e.z = 0.01; e.saltoX = e.cx * d; e.saltoY = e.cy * d; }
+          // se agacha 7 cuadros a 12 fps (0,58 s), como las de Core Keeper
+          if (e.t > 0.58) { const d = Math.min(lejos, 3.5 * T) / 0.45; e.estado = 'anda'; e.ataque = true; e.vz = 94; e.z = 0.01; e.saltoX = e.cx * d; e.saltoY = e.cy * d; }
         } else if (r && lejos < 3 * T && e.cd <= 0 && veJugador(e)) {
           const a = Math.atan2(p.y - e.y, p.x - e.x); e.estado = 'prepara'; e.t = 0; e.cx = Math.cos(a); e.cy = Math.sin(a);
         } else if (e.t > 0.7 && r) { e.vz = 70; e.z = 0.01; e.saltoX = r.x * vel * 0.9; e.saltoY = r.y * vel * 0.9; }

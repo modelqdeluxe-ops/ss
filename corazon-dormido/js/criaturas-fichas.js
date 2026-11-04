@@ -393,10 +393,12 @@ const PIEZAS_CRI = (() => {
   // se ha tragado y un brillo en cruz. Se mueve solo aplastándose y estirándose: respira (8 cuadros), avanza a saltitos
   // (8), se agacha antes de saltar (3), se estira en el aire (4), se espachurra al recibir (2), se deshace al morir (5)
   // y sale de un charco (4). Cada cuadro: [ancho, alto, subida en px] de la gota.
+  // Cuadros y tiempos de las babas de Core Keeper (ESTUDIO-CK.md, slimeBlob): quieta 10 cuadros a 10 fps, se mueve 10
+  // a 10 fps; el salto, 12 a 12 fps (los 6 primeros agachándose, en el séptimo despega y golpea).
   const BABA_CUADROS = {
-    q: Array.from({ length: 8 }, (_, f) => { const k = Math.sin((f / 8) * Math.PI * 2); return [1 + 0.05 * k, 1 - 0.06 * k, 0]; }),
-    a: [[1.12, 0.84, 0], [0.92, 1.12, 1], [0.86, 1.18, 3], [0.9, 1.12, 4], [0.96, 1.04, 3], [1.02, 0.98, 1], [1.16, 0.8, 0], [1.06, 0.92, 0]],
-    p: [[1.1, 0.88, 0], [1.18, 0.78, 0], [1.26, 0.68, 0]],
+    q: Array.from({ length: 10 }, (_, f) => { const k = Math.sin((f / 10) * Math.PI * 2); return [1 + 0.05 * k, 1 - 0.06 * k, 0]; }),
+    a: [[1.12, 0.84, 0], [1.04, 0.94, 0], [0.92, 1.12, 1], [0.86, 1.18, 3], [0.88, 1.14, 4], [0.94, 1.06, 3], [1.0, 1.0, 1], [1.14, 0.82, 0], [1.18, 0.78, 0], [1.08, 0.9, 0]],
+    p: [[1.04, 0.95, 0], [1.1, 0.88, 0], [1.16, 0.8, 0], [1.22, 0.73, 0], [1.26, 0.68, 0], [1.28, 0.66, 0]],
     g: [[0.78, 1.3, 0], [0.82, 1.24, 0], [0.9, 1.12, 0], [1.0, 1.0, 0]],
     r: [[1.22, 0.74, 0], [1.1, 0.88, 0]],
     m: [[1.25, 0.7, 0], [1.4, 0.5, 0], [1.55, 0.34, 0], [1.6, 0.24, 0], [1.6, 0.16, 0]],
@@ -407,7 +409,8 @@ const PIEZAS_CRI = (() => {
     const anims = {};
     for (const [a, c] of Object.entries(BABA_CUADROS)) anims[a] = { proc: 'baba', n: c.length, bucle: a === 'q' || a === 'a' };
     return {
-      W, H, ox: Math.round(W / 2), oy: H - 2, px: 1, yaw: 0, zancada: 16, fpsQuieta: 6, anims,
+      W, H, ox: Math.round(W / 2), oy: H - 2, px: 1, yaw: 0, zancada: 16, fpsQuieta: 10, anims,
+      tiempos: { q: { fps: 10 }, a: { fps: 10 }, p: { fps: 12, pausas: [0, 0, 0, 0, 0, 1] } },
       dibujar(K) {
         const D = K.D, [sx, sy, sube] = BABA_CUADROS[K.anim][K.f] || [1, 1, 0];
         const rp = Object.assign(o.rampa.slice(), { sinLinea: true });

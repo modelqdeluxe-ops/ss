@@ -476,8 +476,21 @@ function dibujarCriatura3d(e) {
 // recibido (r), preparar el ataque (p, al ritmo de lo que tarda en soltarlo), golpear (g: al embestir o justo después
 // de preparar), andar (a, atado a lo que avanza para que los pies no patinen) y quieta (q).
 const PREPARA = { repta: 0.35, salta: 0.55, lancea: 0.45, bruto: 0.8, seton: 0.6, escupe: 0.5, chaman: 0.55, jardinero: 0.55, cazador: 0.5, trampa: 0.6, avispa: 0.55, carga: 0.75, tentaculo: 0.4, farol: 0.55, fantasma: 0.6, estatua: 0.85 };
+// El cuadro de una animación por tiempo, con los fps y las pausas por cuadro de la tabla de la criatura (las de Core
+// Keeper, ESTUDIO-CK.md: { fps, pausas: [cuadros extra que se queda cada uno] }).
+function cuadroPorTiempo(T, n, t, bucle) {
+  const p = T.pausas || [], ticks = Array.from({ length: n }, (_, i) => 1 + (p[i] || 0)), total = ticks.reduce((a, b) => a + b, 0);
+  let k = Math.floor(t * T.fps);
+  if (bucle) k = ((k % total) + total) % total; else if (k >= total) return n - 1;
+  for (let i = 0; i < n; i++) { if (k < ticks[i]) return i; k -= ticks[i]; }
+  return n - 1;
+}
 function cuadroCriatura(e, c, A) {
-  const t = e.tipo, fr = (a, k) => `${t}_${a}${Math.max(0, Math.min(A[a].n - 1, Math.floor(k)))}`;
+  const t = e.tipo, D0 = CRI.DEF[t];
+  // las dibujadas a mano tienen las tres vistas en todas sus animaciones: al atacar miran hacia ti
+  if (D0 && D0.manual && ['prepara', 'muerde', 'carga', 'conjura'].includes(e.estado)) { const dx = J.jug.x - e.x, dy = J.jug.y - e.y; e.vista = Math.abs(dy) > Math.abs(dx) * 1.2 ? (dy > 0 ? 'ab' : 'ar') : 'de'; }
+  const pre = D0 && D0.manual && e.vista && e.vista !== 'de' ? e.vista + '_' : '';
+  const fr = (a, k) => `${t}_${pre}${a}${Math.max(0, Math.min(A[a].n - 1, Math.floor(k)))}`;
   if (e.estAnt !== e.estado) { if (e.estAnt === 'prepara' || e.estAnt === 'conjura') e.golpeT = J.t; e.estAnt = e.estado; }
   const vx = e.x - (e.ax ?? e.x), vy = e.y - (e.ay ?? e.y), v = Math.hypot(vx, vy);
   e.ax = e.x; e.ay = e.y;
@@ -492,17 +505,18 @@ function cuadroCriatura(e, c, A) {
     if (e.z > 0) return fr('g', ((1 - Math.max(-1, Math.min(1, (e.vz || 0) / 110))) / 2) * A.g.n);
     if (e.aplasta > 0) return fr('p', A.p.n - 1);
     if (A.r && g < 0.3) return fr('r', (g / 0.3) * A.r.n);
-    if (e.estado === 'prepara') return fr('p', Math.min(0.999, e.t / 0.55) * A.p.n);
+    if (e.estado === 'prepara') return fr('p', D.tiempos && D.tiempos.p ? cuadroPorTiempo(D.tiempos.p, A.p.n, e.t, false) : Math.min(0.999, e.t / 0.55) * A.p.n);
   }
   if (A.r && g < 0.3 && e.estado !== 'carga') return fr('r', (g / 0.3) * A.r.n);
-  if ((e.estado === 'prepara' || e.estado === 'conjura') && A.p) return fr('p', Math.min(0.999, e.t / (PREPARA[c.conducta] || 0.5)) * A.p.n);
-  if (A.g && (e.estado === 'carga' || e.estado === 'muerde')) return fr('g', Math.min(0.999, e.t / 0.3) * A.g.n);
+  const TT = D.tiempos || {};
+  if ((e.estado === 'prepara' || e.estado === 'conjura') && A.p) return fr('p', TT.p ? cuadroPorTiempo(TT.p, A.p.n, e.t, false) : Math.min(0.999, e.t / (PREPARA[c.conducta] || 0.5)) * A.p.n);
+  if (A.g && (e.estado === 'carga' || e.estado === 'muerde')) return fr('g', TT.g ? cuadroPorTiempo(TT.g, A.g.n, e.t, false) : Math.min(0.999, e.t / 0.3) * A.g.n);
   if (A.g && e.golpeT && J.t - e.golpeT < 0.45) return fr('g', ((J.t - e.golpeT) / 0.45) * A.g.n);
   // de frente o de espaldas si anda sobre todo hacia abajo o hacia arriba (como Core Keeper); de lado si no
-  const vista = D.vistas && e.vista && e.vista !== 'de' ? e.vista : null;
+  const vista = D.vistas && !D.manual && e.vista && e.vista !== 'de' ? e.vista : null;
   const frv = (a, k) => (vista && SPR[`${t}_${vista}_${a}0`] ? `${t}_${vista}_${a}${Math.max(0, Math.min(A[a].n - 1, Math.floor(k)))}` : fr(a, k));
-  if (A.a && J.t - (e.andaT || -9) < 0.12) return frv('a', ((e.paso / (D.zancada || 20)) * A.a.n) % A.a.n);
-  return frv('q', ((J.t * (D.fpsQuieta || 5) + (e.x % 7)) % A.q.n));
+  if (A.a && J.t - (e.andaT || -9) < 0.12) return frv('a', TT.a ? cuadroPorTiempo(TT.a, A.a.n, J.t + (e.x % 3), true) : ((e.paso / (D.zancada || 20)) * A.a.n) % A.a.n);
+  return frv('q', TT.q ? cuadroPorTiempo(TT.q, A.q.n, J.t + (e.x % 7) / 7, true) : ((J.t * (D.fpsQuieta || 5) + (e.x % 7)) % A.q.n));
 }
 // Las de esqueleto ya se mueven solas: solo el retroceso del golpe y, las que no tienen «aparecer», salir del suelo.
 function animarEsqueleto(e, n, c) {

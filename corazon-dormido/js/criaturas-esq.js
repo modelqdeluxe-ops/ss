@@ -367,6 +367,14 @@ const CRI = (() => {
   const VISTAS = { ab: 0.3, ar: Math.PI - 0.3 };
   function hornear(tipo) {
     const D = DEF[tipo], hechos = [];
+    // dibujadas a mano cuadro a cuadro (criaturas-px.js): D.manual(anim, f, vista) → { color, luz, puntos }, en las
+    // tres vistas y en todas sus animaciones (como Core Keeper)
+    if (D.manual) {
+      for (const v of ['de', 'ab', 'ar']) for (const [anim, A] of Object.entries(D.anims)) for (let f = 0; f < A.n; f++) {
+        hechos.push([v === 'de' ? `${tipo}_${anim}${f}` : `${tipo}_${v}_${anim}${f}`, recortar(D, D.manual(anim, f, v))]);
+      }
+      return hechos;
+    }
     for (const [anim, A] of Object.entries(D.anims)) for (let f = 0; f < A.n; f++) {
       const r = recortar(D, cuadro(D, anim, f)), nombre = `${tipo}_${anim}${f}`;
       hechos.push([nombre, r]);
