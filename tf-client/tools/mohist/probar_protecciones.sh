@@ -69,7 +69,7 @@ mira "Beto pulsa INDEPENDIENTE en el pad" Beto "PAD aviso: Tu zona ahora es inde
 comprueba "en los datos, independiente dentro del grupo" sí zona_beto independiente
 di Ana "!usar 47 -61 45" 1.5
 comprueba "independiente: Ana ya NO construye en el cuadrado de Beto" no bloque 47 -60 45 minecraft:dirt
-mira "y le sale el aviso" Ana "No puedes construir aqu" sí
+mira "y le sale el aviso (sin permiso en la zona de Beto)" Ana "[!] No tienes ningún permiso de interacción en esta zona" sí
 consola "tp Ana 80 -60 79" 1.5
 di Ana "!usar 80 -61 80" 1.5
 comprueba "independiente: fuera del cuadrado de Beto, Ana construye en lo suyo" sí bloque 80 -60 80 minecraft:dirt
@@ -92,7 +92,7 @@ consola "tp Carlos 40 -60 45" 1.5
 consola "tf claim give Carlos claimstone_10x10"
 consola "tp Carlos 90 -60 85" 1.5
 di Carlos "!usar 90 -61 88" 2
-mira "Carlos (fuera del grupo) no puede poner su piedra dentro" Carlos "se solapar" sí
+mira "Carlos (fuera del grupo) no puede poner su piedra dentro" Carlos "[x] No puedes construir en esta zona" sí
 
 # 6. El staff la deja independiente desde la consola; Carlos no puede tocar el modo de la piedra de Beto
 consola "tf web claims modo $ID independiente" 1.5
