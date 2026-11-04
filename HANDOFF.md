@@ -285,6 +285,43 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (4 nov 2026, TF Client 1.3.174 + web: MÉTRICAS DE JUGADORES CON NLOGIN EN /metricas) — lee esto primero
+
+- El dueño mandó la carpeta de nLogin («quiero saber por qué mi server no retiene gente… haz una métrica buena o
+  gráfica de jugadores, y si vuelven a jugar»). Primero se hizo un informe suelto (artifact). Después pidió: «que la web
+  con el puente se conecte a la data de nLogin y saque esas gráficas sola, con gráficos bonitos, y un botón para un
+  reporte en Excel; la subpágina /métricas, con contraseña de staff, dame una segura» y «los datos, del 26 de octubre en
+  adelante».
+- **Mod** (`server/NLoginLog`, solo Java, y `server/TFNLogin`): en cada consulta del puente lee lo nuevo de
+  `plugins/nLogin/logs/AAAA-MM-DD-N.log` (fuera del hilo del servidor) y lo manda en `nlogin`. Entradas y salidas salen
+  de las líneas de la base de datos de nLogin (`[UPDATE] … (applied to [last_ip, last_seen, settings])` = entra,
+  `[last_seen, settings]` = sale): son DEBUG pero nLogin las escribe siempre en sus registros. Del resto: «has
+  successfully registered», «By: www.nickuc.com» (arranque), «Successful plugin core shutdown», «Unable to handle
+  incoming packet LOGIN_START (… client = V_1_20)» y «Unable to contact Mojang servers for X». Solo nombre, creación de
+  la cuenta y hora; **nunca la IP ni la huella de la contraseña** que van en la misma línea. La hora de los registros se
+  lee con la zona del servidor (`ZoneId.systemDefault()`; el de Ultra Servers está en UTC). El cursor lo lleva la web.
+- **Web**: `src/nlogin.js` (guardar y juntar en sesiones), rutas en `src/app.js` («Métricas de jugadores»),
+  `public/metricas.html` + `metricas.js` + `metricas-calc.js` (las cuentas, en el navegador) + `xlsx.js` (el Excel).
+  Todo explicado en `tierras-fantasticas/README.md` («Métricas de jugadores»).
+- **Contraseña**: generada al azar (4 grupos de 5 letras y números sin los que se confunden, ~116 bits) y dada al dueño
+  por el chat del 4 nov; en `config/metricas.json` solo su huella PBKDF2. También entran `ADMIN_KEY` y, si se pone,
+  el secreto `METRICAS_PASSWORD`. Cómo poner otra: README.
+- **Comprobado**: `tf-client/tools/nlogin/PruebaNLogin.java` con los registros de verdad del dueño (del 26 oct al 4 nov:
+  905 entradas, 789 salidas, 60 arranques, 59 apagados, 35 fallos de Mojang, 4 de versión, 2 registros; por partes =
+  de una vez = leyendo de 4 KB en 4 KB; la línea a medias no se lee hasta que acaba; sin IP ni contraseñas). Esos
+  eventos por el puente de la web de pruebas dan los mismos jugadores por día que el informe hecho a mano en Python
+  (41, 34, 35, 40, 40, 33, 7, 32, 30, 15 del 26 oct al 4 nov). `npm test` 80/80 (con `test/metricas.test.js`).
+  Capturas de la página (1280 y 390 de ancho, sin desbordes) y el Excel abierto con openpyxl y LibreOffice.
+- **En un Mohist de verdad** (`tf-client/tools/mohist/probar_metricas.sh <carpeta> <jar> <registros de nLogin>`, con el
+  jar del artefacto de CI y los registros del dueño en `plugins/nLogin/logs`; la web es el Worker en local,
+  `web_metricas.mjs`): `METRICAS DE NLOGIN EN MOHIST: TODO BIEN` — el mod pregunta por dónde va la web, manda los 1854
+  eventos (los que cuenta grep) en 5 consultas sin repetir ninguno, sin IP; una línea nueva en el último registro llega
+  una vez y sin la IP; tras reiniciar el servidor sigue donde iba.
+- Lo que se vio en los datos (para el dueño): sí retiene a los que entran; entra poca gente nueva; hubo una caída del 11
+  al 16 de octubre y días de decenas de arranques (el 1 nov, 27 arranques y 7 jugadores); ~13 % de las sesiones acaban
+  en una reconexión en menos de 3 min; los reinicios fijos son a las 3:00 y 15:00 (hora de México), justo antes de las
+  horas fuertes (16–22 h).
+
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.173: EL SONIDO Y LA ANIMACIÓN DE LA MAZA DE LA 1.21) — lee esto primero
 
 - El dueño: «la maza no hace ni tiene el sonido ni la animación de la maza vanilla». La 1.21 no está en la 1.20.1: se

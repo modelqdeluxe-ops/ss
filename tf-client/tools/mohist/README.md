@@ -25,6 +25,7 @@ gh run download <id de la ejecución> --repo modelqdeluxe-ops/ss -n tfclient-jar
 | `probar_chat_clan.sh <carpeta> <jar>` | la prueba entera del chat del clan (abajo) |
 | `protecciones_prueba.py <mundo>/claimblocks_data.json` | la zona grande de Ana (100x100 en 0,-60,0) con el grupo «Reino de Ana» (Ana y Beto) |
 | `probar_protecciones.sh <carpeta> <jar>` | la piedra dentro de la zona de un grupo, unida o independiente (1.3.170, abajo) |
+| `probar_metricas.sh <carpeta> <jar> <registros de nLogin>` | (1.3.174) el puente manda los registros de nLogin a la web (el Worker de la tienda en local, `web_metricas.mjs`): todo desde el 26 oct una vez, sin IP, lo nuevo del último registro y tras reiniciar sigue donde iba. Termina con `METRICAS DE NLOGIN EN MOHIST: TODO BIEN` |
 
 El primer arranque baja 118 librerías de Mohist (un minuto); luego arranca en ~15 s. Java 21 del contenedor vale.
 

@@ -7,6 +7,8 @@ import paypalImages from './paypal-images.json' with { type: 'json' };
 import legal from '../config/legal.json' with { type: 'json' };
 import vfx from '../config/vfx.json' with { type: 'json' };
 import skillsCatalog from '../config/skills.json' with { type: 'json' };
+// (4 nov 2026) La página de métricas (/metricas): desde qué día y la huella de la contraseña del staff
+import metricas from '../config/metricas.json' with { type: 'json' };
 import { Stripe, toStripeAmount } from './stripe.js';
 import { PayPal, formatAmount } from './paypal.js';
 import { MercadoPago, mxnCents, usdToMxn } from './mercadopago.js';
@@ -17,6 +19,7 @@ import { hashPassword, verifyPassword } from './password.js';
 import { createMailer, mailHtml, fieldsText } from './mail.js';
 import { receiptPdf, receiptRows, money, refundPolicyFor, disputeFacts, disputePdf, stripeEvidence } from './receipt.js';
 import { toBase64 } from './pdf.js';
+import { createNLogin, NLOGIN_MAX_EVENTS } from './nlogin.js';
 import { normalizeCode, couponFromInput, couponProblem, couponDiscount, couponLabel, allocate, MIN_TOTAL as COUPON_MIN_TOTAL } from './coupons.js';
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
@@ -31,6 +34,9 @@ const CART_MAX_LINES = 50;
 // Stripe no cobra menos de 0,50 (en USD/EUR); una mejora de rango nunca baja de aquí.
 const MIN_CHARGE = 50;
 const SESSION_COOKIE = 'tf_session';
+// (4 nov 2026) La entrada a /metricas (12 horas)
+const METRICAS_COOKIE = 'tf_metricas';
+const METRICAS_HOURS = 12;
 const STATE_COOKIE = 'tf_oauth_state';
 // Si el puente no ha llamado en este tiempo, damos el servidor por desconectado.
 const BRIDGE_FRESH_MS = 45 * 1000;
@@ -277,6 +283,8 @@ export function createApp(env) {
   const log = env.LOGGER || console;
 
   const store = createStore(env.DB);
+  // (4 nov 2026) Los registros de nLogin que manda el puente, para /metricas
+  const nlogin = createNLogin(env.DB, store.ready, { desde: metricas.desde });
   // Copias por correo para el dueño (src/mail.js): firmas de los Términos, recibos y reembolsos o disputas
   const mailer = createMailer(env, log);
 
@@ -2342,6 +2350,53 @@ export function createApp(env) {
       return json(fresh.isCart ? await cartView(fresh) : orderView(fresh));
     },
 
+    // --- Métricas de jugadores (4 nov 2026) ---
+    // La página /metricas (public/metricas.html) solo enseña algo con la contraseña del staff: la de config/metricas.json
+    // (se guarda su huella PBKDF2, nunca la contraseña), el secreto METRICAS_PASSWORD o la clave de /staff (ADMIN_KEY).
+    // Al acertar, una cookie firmada de 12 horas; tras 8 fallos desde una IP, esa IP espera 15 minutos.
+    'GET /m%C3%A9tricas': async () => redirect('/metricas'),
+    'GET /m%c3%a9tricas': async () => redirect('/metricas'),
+    'POST /api/metricas/entrar': async (req, { secure }) => {
+      const body = (await readJson(req)) || {};
+      const password = typeof body.password === 'string' ? body.password.trim() : '';
+      if (!password || password.length > 200) return json({ error: 'Escribe la contraseña.' }, 400);
+      const key = `metricas:${req.headers.get('CF-Connecting-IP') || 'local'}`;
+      if (await store.loginLocked(key)) return json({ error: 'Demasiados intentos con una contraseña incorrecta. Espera unos minutos.' }, 429);
+      let ok = false;
+      if (metricas.password) ok = await verifyPassword(password, metricas.password);
+      if (!ok && env.METRICAS_PASSWORD) ok = safeEqual(password, env.METRICAS_PASSWORD);
+      if (!ok && env.ADMIN_KEY) ok = safeEqual(password, env.ADMIN_KEY);
+      if (!ok) {
+        await store.loginFailed(key);
+        return json({ error: 'Contraseña incorrecta.' }, 401);
+      }
+      await store.loginSucceeded(key);
+      const token = await (await session()).encode({ metricas: true, exp: Date.now() + METRICAS_HOURS * 3600 * 1000 });
+      return json({ ok: true }, 200, { 'Set-Cookie': serializeCookie(METRICAS_COOKIE, token, { maxAge: METRICAS_HOURS * 3600, secure }) });
+    },
+    'POST /api/metricas/salir': async (req, { secure }) =>
+      json({ ok: true }, 200, { 'Set-Cookie': serializeCookie(METRICAS_COOKIE, '', { maxAge: 0, secure }) }),
+    // Los datos de las gráficas desde «desde» (YYYY-MM-DD, no antes del de config/metricas.json): las sesiones y los
+    // eventos sueltos; la página calcula lo demás (y el Excel) en el navegador.
+    'GET /api/metricas': async (req, { url }) => {
+      if (!(await metricasAllowed(req))) return json({ error: 'Entra con la contraseña del staff.' }, 401);
+      const asked = url.searchParams.get('desde');
+      const desde = /^\d{4}-\d{2}-\d{2}$/.test(asked || '') && asked > metricas.desde ? asked : metricas.desde;
+      const [y, m, d] = desde.split('-').map(Number);
+      // La medianoche de ese día en el centro de México (UTC-6, sin horario de verano desde 2022)
+      const since = Date.UTC(y, m - 1, d) + 6 * 3600 * 1000;
+      const status = await store.serverStatus();
+      return json({
+        desde,
+        inicio: metricas.desde,
+        zona: metricas.zona,
+        now: Date.now(),
+        bridge: Boolean(status && Date.now() - status.at <= BRIDGE_FRESH_MS),
+        online: status && Date.now() - status.at <= BRIDGE_FRESH_MS ? status.players.map((p) => p.name) : [],
+        ...(await nlogin.data(since)),
+      });
+    },
+
     // --- Puente con el servidor de Minecraft (mod TF Client instalado en el servidor) ---
     // Cada pocos segundos el servidor manda sus jugadores (conectados y vistos), las entregas que ya hizo,
     // los códigos de vinculación escritos en el juego y los cambios de rango del staff. Recibe las compras
@@ -2470,6 +2525,17 @@ export function createApp(env) {
         log.warn(`Puente: reiniciados en la web ${resetDone} jugadores (el servidor empezó limpio)`);
       }
 
+      // (4 nov 2026) Los registros de nLogin (TF Client 1.3.174+): el mod pregunta por dónde seguir ({ want }) o manda lo
+      // que leyó desde ahí ({ from, to, events }); la respuesta le dice por dónde va la web (src/nlogin.js).
+      let nloginAnswer = null;
+      if (body.nlogin && typeof body.nlogin === 'object') {
+        try {
+          nloginAnswer = await nlogin.ingest(body.nlogin.want ? null : { ...body.nlogin, events: list(body.nlogin.events, NLOGIN_MAX_EVENTS) });
+        } catch (err) {
+          log.error('Puente: no se pudieron guardar los registros de nLogin:', err.message);
+        }
+      }
+
       const playerRanks = (await store.ranksFor(online)).map((r) => ({ uuid: r.uuid, ...rankInfo(rankById.get(r.rankId)) })).filter((r) => r.id);
 
       return json({
@@ -2494,6 +2560,7 @@ export function createApp(env) {
         ...(body.wantOrders === true ? { orders: await ordersForServer() } : {}),
         roulette: rouletteForServer(),
         store: (PUBLIC_URL || new URL(req.url).origin).replace(/^https?:\/\//, ''),
+        ...(nloginAnswer ? { nlogin: nloginAnswer } : {}),
       });
     },
   };
@@ -2777,6 +2844,14 @@ export function createApp(env) {
   // quita los objetos marcados con el pedido estén donde estén (inventario, cofres, cofre de ender, suelo…), se quita
   // el grupo del rango (volviendo al anterior si fue una mejora) y sus roles de Discord. Un reembolso parcial solo se
   // apunta en el pedido.
+  // (4 nov 2026) ¿Entró a /metricas con la contraseña? (la cookie firmada de POST /api/metricas/entrar)
+  async function metricasAllowed(req) {
+    const token = parseCookies(req.headers.get('Cookie'))[METRICAS_COOKIE];
+    if (!token) return false;
+    const data = await (await session()).decode(token);
+    return Boolean(data && data.metricas === true);
+  }
+
   // La clave del panel de staff (ADMIN_KEY). Tras varios intentos fallidos desde una IP, esa IP espera unos minutos.
   async function staffDenied(req) {
     if (!env.ADMIN_KEY) return json({ error: 'El panel de staff no está configurado: falta el secreto ADMIN_KEY en Cloudflare.' }, 503);

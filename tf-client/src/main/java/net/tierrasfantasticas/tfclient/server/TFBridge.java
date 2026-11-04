@@ -398,7 +398,6 @@ public final class TFBridge {
 
         String url = TFServerConfig.url() + "/bridge/poll";
         String secret = TFServerConfig.secret();
-        byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
 
         inFlight = true;
         inFlightSince = System.currentTimeMillis();
@@ -408,6 +407,14 @@ public final class TFBridge {
             String text = null;
             Throwable error = null;
             try {
+                // (1.3.174) lo nuevo de los registros de nLogin, para /metricas de la web (se lee aquí, fuera del hilo del servidor)
+                try {
+                    JsonObject nlogin = TFNLogin.collect();
+                    if (nlogin != null) body.add("nlogin", nlogin);
+                } catch (Throwable t) {
+                    TFClient.LOGGER.warn("TF Bridge: error leyendo nLogin: {}", t.toString());
+                }
+                byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
                 HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
                 connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
                 connection.setReadTimeout(READ_TIMEOUT_MS);
@@ -498,6 +505,8 @@ public final class TFBridge {
         // (1.3.127, el dueño: «el test no sirve, no me llegan los items ni el rango») si algo de lo de antes falla (efectos,
         // skills, armario…), las entregas se hacen igual: antes la excepción cortaba aquí y no llegaba ninguna
         try {
+            // (1.3.174) por dónde van en la web los registros de nLogin (y desde qué día los quiere)
+            if (json.has("nlogin")) TFNLogin.answer(json.get("nlogin"));
             if (json.has("store") && !json.get("store").isJsonNull()) storeHost = json.get("store").getAsString();
             if (json.has("orders") && json.get("orders").isJsonArray()) {
                 net.tierrasfantasticas.tfclient.rastreo.TFPurchases.fromWeb(srv, json.getAsJsonArray("orders"));
