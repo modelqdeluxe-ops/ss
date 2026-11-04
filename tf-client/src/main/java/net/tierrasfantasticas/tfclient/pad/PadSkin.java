@@ -83,6 +83,8 @@ final class PadSkin {
     private static String base(String app) {
         if (app.equals("a_apps")) return "apps";
         if (app.equals("a_ajustes")) return "admin";
+        // (1.3.171) el reproductor de la música de una protección: con el color y el icono de Protección
+        if (app.equals("zonamusica")) return "protecciones";
         return app.startsWith("a_") ? app.substring(2) : app;
     }
 

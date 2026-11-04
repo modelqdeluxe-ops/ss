@@ -517,6 +517,12 @@ public final class PadClans {
                     TFPadNet.notice(player, "Los efectos arcoíris se compran en la TIENDA del clan.");
                     return null;
                 }
+                // (1.3.171) la onda de varios colores corriendo es un arcoíris: también con los efectos arcoíris
+                if (fx.mode().equals(net.tierrasfantasticas.tfclient.clans.ClanTagFx.WAVE) && fx.colors().length > 1
+                        && !net.tierrasfantasticas.tfclient.clans.ClanTagFx.rainbowOwned(c)) {
+                    TFPadNet.notice(player, "La onda de varios colores es parte de los efectos arcoíris (TIENDA del clan). Sin ellos, la onda es de un color.");
+                    return null;
+                }
                 net.tierrasfantasticas.tfclient.clans.ClanTagFx.store(c, fx);
                 STORE_IMPL.changed();
                 for (UUID u : members(c)) refreshName(u);

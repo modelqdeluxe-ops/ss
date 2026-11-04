@@ -1571,5 +1571,12 @@
  "item.tfclient.nitro_armor_leggings": "Grebas Discord Nitro",
  "item.tfclient.nitro_armor_boots": "Botas Discord Nitro",
  "tfclient.set.nitro": "Discord Nitro",
- "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets"
+ "itemGroup.tfclient.sets": "Tierras Fantásticas · Sets",
+ "enchantment.tfclient.densidad": "Densidad",
+ "enchantment.tfclient.densidad.desc": "El golpe aplastante de la maza hace más daño por cada bloque que caes.",
+ "enchantment.tfclient.brecha": "Brecha",
+ "enchantment.tfclient.brecha.desc": "La armadura del enemigo protege menos de los golpes de la maza.",
+ "enchantment.tfclient.rafaga_viento": "Ráfaga de viento",
+ "enchantment.tfclient.rafaga_viento.desc": "Tras un golpe aplastante, el viento te lanza hacia arriba.",
+ "entity.tfclient.lanza_lanzada": "Lanza"
 }

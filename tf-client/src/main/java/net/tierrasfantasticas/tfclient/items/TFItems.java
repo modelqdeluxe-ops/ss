@@ -78,7 +78,17 @@ public final class TFItems {
         // (1.3.101) El panel de control de los NPC de escenas (/tf npc)
         net.tierrasfantasticas.tfclient.npcs.TFNpcs.PANEL = ITEMS.register("npc_panel", net.tierrasfantasticas.tfclient.npcs.NpcPanelItem::new);
         ITEMS.register(modBus);
+        // (1.3.171) Densidad, Brecha y Ráfaga de viento (la maza) y las lanzas lanzadas con su modelo
+        TFMace.ENCHANTMENTS.register(modBus);
+        ENTITIES.register(modBus);
     }
+
+    /** (1.3.171) El tridente de un set lanzado: se dibuja con su modelo, no con el tridente de Minecraft. */
+    public static final net.minecraftforge.registries.DeferredRegister<net.minecraft.world.entity.EntityType<?>> ENTITIES =
+            net.minecraftforge.registries.DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, TFClient.MOD_ID);
+    public static final RegistryObject<net.minecraft.world.entity.EntityType<TFThrownTrident>> THROWN_TRIDENT = ENTITIES.register("lanza_lanzada",
+            () -> net.minecraft.world.entity.EntityType.Builder.<TFThrownTrident>of(TFThrownTrident::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build("lanza_lanzada"));
 
     // Los atributos de los objetos de los sets no se enseñan en su descripción (ver TFItemTypes.HIDE_ATTRIBUTES).
     private static Item create(TFSets.SetDef set, TFSets.ItemDef def) {
@@ -86,7 +96,8 @@ public final class TFItems {
         // Nivel de atributos del set: el de las crates o el de su rango (TFTier)
         Tier tier = set.tier().tool();
         return switch (def.type()) {
-            case "heavy" -> new TFItemTypes.Sword(tier, 6, -3.1F, p);
+            // (1.3.171) los martillos y las mazas, como la maza de Minecraft 1.21 (TFMace); los garrotes y guanteletes, igual
+            case "heavy" -> isMace(def.id()) ? new TFItemTypes.Mace(tier, p.durability(500)) : new TFItemTypes.Sword(tier, 6, -3.1F, p);
             case "axe" -> new TFItemTypes.Axe(tier, 5.0F, -3.0F, p);
             case "pickaxe" -> new TFItemTypes.Pickaxe(tier, 1, -2.8F, p);
             case "shovel" -> new TFItemTypes.Shovel(tier, 1.5F, -3.0F, p);
@@ -105,6 +116,11 @@ public final class TFItems {
             case "balloon" -> new TFItemTypes.Held(true, p.stacksTo(1));
             default -> new TFItemTypes.Sword(tier, 3, -2.4F, p);
         };
+    }
+
+    /** (1.3.171) ¿Es un martillo o una maza de un set? (valentine_hammer, nazgul_forge_hammer, nazgul_fire_mace…) */
+    public static boolean isMace(String id) {
+        return id.contains("hammer") || id.contains("mace");
     }
 
     private static ArmorItem.Type armorType(String slot) {

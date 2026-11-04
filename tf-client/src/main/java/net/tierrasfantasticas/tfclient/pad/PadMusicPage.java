@@ -978,16 +978,16 @@ final class PadMusicPage extends PadPage {
         return out;
     }
 
-    private static final int[][] PLAY = glyph("#......", "###....", "#####..", "#######", "#####..", "###....", "#......");
-    private static final int[][] PAUSE = glyph("##.##", "##.##", "##.##", "##.##", "##.##", "##.##", "##.##");
-    private static final int[][] NEXT = glyph("#...#.#", "##..#.#", "###.#.#", "#####.#", "###.#.#", "##..#.#", "#...#.#");
-    private static final int[][] PREV = glyph("#.#...#", "#.#..##", "#.#.###", "#.#####", "#.#.###", "#.#..##", "#.#...#");
+    static final int[][] PLAY = glyph("#......", "###....", "#####..", "#######", "#####..", "###....", "#......");
+    static final int[][] PAUSE = glyph("##.##", "##.##", "##.##", "##.##", "##.##", "##.##", "##.##");
+    static final int[][] NEXT = glyph("#...#.#", "##..#.#", "###.#.#", "#####.#", "###.#.#", "##..#.#", "#...#.#");
+    static final int[][] PREV = glyph("#.#...#", "#.#..##", "#.#.###", "#.#####", "#.#.###", "#.#..##", "#.#...#");
     private static final int[][] SHUFFLE = glyph("##....##.", "..#..#.##", "...##....", "...##....", "..#..#.##", "##....##.", ".........");
-    private static final int[][] REPEAT = glyph("..######.", ".#.....##", "#......#.", "#.......#", ".#......#", "##.....#.", ".######..");
-    private static final int[][] REPEAT_ONE = glyph("..######.", ".#.....##", "#...#..#.", "#..##...#", ".#..#...#", "##..#..#.", ".######..");
-    private static final int[][] SPEAKER = glyph("...#.....", "..##..#..", "####...#.", "####.#.#.", "####...#.", "..##..#..", "...#.....");
-    private static final int[][] SPEAKER_LOW = glyph("...#...", "..##...", "####.#.", "####..#", "####.#.", "..##...", "...#...");
-    private static final int[][] MUTE = glyph("...#.....", "..##.....", "####.#.#.", "####..#..", "####.#.#.", "..##.....", "...#.....");
+    static final int[][] REPEAT = glyph("..######.", ".#.....##", "#......#.", "#.......#", ".#......#", "##.....#.", ".######..");
+    static final int[][] REPEAT_ONE = glyph("..######.", ".#.....##", "#...#..#.", "#..##...#", ".#..#...#", "##..#..#.", ".######..");
+    static final int[][] SPEAKER = glyph("...#.....", "..##..#..", "####...#.", "####.#.#.", "####...#.", "..##..#..", "...#.....");
+    static final int[][] SPEAKER_LOW = glyph("...#...", "..##...", "####.#.", "####..#", "####.#.", "..##...", "...#...");
+    static final int[][] MUTE = glyph("...#.....", "..##.....", "####.#.#.", "####..#..", "####.#.#.", "..##.....", "...#.....");
     // los de las filas y pestañas: 8x8 con trazo de 2 (en un botón de 14 quedan justo en el centro)
     private static final int[][] CROSS = glyph("##....##", "###..###", ".######.", "..####..", "..####..", ".######.", "###..###", "##....##");
     private static final int[][] PLUS = glyph("...##...", "...##...", "...##...", "########", "########", "...##...", "...##...", "...##...");
@@ -1001,7 +1001,7 @@ final class PadMusicPage extends PadPage {
     private static final int[][] BROADCAST = glyph("#.......#", "#..#.#..#", "#.#...#.#", "#.#.#.#.#", "#.#...#.#", "#..#.#..#", "#.......#");
     private static final int[][] IMAGE = glyph("#########", "#.......#", "#.##..#.#", "#.##.###.", "#..#####.", "#.#######", "#########");
 
-    private void drawGlyph(GuiGraphics g, int[][] glyph, int x, int y, int color) {
+    static void drawGlyph(GuiGraphics g, int[][] glyph, int x, int y, int color) {
         g.pose().pushPose();
         g.pose().translate(x, y, 0);
         g.pose().scale(1F, 1F, 1);
@@ -1013,7 +1013,7 @@ final class PadMusicPage extends PadPage {
         g.pose().popPose();
     }
 
-    private void drawGlyphCentered(GuiGraphics g, int[][] glyph, int cx, int cy, int color) {
+    static void drawGlyphCentered(GuiGraphics g, int[][] glyph, int cx, int cy, int color) {
         int w = Math.round(glyph[0].length * 1F), h = Math.round(glyph.length * 1F);
         drawGlyph(g, glyph, cx - w / 2, cy - h / 2, color);
     }
@@ -1035,14 +1035,14 @@ final class PadMusicPage extends PadPage {
         PadUi.box(g, x + 1, y + 1, w - 2, h - 2, on ? 0xFF7A4A08 : 0xFF262E66);
     }
 
-    private static void disc(GuiGraphics g, int cx, int cy, int r, int color) {
+    static void disc(GuiGraphics g, int cx, int cy, int r, int color) {
         for (int dy = -r; dy <= r; dy++) {
             int half = (int) Math.floor(Math.sqrt(r * r - dy * dy + r * 0.8));
             g.fill(cx - half, cy + dy, cx + half + 1, cy + dy + 1, color);
         }
     }
 
-    private static void ring(GuiGraphics g, int cx, int cy, int r, int color) {
+    static void ring(GuiGraphics g, int cx, int cy, int r, int color) {
         int steps = Math.max(24, r * 6);
         int lx = Integer.MIN_VALUE, ly = 0;
         for (int i = 0; i < steps; i++) {
@@ -1084,7 +1084,7 @@ final class PadMusicPage extends PadPage {
         g.fill(x + w - 1, y + 1, x + w, y + h - 1, color);
     }
 
-    private static String time(long ms) {
+    static String time(long ms) {
         long s = ms / 1000;
         return s >= 3600 ? String.format(Locale.ROOT, "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60)
                 : String.format(Locale.ROOT, "%d:%02d", s / 60, s % 60);

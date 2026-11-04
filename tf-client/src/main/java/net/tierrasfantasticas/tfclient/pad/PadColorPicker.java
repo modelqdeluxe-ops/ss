@@ -85,7 +85,7 @@ final class PadColorPicker extends PadPage {
         style = f.style();
         int[] c = f.colors();
         for (int i = 0; i < Math.min(3, c.length); i++) cols[i] = c[i];
-        count = mode.equals(MODES[0]) || mode.equals(MODES[2]) ? 1 : Math.max(2, c.length);
+        count = mode.equals(MODES[0]) || mode.equals(MODES[2]) ? 1 : mode.equals(MODES[3]) ? waveColors(c.length) : Math.max(2, c.length);
         slot = 0;
     }
 
@@ -142,8 +142,17 @@ final class PadColorPicker extends PadPage {
     private void setMode(String m) {
         mode = m;
         if (m.equals(MODES[0]) || m.equals(MODES[2])) count = 1;
+        else if (m.equals(MODES[3])) count = waveColors(count);
         else if (count < 2) count = 2;
         if (slot >= count) pickSlot(0);
+    }
+
+    /**
+     * (1.3.171, el dueño: «hay una opción que no es arcoíris pero que te da el efecto de arcoíris») Los colores de la
+     * onda: de varios (que corren, como un arcoíris) solo con los efectos arcoíris comprados; si no, uno (su brillo).
+     */
+    private int waveColors(int wanted) {
+        return rainbowOwned ? Math.max(2, Math.min(3, wanted)) : 1;
     }
 
     /** El efecto tal como se ve ahora. */
@@ -261,7 +270,13 @@ final class PadColorPicker extends PadPage {
                 actions.add(() -> pickSlot(k));
                 x += 20;
             }
-            if (count > 1 && count < 3) {
+            if (mode.equals(MODES[3]) && !rainbowOwned) {
+                // (1.3.171) la onda de varios colores es parte de los efectos arcoíris: el «+» con candado
+                tiny(g, x, y, "+", mx, my, () -> pad.showNotice("La onda de varios colores es de los efectos arcoíris: Clanes › TIENDA."));
+                g.fill(x + 1, y + 1, x + 11, y + 11, 0xB0E6ECF5);
+                lock(g, x + 2, y + 2);
+                x += 14;
+            } else if (count > 1 && count < 3) {
                 tiny(g, x, y, "+", mx, my, () -> {
                     count = 3;
                     pickSlot(2);

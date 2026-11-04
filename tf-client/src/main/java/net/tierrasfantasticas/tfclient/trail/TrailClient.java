@@ -313,7 +313,8 @@ public final class TrailClient {
     private static int category(ItemStack s) {
         Item i = s.getItem();
         if (i instanceof TridentItem) return NONE;
-        if (i instanceof SwordItem || s.is(ItemTags.SWORDS)) return SWORD;
+        // (1.3.171) los martillos de los sets ya no son espadas (son la maza): su estela, como siempre, la de las espadas
+        if (i instanceof SwordItem || s.is(ItemTags.SWORDS) || i instanceof net.tierrasfantasticas.tfclient.items.TFItemTypes.Mace) return SWORD;
         if (i instanceof AxeItem || s.is(ItemTags.AXES)) return AXE;
         if (i instanceof PickaxeItem || s.is(ItemTags.PICKAXES)) return PICKAXE;
         if (i instanceof ShovelItem || s.is(ItemTags.SHOVELS)) return SHOVEL;

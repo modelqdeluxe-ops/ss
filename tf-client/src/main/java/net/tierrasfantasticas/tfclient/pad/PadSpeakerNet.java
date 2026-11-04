@@ -81,7 +81,9 @@ public final class PadSpeakerNet {
      * (1.3.160) Al que está dentro de una protección con música: lo que suena (por dónde va, en bucle, y su volumen de
      * 0 a 100); playing false = salió de la zona (o se quitó la música): que pare.
      */
-    public record Zone(UUID claim, boolean playing, String url, String title, String artist, long positionMs, long durationMs, int volume) {
+    /** (1.3.171) loop: en bucle (lo de siempre) o una vez (el reproductor de la zona: REPETIR). */
+    public record Zone(UUID claim, boolean playing, String url, String title, String artist, long positionMs, long durationMs, int volume,
+                       boolean loop) {
         static void write(Zone m, FriendlyByteBuf buf) {
             buf.writeUUID(m.claim);
             buf.writeBoolean(m.playing);
@@ -91,11 +93,12 @@ public final class PadSpeakerNet {
             buf.writeVarLong(Math.max(0, m.positionMs));
             buf.writeVarLong(Math.max(0, m.durationMs));
             buf.writeVarInt(Math.max(0, Math.min(100, m.volume)));
+            buf.writeBoolean(m.loop);
         }
 
         static Zone read(FriendlyByteBuf buf) {
             return new Zone(buf.readUUID(), buf.readBoolean(), buf.readUtf(512), buf.readUtf(80), buf.readUtf(80), buf.readVarLong(), buf.readVarLong(),
-                    buf.readVarInt());
+                    buf.readVarInt(), buf.readBoolean());
         }
 
         static void handle(Zone m, Supplier<NetworkEvent.Context> ctx) {

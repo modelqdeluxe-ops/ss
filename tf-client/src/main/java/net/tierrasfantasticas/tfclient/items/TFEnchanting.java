@@ -79,6 +79,8 @@ public final class TFEnchanting {
      */
     static boolean anvilAccepts(ItemStack stack, Enchantment e) {
         if (e == null || useless(e)) return false;
+        // (1.3.171) los martillos y mazas de los sets: los encantamientos de la maza (TFMace)
+        if (stack.getItem() instanceof TFItemTypes.Mace) return TFMace.anvilAccepts(e);
         if (e.canEnchant(stack)) return true;
         return e == Enchantments.THORNS && stack.canApplyAtEnchantingTable(Enchantments.ALL_DAMAGE_PROTECTION);
     }
