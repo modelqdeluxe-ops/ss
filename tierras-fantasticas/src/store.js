@@ -196,6 +196,33 @@ const SCHEMA = [
     PRIMARY KEY (code, payment_id)
   )`,
   'CREATE INDEX IF NOT EXISTS coupon_claims_payment ON coupon_claims (payment_id)',
+  // (4 nov 2026) Métricas de jugadores con los registros de nLogin que manda el puente (src/nlogin.js). Solo nombres
+  // (en minúsculas como clave) y horas: ni IP, ni contraseñas, ni correos.
+  `CREATE TABLE IF NOT EXISTS nlogin_events (
+    id TEXT PRIMARY KEY,
+    t INTEGER NOT NULL,
+    kind TEXT NOT NULL,
+    name TEXT
+  )`,
+  'CREATE INDEX IF NOT EXISTS nlogin_events_t ON nlogin_events (t)',
+  `CREATE TABLE IF NOT EXISTS nlogin_players (
+    key TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    created INTEGER,
+    first_seen INTEGER,
+    last_seen INTEGER
+  )`,
+  `CREATE TABLE IF NOT EXISTS nlogin_sessions (
+    key TEXT NOT NULL,
+    start INTEGER NOT NULL,
+    end INTEGER NOT NULL,
+    PRIMARY KEY (key, start)
+  )`,
+  'CREATE INDEX IF NOT EXISTS nlogin_sessions_start ON nlogin_sessions (start)',
+  `CREATE TABLE IF NOT EXISTS nlogin_open (
+    key TEXT PRIMARY KEY,
+    start INTEGER NOT NULL
+  )`,
 ];
 
 // Columnas nuevas en tablas que ya existen en la base de datos publicada.
@@ -1553,5 +1580,7 @@ export function createStore(db) {
     serverStatus,
     pendingDeliveries,
     secret,
+    // (4 nov 2026) las tablas listas, para las métricas de nLogin (src/nlogin.js)
+    ready: init,
   };
 }

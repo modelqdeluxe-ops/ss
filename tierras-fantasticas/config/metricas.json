@@ -1,0 +1,6 @@
+{
+  "_comentario": "(4 nov 2026) La página /metricas: los datos de nLogin que manda el puente desde «desde» (hora del centro de México). «password» es la huella PBKDF2 de la contraseña del staff para entrar (la contraseña no está en el repositorio). También valen el secreto METRICAS_PASSWORD y la clave de /staff (ADMIN_KEY).",
+  "desde": "2026-10-26",
+  "zona": "America/Mexico_City",
+  "password": "pbkdf2$100000$NyL1v8l25_LLROd-C1h8pg$7MKWEL8EoUZysvpK_SXE9BFnRdDA3CBLmGllQnaXUBU"
+}

@@ -204,6 +204,44 @@ ejecutó, así que nunca entrega dos veces).
 > Con el TF Client 1.2.7 o anterior en el servidor, la web sigue entregando (les manda los comandos con el nombre ya
 > puesto), pero sin anuncio, sin nametag ni vinculación. Actualiza el mod del servidor a la 1.2.8.
 
+#### Métricas de jugadores (`/metricas`, 4 nov 2026)
+
+El dueño: «que la web con el puente se conecte a la data de nLogin y saque las gráficas sola, con un botón para un
+reporte en Excel; la subpágina /métricas, con contraseña de staff; los datos, del 26 de octubre en adelante».
+
+- **De dónde salen**: el TF Client del servidor (**1.3.174+**, `server/NLoginLog` y `server/TFNLogin`) lee los
+  registros del plugin nLogin (`plugins/nLogin/logs/AAAA-MM-DD-N.log`, uno por arranque) y en cada consulta del puente
+  manda lo nuevo en el campo `nlogin`: quién entra y sale (las líneas de la base de datos de nLogin «applied to
+  [last_ip, last_seen…]» / «[last_seen…]»), quién se registra, cuándo arranca y se apaga el servidor, los intentos con
+  otra versión de Minecraft (con la versión) y cuándo Mojang no contesta. **Solo** el nombre, la creación de la cuenta y
+  la hora: las líneas llevan la IP y la huella de la contraseña y el mod no las lee.
+- **El cursor lo guarda la web** (`settings.nlogin_cursor`: archivo + byte): al arrancar, el mod pregunta
+  (`{ want: true }`) y la web contesta `{ cursor, desde }`; luego el mod manda `{ from, to, events }` (de 400 en 400:
+  lo de días atrás llega en unos minutos) y la web solo lo guarda si `from` es justo donde se quedó (nada entra dos
+  veces). `desde` es el de `config/metricas.json` (**2026-10-26**). Si se borran las tablas, el mod vuelve a mandar todo
+  desde ese día.
+- **En la web** (`src/nlogin.js`): `nlogin_events` (todo), `nlogin_sessions` (de la entrada a la siguiente salida; sin
+  salida, hasta el arranque o apagado de en medio si fue antes de 6 h; de más de 12 h no cuentan), `nlogin_open` (las
+  abiertas) y `nlogin_players` (nombre, creación de la cuenta, primera y última vez).
+- **La página** (`public/metricas.html`, `metricas.js`, `metricas-calc.js`): pide la contraseña
+  (`POST /api/metricas/entrar` → cookie firmada `tf_metricas` de 12 h; 8 fallos desde una IP = 15 min de espera) y luego
+  `GET /api/metricas?desde=AAAA-MM-DD` (no antes del 26 de octubre), que da las sesiones compactas; **las cuentas se
+  hacen en el navegador** (`metricas-calc.js`, sin cargar el Worker): jugadores por día (con los de cuenta nueva),
+  nuevos que vuelven (embudo y por semana de creación), jugadores de cada semana (siguen, regresan, nuevos), días jugados,
+  mapa de calor día × hora, arranques por día (rojo con más de 4), reconexiones (salir y entrar en menos de 3 min sin
+  reinicio), intentos con otra versión, fallos de Mojang y la tabla de jugadores. Todo en hora del centro de México
+  (UTC-6). Se actualiza sola cada minuto. `/métricas` (con tilde) lleva a `/metricas`.
+- **Excel**: «Descargar Excel» hace un `.xlsx` de verdad en el navegador (`public/xlsx.js`, sin librerías: zip con
+  `CompressionStream`) con 10 hojas: Resumen, Por día, Por semana, Cuentas nuevas, Embudo de nuevos, Por hora, Días
+  jugados, Jugadores, Sesiones y Arranques (fechas como fechas de Excel, filtros y la cabecera fija).
+- **La contraseña**: en `config/metricas.json` solo está su huella PBKDF2 (la contraseña se le dio al dueño por el chat
+  y no está en el repositorio). También entran el secreto `METRICAS_PASSWORD` de Cloudflare (si se pone) y la clave de
+  `/staff` (`ADMIN_KEY`). Para cambiarla, la huella nueva:
+  `node --input-type=module -e "import { hashPassword } from './src/password.js'; console.log(await hashPassword(process.argv[1]))" 'contraseña-nueva'`
+  (desde esta carpeta) y se pone en `password`.
+- Pruebas: `test/metricas.test.js` (el puente, la contraseña, los datos y las cuentas) y `tf-client/tools/nlogin/`
+  (la lectura de los registros, con registros de verdad, sin compilar el mod).
+
 ### 3. Discord
 
 Discord es opcional: si no lo configuras, la tienda y las cuentas funcionan igual, solo que sin «Conectar Discord»,

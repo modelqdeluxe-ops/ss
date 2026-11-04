@@ -1,5 +1,10 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **4 nov 2026 — 1.3.174 + WEB, MÉTRICAS EN /metricas**: el puente manda a la web los registros de nLogin (desde el 26 de
+> octubre) y `/metricas` (con contraseña de staff) hace las gráficas de jugadores y un Excel. Mod: `server/NLoginLog`,
+> `server/TFNLogin`; web: `src/nlogin.js`, `public/metricas*.js`, `public/xlsx.js`. Todo en «Métricas de jugadores» de
+> `tierras-fantasticas/README.md` y el CHECKPOINT de `HANDOFF.md`.
+>
 > **4 nov 2026 — 1.3.173**: la maza con el sonido y la explosión de polvo de la 1.21 (los sonidos los baja cada
 > cliente de Mojang, no van en el jar: `items/TFMaceClient`). Prueba `[prueba-jefes=maza]`.
 >
