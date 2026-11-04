@@ -656,6 +656,81 @@ const CRI_PX2 = (() => {
     tiempos: { q: { fps: 3 }, a: { fps: 9 }, p: { fps: 6 }, g: { fps: 10 } },
     W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, zancada: 30, fpsQuieta: 3, vistas: true,
   };
+  // ---------------------------------------------------------------- el Necrófago (a cuatro patas, cráneo por cabeza)
+  function cuadroNecrofago(v, k, o) {
+    const L = new Lienzo(HW, HH), luz = new Lienzo(HW, HH), R = o.rampas, pal = o.pal;
+    const x = HOX, y = HOY, f = k.fase || 0, alza = k.alza || 0, sw = Math.sin(f), det = [], del = [];
+    const cuerpoY = y - 10 - alza * 6;
+    if (v === 'de') {
+      det.push({ c: [x - 7, cuerpoY + 2, x - 9 - sw * 3, y - 1, 2.2, 1.6], rampa: R.atras }, { c: [x + 6, cuerpoY + 1, x + 9 + sw * 3 + alza * 4, y - 1 - alza * 6, 2.2, 1.6], rampa: R.atras });
+      det.push({ c: [x - 9, cuerpoY + 1, x + 7, cuerpoY - 2 - alza * 3, 5, 4.2], rampa: R.piel });
+      det.push({ e: [x + 12 + alza * 2, cuerpoY - 3 - alza * 4, 4.4, 3.8], rampa: R.hueso });
+      del.push({ c: [x - 6, cuerpoY + 3, x - 6 + sw * 3, y - 1, 2.2, 1.6], rampa: R.piel }, { c: [x + 7, cuerpoY + 1, x + 11 - sw * 3 + alza * 6, y - 1 - alza * 8, 2.4, 1.6], rampa: R.piel });
+    } else {
+      const ab = v === 'ab';
+      for (const s of [-1, 1]) det.push({ c: [x + s * 6, cuerpoY + 1, x + s * 8, y - 1 + (s > 0 ? sw : -sw), 2.2, 1.6], rampa: R.atras });
+      det.push({ e: [x, cuerpoY - 1, 8, 6], rampa: R.piel });
+      if (ab) det.push({ e: [x, cuerpoY + 2 - alza * 3, 4.6, 4], rampa: R.hueso });
+      for (const s of [-1, 1]) del.push({ c: [x + s * 5, cuerpoY + 2, x + s * (6 + alza * 3), y - 1 - alza * 8, 2.4, 1.6], rampa: R.piel });
+    }
+    masas(L, det, HW, HH);
+    // las vértebras de la espalda y el cráneo con sus cuencas
+    if (v === 'de') { for (let i = 0; i < 5; i++) { const bx = x - 7 + i * 3, by = Math.round(cuerpoY - 5 - alza * (i / 5) * 3); L.px(bx, by, R.hueso[3]); L.px(bx + 1, by, R.hueso[2]); } const hx = Math.round(x + 12 + alza * 2), hy = Math.round(cuerpoY - 3 - alza * 4); L.px(hx + 1, hy - 1, pal.cuenca); L.px(hx + 2, hy - 1, pal.cuenca); if (!k.ojosC) { L.px(hx + 2, hy - 1, pal.ojo); luz.px(hx + 2, hy - 1, pal.ojo); } for (let i = 0; i < 4; i++) L.px(hx + 1 + i, hy + 2 + (i % 2) + (k.boca || 0), R.hueso[i % 2 ? 2 : 4]); }
+    else if (v === 'ab') { const hy = Math.round(cuerpoY + 2 - alza * 3); for (const dx of [-2, 1]) { L.px(x + dx, hy - 1, pal.cuenca); L.px(x + dx + 1, hy - 1, pal.cuenca); if (!k.ojosC) { L.px(x + dx + (dx < 0 ? 1 : 0), hy - 1, pal.ojo); luz.px(x + dx + (dx < 0 ? 1 : 0), hy - 1, pal.ojo); } } for (let i = -2; i <= 2; i++) L.px(x + i, hy + 2 + (k.boca || 0), R.hueso[i % 2 ? 2 : 4]); }
+    else for (let i = 0; i < 5; i++) { L.px(x, Math.round(cuerpoY - 5 + i * 2), R.hueso[3]); L.px(x - 1, Math.round(cuerpoY - 5 + i * 2), R.hueso[2]); }
+    masas(L, del, HW, HH);
+    return { color: acabarH(L, luz, k, pal), luz, puntos: { cabeza: [x + 12, cuerpoY - 3] } };
+  }
+  const NECROFAGO = {
+    q: (v, f) => ({ alza: [0, 0.05, 0.1, 0.05][f] }), a: (v, f) => ({ fase: (f / 8) * Math.PI * 2 }),
+    p: (v, f) => ({ alza: [0.3, 0.6, 0.8][f], boca: f > 0 ? 1 : 0 }), g: (v, f) => ({ alza: [0.9, 0.5, 0.1][f], boca: f < 2 ? 2 : 0, fase: f }),
+    r: (v, f) => (f === 0 ? { alza: -0.2, ojosC: true } : {}),
+    m: (v, f) => [{ ojosC: true, alza: -0.3 }, { ojosC: true, alza: -0.6 }, { tumbado: true, ojosC: true }, { tumbado: true, ojosC: true }][f],
+    n: (v, f) => ({ hundido: [24, 16, 8, 0][f] }),
+  };
+  FICHAS.necrofago = {
+    manual: (anim, f, v) => cuadroNecrofago(v, NECROFAGO[anim](v, f), {
+      pal: { K: '#080606', cuenca: '#0a0606', ojo: '#ff5a3a' },
+      rampas: { piel: [0, '#2a1e22', '#4a3638', '#6e5450', '#94786c'], atras: [0, '#1a1214', '#2e2224', '#423234', '#584444'], hueso: [0, '#5a4c36', '#8e7c5c', '#c8b890', '#efe4c4'] },
+    }),
+    anims: { q: { n: 4, bucle: true }, a: { n: 8, bucle: true }, p: { n: 3 }, g: { n: 3 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 3 }, a: { fps: 12 }, p: { fps: 8 }, g: { fps: 12 } },
+    W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, zancada: 26, fpsQuieta: 3, vistas: true,
+  };
+  // ---------------------------------------------------------------- el Guardián de piedra (estatua que despierta)
+  function cuadroGuardian(v, k, o) {
+    const L = new Lienzo(HW, HH), luz = new Lienzo(HW, HH), R = o.rampas, pal = o.pal;
+    const x = HOX, y = HOY, f = k.fase || 0, alza = k.alza || 0, ag = k.agacha || 0, sw = Math.sin(f), det = [], del = [];
+    const t = y - 20 + ag * 6, brazoY = t - 6 - alza * 14;
+    for (const s of [-1, 1]) det.push({ c: [x + s * 4, t + 6, x + s * 5 + (v === 'de' ? s * sw * 2 : 0), y - 2, 3.2, 3], rampa: R.piedra }, { e: [x + s * 5, y - 1.5, 3.6, 2], rampa: R.piedra });
+    det.push({ e: [x, t, 10, 9], rampa: R.piedra }, { e: [x, t - 9 + ag * 2, 5, 4.4], rampa: R.piedra });
+    for (const s of [-1, 1]) del.push({ c: [x + s * 10, t - 4, x + s * (12 - alza * 4), brazoY + 12 + (k.golpe || 0) * 6, 3.4, 3.8], rampa: R.piedra }, { e: [x + s * (12 - alza * 4), brazoY + 14 + (k.golpe || 0) * 6, 4, 3.6], rampa: R.piedra });
+    masas(L, det, HW, HH);
+    // las runas y los ojos (apagados mientras es estatua)
+    const viva = !k.dormida, hy = Math.round(t - 9 + ag * 2);
+    if (v !== 'ar') { for (const dx of v === 'de' ? [2] : [-2, 1]) { const c = viva && !k.ojosC ? pal.runa[2] : R.piedra[1]; L.px(x + dx, hy, c); L.px(x + dx + 1, hy, c); if (viva && !k.ojosC) { luz.px(x + dx, hy, c); luz.px(x + dx + 1, hy, c); } } }
+    for (const [dx, dy] of [[-3, 0], [0, -2], [3, 0], [0, 3], [-1, 1], [1, 1]]) { const c = viva ? pal.runa[1] : R.piedra[1]; L.px(x + dx, Math.round(t + dy), c); if (viva) luz.px(x + dx, Math.round(t + dy), c); }
+    for (const [dx, dy] of [[-7, -5], [6, -6], [-4, 5], [7, 3]]) { L.px(x + dx, Math.round(t + dy), o.musgo[2]); L.px(x + dx + 1, Math.round(t + dy), o.musgo[1]); }
+    masas(L, del, HW, HH);
+    if (k.golpe > 0.5) for (const [dx, dy] of [[-15, 0], [15, 0], [-12, -2], [13, -1]]) L.px(x + dx, y + dy, '#8a8e9a');
+    return { color: acabarH(L, luz, k, pal), luz, puntos: { cabeza: [x, hy] } };
+  }
+  const GUARDIAN = {
+    q: (v, f) => ({ agacha: [0, 0, 0.1, 0.1][f] }), a: (v, f) => ({ fase: (f / 6) * Math.PI * 2 }),
+    e: (v, f) => ({ dormida: true, agacha: 1 }), d: (v, f) => ({ agacha: [0.8, 0.5, 0.2][f], dormida: f === 0 }),
+    p: (v, f) => ({ alza: [0.4, 0.8, 1][f] }), g: (v, f) => ({ alza: [0.5, 0, 0][f], golpe: [0.3, 1, 0.6][f], agacha: f ? 0.4 : 0.2 }),
+    r: (v, f) => (f === 0 ? { agacha: 0.3, ojosC: true } : {}),
+    m: (v, f) => ({ disuelve: [0.15, 0.4, 0.65, 0.9][f], dormida: f > 0, agacha: 0.6 }), n: (v, f) => ({ hundido: [30, 20, 10, 0][f] }),
+  };
+  FICHAS.guardian_piedra = {
+    manual: (anim, f, v) => cuadroGuardian(v, GUARDIAN[anim](v, f), {
+      pal: { K: '#0a0c14', runa: ['#1a3a6a', '#6a9aff', '#d8ecff'] }, musgo: ['#0e1a0a', '#2a4a1a', '#4a7a2a', '#7aaa44'],
+      rampas: { piedra: [0, '#2a3040', '#464e64', '#646e86', '#8a94aa'] },
+    }),
+    anims: { q: { n: 4, bucle: true }, a: { n: 6, bucle: true }, e: { n: 1, bucle: true }, d: { n: 3 }, p: { n: 3 }, g: { n: 3 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 2 }, a: { fps: 6 }, p: { fps: 5 }, g: { fps: 10 } },
+    W: HW, H: HH, ox: HOX, oy: HOY, px: 1, yaw: 0, zancada: 30, fpsQuieta: 2, vistas: true,
+  };
   function registrar() { for (const [t, d] of Object.entries(FICHAS)) CRI.DEF[t] = d; }
   registrar();
   return { gusano, cuadro, FICHAS, W, H, OX, OY };
