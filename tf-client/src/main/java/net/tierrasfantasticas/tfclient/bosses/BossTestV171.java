@@ -417,7 +417,9 @@ final class BossTestV171 {
                 f.showBorder = true;
                 if (big != null) big.getOwnFlags().showBorder = true;
                 ClaimManager.getInstance().save();
-                player.teleportTo(level, minePos.getX() - 34.5, minePos.getY() + 30, minePos.getZ() + 0.5, -90F, 40F);
+                // de pie dentro de la grande, a 6 bloques del lado oeste de la pequeña, mirando hacia ella (las líneas se
+                // ven a menos de 32 bloques)
+                player.teleportTo(level, minePos.getX() - 31.5, minePos.getY(), minePos.getZ() - 6.5, -65F, 12F);
                 BossTest.hideHud = true;
             }
             case 710 -> BossTest.shot(r, "v171_06b_borde_independiente");

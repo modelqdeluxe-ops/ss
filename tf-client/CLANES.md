@@ -20,6 +20,13 @@ CHECKPOINT de `HANDOFF.md`). Si el dueño pide más cosas de clanes, mira las id
 - **Clan Coins sin inflar**: «no pongas esa moneda inflada, que sea como las de gacha: 1 o 2 máximo en recompensas».
   Todo lo que da Clan Coins da 1–2 y los precios de la tienda/banco van en esa escala.
 
+### ONDA de la etiqueta (1.3.171)
+
+El dueño: «hay una opción que no es arcoíris pero da el efecto de arcoíris; el efecto arcoíris solo si lo compras». Era
+ONDA con 2-3 colores cualesquiera corriendo. Ahora ONDA de varios colores solo con los efectos arcoíris comprados
+(`ClanTagFx.of`, `PadClans` tagfx, `PadColorPicker.waveColors`); sin ellos, ONDA de un color: un brillo que recorre la
+etiqueta sin cambiar de tono. DEGRADADO sigue gratis (no se anima).
+
 ### El chat del clan en Mohist (1.3.169)
 
 `/clan chat` no repartía nada en el Mohist del dueño: el `ServerChatEvent` de Mohist llega con `getRawText()` vacío y se
