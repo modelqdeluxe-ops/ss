@@ -1,5 +1,8 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **4 nov 2026 — 1.3.173**: la maza con el sonido y la explosión de polvo de la 1.21 (los sonidos los baja cada
+> cliente de Mojang, no van en el jar: `items/TFMaceClient`). Prueba `[prueba-jefes=maza]`.
+>
 > **4 nov 2026 — 1.3.172**: las lanzas lanzadas de los sets, todas al tamaño del tridente de Minecraft
 > (`TFThrownTridentRenderer.VANILLA_LENGTH`). Prueba `[prueba-jefes=lanzas]`.
 >

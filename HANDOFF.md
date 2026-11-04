@@ -285,6 +285,22 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (4 nov 2026, TF Client 1.3.173: EL SONIDO Y LA ANIMACIÓN DE LA MAZA DE LA 1.21) — lee esto primero
+
+- El dueño: «la maza no hace ni tiene el sonido ni la animación de la maza vanilla». La 1.21 no está en la 1.20.1: se
+  ponía yunque/explosión y polvo de bloque normal.
+- **Sonidos** (`items/TFMaceClient`): los de la maza (`item/mace/smash_ground1-4`, `smash_ground_heavy`, `smash_air1-3`) y
+  los de la Ráfaga (`entity/wind_charge/wind_burst1-3`) son de Mojang: **no van en el jar**. Cada TF Client los baja al
+  arrancar (`AddPackFindersEvent`, solo los que faltan, máx. 15 s) de `resources.download.minecraft.net/<2>/<sha1>` (los
+  hashes del índice de assets 17 de la 1.21), comprueba el SHA-1, los guarda en `<juego>/tfclient/sonidos_minecraft` y
+  los sirve como paquete de recursos fijo («TF Client: sonidos de la maza»). Eventos en `sounds.json`: `maza.golpe_suelo`,
+  `maza.golpe_suelo_fuerte`, `maza.golpe_aire`, `maza.rafaga` (con los subtítulos). Sin los archivos, suena lo de antes.
+- **Animación**: el servidor manda `TFMaceNet.Smash` (canal `tfclient:maza`) a los TF Client a 64 bloques y el cliente
+  hace lo de la 1.21: el sonido desde quien pega (el fuerte si caía más de 5; «en el aire» si el blanco no pisaba
+  suelo) y `spawnSmashAttackParticles(750)` con DUST_PILLAR (250 en el centro y 500 en un anillo de 3,5 bloques que
+  suben con fuerza, 20-40 ticks; respeta el ajuste de partículas).
+- Prueba `[prueba-jefes=maza]` (`bosses/BossTestMaza`): un bot cae con un martillo sobre un gólem; capturas del polvo.
+
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.172: LAS LANZAS LANZADAS, AL TAMAÑO DEL TRIDENTE) — lee esto primero
 
 - El dueño preguntó si el tamaño de las lanzas lanzadas estaba bien. Medido (prueba `[prueba-jefes=lanzas]`,
