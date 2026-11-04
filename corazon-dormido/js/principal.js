@@ -511,6 +511,8 @@ function cuadroCriatura(e, c, A) {
   const TT = D.tiempos || {};
   if ((e.estado === 'prepara' || e.estado === 'conjura') && A.p) return fr('p', TT.p ? cuadroPorTiempo(TT.p, A.p.n, e.t, false) : Math.min(0.999, e.t / (PREPARA[c.conducta] || 0.5)) * A.p.n);
   if (A.g && (e.estado === 'carga' || e.estado === 'muerde')) return fr('g', TT.g ? cuadroPorTiempo(TT.g, A.g.n, e.t, false) : Math.min(0.999, e.t / 0.3) * A.g.n);
+  // el mole: tras el golpe se queda con la cuchilla en el suelo y se recupera (los cuadros del golpe con sus tiempos)
+  if (A.g && e.estado === 'descansa' && c.conducta === 'bruto' && TT.g) return fr('g', cuadroPorTiempo(TT.g, A.g.n, e.t, false));
   if (A.g && e.golpeT && J.t - e.golpeT < 0.45) return fr('g', ((J.t - e.golpeT) / 0.45) * A.g.n);
   // de frente o de espaldas si anda sobre todo hacia abajo o hacia arriba (como Core Keeper); de lado si no
   const vista = D.vistas && !D.manual && e.vista && e.vista !== 'de' ? e.vista : null;

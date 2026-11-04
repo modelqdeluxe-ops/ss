@@ -85,8 +85,21 @@ nosotros (ver `ARTE.md`).
   máscara de frente y de espaldas; el juego elige la vista por hacia dónde anda (`principal.js`, `cuadroCriatura`).
 - Paredes: tapa negra con marco de 3 px (`arte.js`, `muroArriba`; `gl.js`, tapa 0,8).
 
+## Hecho en la 0.9.1 (todo a mano, sin esqueleto ni modelos 3D)
+- Grutos cuadro a cuadro por piezas a mano (`js/criaturas-px.js`), con los tiempos de cada caveling.
+- Gusanos de anillos en tres vistas (`js/criaturas-px2.js`, `gusano`): larva (quieta 1, anda 4 a 8 fps, ataca 4 a
+  10 fps con pausas 0, 0, 1, 0; cabe en 16×16), larva de la Podre, gusano escupidor (como el «bigLarva»: anda 6 a
+  10 fps, ataca 6 a 10 fps con pausas 0, 0, 2, 0, 0, 0) y sanguijuela.
+- Gruto mole (`criaturas-px2.js`, `mole`; como el «cavelingBrute», cuadros de unos 44×40): quieto 5 a 10 fps con
+  pausas 4, 0, 0, 4, 0; anda 10 a 10 fps; ataca 9 a 10 fps con pausas 0, 0, 2, 0, 0, 1, 0, 0, 0 (tres alzando y seis
+  del golpe; en el juego el golpe sigue mientras «descansa», `principal.js`). Se pinta con masas (elipses y
+  cápsulas con luz arriba a la izquierda, surco y contorno) y la cabeza de gruto a mano.
+- Objetos del mundo a mano (`js/objetos-px.js`, `MUNDO`): casi todos; faltan la tienda, el trono, el altar del
+  cielo, la fuente seca, el Archivero, Muda, la raíz y el árbol muerto.
+
 ## Lo que queda (por orden)
-1. Las demás criaturas con vistas de frente y espaldas (gusanos, sanguijuela, necrófago, velados…).
+1. Las demás criaturas a mano en tres vistas: voladores (avispa, moscarda), escarabajo, sapo, necrófago, velados,
+   farolero, planta trampa, tentáculo, guardián de piedra, setón y velador caído; y los jefes por piezas a mano.
 2. Los ataques de las criaturas también de frente y de espaldas (ahora solo de lado).
 3. Suelos con el borde oscuro de cada zona y objetos con cuatro orientaciones.
 4. Leer el código del juego (`Pug.Other.dll`) para las fórmulas del jugador (velocidad, picar, empuje): hace falta
