@@ -430,6 +430,71 @@ const CRI_PX2 = (() => {
     pal: { K: '#040506', aguijon: '#c8ccd4', ojo: '#e0281c', cuenca: '#2a0606', brillo: '#ffb0a0' },
     rampas: Object.assign({ cuerpo: [0, '#0c1216', '#18242c', '#26384a', '#3a5266'], abdomen: [0, '#10241c', '#1e4a36', '#2e7050', '#52a476'], raya: [0, '#0a1410', '#14281e', '#1e3a2c', '#2a4c3a'], cabeza: [0, '#0c1216', '#18242c', '#26384a', '#3a5266'] }, ALA, { ala: [0, '#4a5058', '#7a848e', '#a4aeb8', '#ccd6de'], alaAtras: [0, '#30363c', '#4e565e', '#6a747c', '#8a949c'] }),
   });
+  // ---------------------------------------------------------------- la Lápida (escarabajo del musgo)
+  // El caparazón es una lápida de piedra con musgo y una cruz grabada; seis patas con paso en trípode (como los
+  // bichos de Core Keeper: anda 4 a 13 fps); antes de embestir rasca el suelo con la cabeza baja.
+  const EW = 48, EH = 36, EOX = 24, EOY = 32;
+  function cuadroEscarabajo(v, k, o) {
+    const L = new Lienzo(EW, EH), luz = new Lienzo(EW, EH), R = o.rampas, pal = o.pal;
+    const x = EOX, y = EOY + (k.bajo || 0), f = k.fase || 0, cab = k.cabeza || 0, formas = [], delante = [];
+    const pata = (hx, hy, fx, fy, atras) => ({ c: [hx, hy, fx, fy, 1.3, 1], rampa: atras ? R.pataAtras : R.pata });
+    if (v === 'de') {
+      for (let i = 0; i < 3; i++) { const ph = Math.sin(f + i * 2.1 + Math.PI) * 2.5; formas.push(pata(x - 5 + i * 5, y - 6, x - 6 + i * 6 + ph, y - (ph > 0 ? 1 : 0), true)); }
+      formas.push({ e: [x - 1, y - 11, 11, 7.5], rampa: R.concha }, { e: [x + 10 + cab * 0.5, y - 6 + cab, 3.8, 3.2], rampa: R.cabeza });
+      for (let i = 0; i < 3; i++) { const ph = Math.sin(f + i * 2.1) * 2.5; delante.push(pata(x - 4 + i * 5, y - 5, x - 4 + i * 6 + ph + (k.rasca && i === 2 ? -3 : 0), y - (ph > 0 ? 1 : 0), false)); }
+      masas(L, formas, EW, EH);
+      // la cruz y el musgo de la lápida, los cuernos y el ojo
+      const cx0 = x - 2, cy0 = y - 13;
+      for (let d = -3; d <= 3; d++) { L.px(cx0, cy0 + d, R.concha[1]); if (Math.abs(d) <= 2) L.px(cx0 + d, cy0 - 1, R.concha[1]); }
+      for (const [dx, dy] of [[-8, -15], [-6, -17], [-3, -18], [1, -18], [4, -17], [-5, -16], [2, -17]]) { L.px(x + dx, y + dy, o.musgo[2]); L.px(x + dx + 1, y + dy, o.musgo[3]); L.px(x + dx, y + dy + 1, o.musgo[1]); }
+      const hx = x + 10 + cab * 0.5, hy = y - 6 + cab;
+      CRI_PX.linea(L, [hx + 3, hy - 1], [hx + 6, hy - 3 + cab], pal.cuerno); CRI_PX.linea(L, [hx + 3, hy + 1], [hx + 6, hy + 2], pal.cuerno);
+      L.px(Math.round(hx + 1), Math.round(hy - 1), pal.ojo); luz.px(Math.round(hx + 1), Math.round(hy - 1), pal.ojo);
+      masas(L, delante, EW, EH);
+    } else {
+      const ab = v === 'ab';
+      for (const s of [-1, 1]) for (let i = 0; i < 3; i++) { const ph = Math.sin(f + i * 2.1 + (s > 0 ? Math.PI : 0)) * 1.5; formas.push(pata(x + s * 7, y - 9 + i * 3, x + s * (12 + (i === 1 ? 1 : 0)), y - 7 + i * 3 + ph, false)); }
+      if (!ab) formas.push({ e: [x, y - 3 - cab, 4, 3], rampa: R.cabeza });
+      formas.push({ e: [x, y - 11, 10, 8], rampa: R.concha });
+      if (ab) formas.push({ e: [x, y - 4 + cab, 4.2, 3.4], rampa: R.cabeza });
+      masas(L, formas, EW, EH);
+      if (ab) { const hy = y - 4 + cab; for (const dx of [-2, 2]) { L.px(x + dx - (dx < 0 ? 1 : 0), Math.round(hy - 1), pal.ojo); luz.px(x + dx - (dx < 0 ? 1 : 0), Math.round(hy - 1), pal.ojo); } CRI_PX.linea(L, [x - 2, hy + 2], [x - 4, hy + 5], pal.cuerno); CRI_PX.linea(L, [x + 1, hy + 2], [x + 3, hy + 5], pal.cuerno); }
+      // la cruz grabada (de espaldas, grande: es la lápida) y el musgo arriba
+      const cy0 = y - (ab ? 14 : 12), lc = ab ? 2 : 4;
+      for (let d = -lc; d <= lc + 1; d++) L.px(x, cy0 + d, R.concha[1]);
+      for (let d = -lc + 1; d <= lc - 1; d++) L.px(x + d, cy0 - (ab ? 0 : 1), R.concha[1]);
+      for (const dx of [-7, -4, -1, 2, 5]) { L.px(x + dx, y - 18 + (Math.abs(dx) > 5 ? 1 : 0), o.musgo[2]); L.px(x + dx + 1, y - 18, o.musgo[3]); L.px(x + dx, y - 17, o.musgo[1]); }
+    }
+    if (k.polvo) for (const [dx, dy] of [[-12, -1], [-14, -3], [-10, -2]]) L.px(x + (v === 'de' ? dx : dx / 2), y + dy, '#8a7a64');
+    contorno2(L, pal.K, EW, EH);
+    if (k.tumbado) { // boca arriba: el dibujo del revés, apoyado en el suelo
+      const d = L.d.slice(); L.d.fill(null); let fondo = 0, techo = EH;
+      for (let yy = 0; yy < EH; yy++) for (let xx = 0; xx < EW; xx++) if (d[yy * EW + xx]) { fondo = Math.max(fondo, yy); techo = Math.min(techo, yy); }
+      for (let yy = techo; yy <= fondo; yy++) for (let xx = 0; xx < EW; xx++) { const y2 = EOY - (yy - techo); if (y2 >= 0) L.d[y2 * EW + xx] = d[yy * EW + xx]; }
+      luz.d.fill(null);
+    }
+    if (k.hundido) { const d = L.d.slice(); L.d.fill(null); for (let yy = 0; yy < EH; yy++) for (let xx = 0; xx < EW; xx++) { const y2 = yy + k.hundido; if (y2 <= EOY && y2 < EH) L.d[y2 * EW + xx] = d[yy * EW + xx]; } luz.d.fill(null); }
+    return { color: MANO.normales(L), luz, puntos: { cabeza: [x + 10, y - 6] } };
+  }
+  const ESCARABAJO = {
+    q: (v, f) => ({ bajo: f ? 1 : 0 }),
+    a: (v, f) => ({ fase: (f / 4) * Math.PI * 2, bajo: f % 2 }),
+    p: (v, f) => ({ cabeza: 2, rasca: f === 0, fase: f ? 1 : 0, polvo: true }),
+    g: (v, f) => ({ cabeza: 2, fase: (f / 2) * Math.PI * 2, polvo: true, bajo: f }),
+    r: (v, f) => (f === 0 ? { bajo: 1, cabeza: -1 } : {}),
+    m: (v, f) => [{ cabeza: -1 }, { bajo: 2 }, { tumbado: true }, { tumbado: true }][f],
+    n: (v, f) => ({ hundido: [16, 10, 5, 0][f] }),
+  };
+  FICHAS.escarabajo_musgo = {
+    manual: (anim, f, v) => cuadroEscarabajo(v, ESCARABAJO[anim](v, f), {
+      pal: { K: '#0a0806', ojo: '#e0c040', cuerno: '#2a2018' },
+      musgo: ['#0e1a0a', '#2a4a1a', '#4a7a2a', '#7aaa44'],
+      rampas: { concha: [0, '#3a3c40', '#5a5e64', '#7e848a', '#a2a8ae'], cabeza: [0, '#14100c', '#2a2218', '#40342a', '#5a4a3a'], pata: [0, '#120e0a', '#241c14', '#3a2e22', '#4e3e2e'], pataAtras: [0, '#0a0806', '#160f0a', '#221810', '#2e2016'] },
+    }),
+    anims: { q: { n: 2, bucle: true }, a: { n: 4, bucle: true }, p: { n: 2 }, g: { n: 2 }, r: { n: 2 }, m: { n: 4 }, n: { n: 4 } },
+    tiempos: { q: { fps: 3 }, a: { fps: 13 }, p: { fps: 10, bucle: true }, g: { fps: 13, bucle: true } },
+    W: EW, H: EH, ox: EOX, oy: EOY, px: 1, yaw: 0, zancada: 14, fpsQuieta: 3, vistas: true,
+  };
   function registrar() { for (const [t, d] of Object.entries(FICHAS)) CRI.DEF[t] = d; }
   registrar();
   return { gusano, cuadro, FICHAS, W, H, OX, OY };
