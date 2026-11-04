@@ -1,0 +1,8 @@
+{
+  "name": "tf-mohist-bots",
+  "private": true,
+  "description": "Jugadores de prueba (bots con el apretón de manos de Forge) para el Mohist de tools/mohist",
+  "dependencies": {
+    "minecraft-protocol": "1.68.0"
+  }
+}

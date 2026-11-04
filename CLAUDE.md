@@ -17,6 +17,8 @@
 - Clanes (la app de clanes del pad, `/clan`, Clan Coins, misiones, banco, duelos, guerras): lee `tf-client/CLANES.md`
   antes de tocarlos; ahí está lo que pidió el dueño literal, lo hecho y lo que falta (31 oct: 1.3.155 sin publicar, la
   fase 2 a medias, y el dueño quiere **un solo parche con todo**: ver el CHECKPOINT del 31 oct de `HANDOFF.md`).
+- Mohist (el servidor del dueño: chat, comandos, eventos de Bukkit, EssentialsX, LuckPerms): se puede correr uno de
+  verdad en el contenedor con jugadores bot: `tf-client/tools/mohist/README.md` (1.3.169: el chat del clan).
 - Revivir (noqueo, revivir, rematar, `/revive`, `config/tfclient/revivir.json`; el Revive Mod del dueño dentro del
   TF Client desde la 1.3.157): lee `tf-client/REVIVIR.md` antes de tocarlo.
 - Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo

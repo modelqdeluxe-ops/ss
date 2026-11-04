@@ -1,0 +1,88 @@
+// Jugador de prueba para un servidor Forge/Mohist 1.20.1 (tf-client/tools/mohist/README.md): hace el apretón de manos de
+// Forge (FML3: contesta a fml:loginwrapper con la lista de mods y canales del servidor y acusa recibo de lo demás), entra
+// sin cuenta (online-mode=false), escribe en el chat lo que se añada a <carpeta>/<nombre>.cmd (una línea por mensaje o
+// comando; «quit» para salir) y apunta todo lo que le llega del chat (sistema y jugadores) en su salida.
+//   node bot.js <nombre> [puerto] [carpeta de los .cmd]
+const mc = require('minecraft-protocol');
+const fs = require('fs');
+const path = require('path');
+
+const name = process.argv[2] || 'Bot';
+const port = Number(process.argv[3] || 25565);
+const cmdFile = path.join(process.argv[4] || __dirname, `${name}.cmd`);
+fs.writeFileSync(cmdFile, '');
+
+const log = (...a) => console.log(new Date().toISOString().slice(11, 23), `[${name}]`, ...a);
+
+// ---- búfer de Minecraft (VarInt, cadenas) ----
+function readVarInt(buf, o) {
+  let v = 0, s = 0, b;
+  do { b = buf[o.i++]; v |= (b & 0x7f) << s; s += 7; } while (b & 0x80);
+  return v;
+}
+function readStr(buf, o) {
+  const n = readVarInt(buf, o);
+  const s = buf.toString('utf8', o.i, o.i + n);
+  o.i += n;
+  return s;
+}
+function varInt(v) {
+  const out = [];
+  do { let b = v & 0x7f; v >>>= 7; if (v) b |= 0x80; out.push(b); } while (v);
+  return Buffer.from(out);
+}
+function str(s) { const b = Buffer.from(s, 'utf8'); return Buffer.concat([varInt(b.length), b]); }
+function wrap(channel, inner) { return Buffer.concat([str(channel), varInt(inner.length), inner]); }
+
+const client = mc.createClient({ host: '127.0.0.1', port, username: name, version: '1.20.1', auth: 'offline', hideErrors: true });
+client.tagHost = '\0FML3\0';
+client.removeAllListeners('login_plugin_request');
+client.on('login_plugin_request', (p) => {
+  const reply = (data) => client.write('login_plugin_response', { messageId: p.messageId, data });
+  if (p.channel !== 'fml:loginwrapper' || !p.data) { log('login plugin desconocido', p.channel); return reply(undefined); }
+  const o = { i: 0 };
+  const inner = readStr(p.data, o);
+  const len = readVarInt(p.data, o);
+  const body = p.data.subarray(o.i, o.i + len);
+  if (inner !== 'fml:handshake') { log('loginwrapper de', inner, '(se contesta vacío)'); return reply(wrap(inner, Buffer.alloc(0))); }
+  if (body[0] === 1) {
+    // S2CModList: mods, canales (nombre → versión), registros y registros de datapacks
+    const b = { i: 1 };
+    const mods = []; for (let n = readVarInt(body, b); n > 0; n--) mods.push(readStr(body, b));
+    const channels = []; for (let n = readVarInt(body, b); n > 0; n--) channels.push([readStr(body, b), readStr(body, b)]);
+    log(`lista de mods del servidor: ${mods.length} mods, ${channels.length} canales`);
+    // C2SModListReply (2): los mismos mods y canales con su versión, sin registros
+    const parts = [Buffer.from([2]), varInt(mods.length), ...mods.map(str), varInt(channels.length)];
+    for (const [c, v] of channels) parts.push(str(c), str(v));
+    parts.push(varInt(0));
+    return reply(wrap('fml:handshake', Buffer.concat(parts)));
+  }
+  // registros, config, datos de los mods…: C2SAcknowledge (99)
+  return reply(wrap('fml:handshake', Buffer.from([99])));
+});
+
+client.on('login', () => log('dentro del mundo'));
+client.on('kick_disconnect', (p) => log('ECHADO:', JSON.stringify(p.reason)));
+client.on('end', (r) => { log('fin de la conexión', r || ''); process.exit(0); });
+client.on('error', (e) => log('error', e.message));
+
+function plain(json) {
+  try {
+    const j = typeof json === 'string' ? JSON.parse(json) : json;
+    const walk = (c) => (typeof c === 'string' ? c : (c.text || '') + (c.translate ? `{${c.translate}${c.with ? ':' + c.with.map(walk).join('|') : ''}}` : '') + (c.extra || []).map(walk).join(''));
+    return walk(j);
+  } catch { return String(json); }
+}
+client.on('systemChat', (m) => log('CHAT sistema:', plain(m.formattedMessage)));
+client.on('playerChat', (m) => log('CHAT jugador:', plain(m.senderName), '→', m.plainMessage ?? plain(m.formattedMessage), m.unsignedContent ? '| ' + plain(m.unsignedContent) : ''));
+
+let done = 0;
+setInterval(() => {
+  const lines = fs.readFileSync(cmdFile, 'utf8').split('\n').filter(Boolean);
+  for (; done < lines.length; done++) {
+    const line = lines[done];
+    if (line === 'quit') { client.end('fin'); return; }
+    log('escribe:', line);
+    client.chat(line);
+  }
+}, 200);

@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **4 nov 2026 — 1.3.169, EL CHAT DEL CLAN EN MOHIST**: en Mohist el `ServerChatEvent` llega con el texto vacío; ahora
+> lo reparte el mixin de `broadcastChatMessage`. Probado en un **Mohist de verdad en el contenedor** con bots:
+> `tf-client/tools/mohist/` (README). CHECKPOINT en `HANDOFF.md`.
+>
 > **3 nov 2026 — 1.3.168, LOS OBJETOS DE TF FUERA DEL CREATIVO**: nadie (ni OP) los ve en el creativo ni en JEI y el
 > servidor rechaza sacarlos, moverlos o copiarlos en creativo (`items/TFCreativeGuard`); Espinas en toda la armadura con
 > el yunque; las piezas de las crates se desencantan en la piedra de afilar (las de los rangos no). CHECKPOINT en

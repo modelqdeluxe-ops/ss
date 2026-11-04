@@ -285,6 +285,30 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (4 nov 2026, TF Client 1.3.169: EL CHAT DEL CLAN EN MOHIST, PROBADO EN UN MOHIST DE VERDAD) — lee esto primero
+
+- El dueño: «el chat del clan no funciona, no enviaba el mensaje, nada… haz lo posible por correr Mohist». Se montó un
+  **Mohist 1.20.1 de verdad en el contenedor** (build 921, Forge 47.4.23, con EssentialsX, EssentialsXChat y LuckPerms,
+  como el suyo) y jugadores bot que hacen el apretón de manos de Forge: **`tf-client/tools/mohist/`** (léete su
+  `README.md`). Con la 1.3.168 se reprodujo igual que lo vio él: `TF Clanes: chat del clan de Ana (por Forge, hilo Async
+  Chat Thread)` y luego nada, a nadie le llegaba.
+- **La causa**: en Mohist el `ServerChatEvent` de Forge sale del decorador del chat de Mohist
+  (`ForgeHooks.getServerChatSubmittedDecorator`) solo cuando un plugin cambió el formato o el nombre, y con
+  `getRawText()` **vacío** (Mohist lo saca de la raíz de un texto de Bukkit, que siempre es ""). `PadClanChat.onServerChat`
+  lo cancelaba (por eso no salía en el público) y repartía un texto vacío, que `route` tiraba sin avisar. Lo de la 1.3.167
+  (repartir en el momento) no tenía que ver.
+- **Arreglo** (`pad/server/PadClanChat.onServerChat`): con Bukkit (Mohist) o sin texto, ese evento ya no se toca; el
+  mensaje sigue a `broadcastChatMessage`, donde el mixin (`mixin/claims/ServerChatPromptMixin`) lo reparte con lo escrito
+  de verdad (`signedContent`), o al `AsyncPlayerChatEvent` de Bukkit. En Forge sin Bukkit, como antes. Y un texto vacío ya
+  no se pierde en silencio (registro + aviso en rojo al que escribe).
+- **Probado en Mohist** (`tools/mohist/probar_chat_clan.sh`): 22 de 22 «bien» (lo de [TF] solo a su clan y a la
+  operadora, lo de [OTR] igual, quien lo tiene activado no ve el público, `disable` vuelve al público, el registro pone
+  `[Clan TF] Ana: …` «por mixin» y nunca como chat público). Con la 1.3.168, 7 fallos.
+- Antes de tocar algo que en Mohist vaya por otro camino (chat, comandos, eventos de Bukkit), pruébalo ahí con esa
+  carpeta: el jar sale del artefacto `tfclient-jar` de la ejecución de la rama (no se compila en el contenedor).
+- Lo que preguntó el dueño de paso: el aviso del juego al comprar con cupón **no** dice que fue con descuento (solo
+  «Recibiste X» y «Steve compró X»); no pidió cambiarlo.
+
 ### CHECKPOINT (3 nov 2026, TF Client 1.3.168: LOS OBJETOS DE TF FUERA DEL CREATIVO, ESPINAS EN TODA LA ARMADURA Y DESENCANTAR LAS CRATES) — lee esto primero
 
 El dueño: «elimina por completo que los items del mod salgan en el inventario creativo… ni operadores ni miembros con
