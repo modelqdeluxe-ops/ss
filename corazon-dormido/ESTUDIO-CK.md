@@ -122,7 +122,17 @@ nosotros (ver `ARTE.md`).
   cebo), el Necrófago (a cuatro patas), el Guardián de piedra (duerme como estatua y despierta), la Fauce y el Brazo
   de la Podre (salen del suelo, se curvan y muerden o golpean).
 
+## Hecho en la 0.10.2
+- Personaje nuevo: cabezas de 13×11 con la construcción de las de Core Keeper (de sus capas `Miner_skin`,
+  `Miner_eyes`, `Miner_hair*`: cara ancha, ojos de 2×3 —raya oscura, brillo e iris—, colorete, el pelo con volumen y
+  flequillo) en `js/mano.js` (`CABEZA`), cuello claro de camisa en vez de la bufanda roja (`js/personaje-px.js`) y
+  aspecto por defecto nuevo (`ASPECTO_INICIAL` en `js/personaje.js`; quien tenía el viejo sin tocar pasa al nuevo).
+
 ## Lo que queda (por orden)
+0. **El dueño dice que los bichos hechos con masas (elipses y cápsulas generadas, `criaturas-px2.js`) se ven mal
+   hechos.** Rehacerlos dibujados píxel a píxel como los grutos de `criaturas-px.js`: piezas de rejillas de letras con
+   el contorno puesto a mano y colocadas en cada cuadro con desplazamientos enteros (nada generado). Orden: larvas,
+   babas, mole, voladores, Lápida, sapo, Velado, Farolero, Necrófago, Guardián, Fauce, Brazo de la Podre.
 1. Lo que aún es de esqueleto: el setón y el velador caído, las mascotas, los mercaderes y los siete jefes (por
    piezas a mano, con masas como el mole; `criaturas-px2.js` tiene `masas`, `contorno2`, `tumbar` y `acabarH`).
 2. Iconos que faltan por rehacer a mano: comida, semillas, peces, materiales sueltos, muebles de la casa.
