@@ -299,7 +299,10 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
   hace lo de la 1.21: el sonido desde quien pega (el fuerte si caía más de 5; «en el aire» si el blanco no pisaba
   suelo) y `spawnSmashAttackParticles(750)` con DUST_PILLAR (250 en el centro y 500 en un anillo de 3,5 bloques que
   suben con fuerza, 20-40 ticks; respeta el ajuste de partículas).
-- Prueba `[prueba-jefes=maza]` (`bosses/BossTestMaza`): un bot cae con un martillo sobre un gólem; capturas del polvo.
+- Prueba `[prueba-jefes=maza]` (`bosses/BossTestMaza`, commit 6a2a5b58): un bot cae con un martillo sobre un gólem.
+  **4 de 4 bien**: los sonidos bajados y en los recursos; cayendo 3 bloques «golpe_suelo» y 750 partículas; cayendo 7,
+  el fuerte; con el gólem en el aire, «golpe_aire» y sin polvo. Capturas del polvo (`maza_01`…`03`). Ojo: un mob sin IA
+  no tiene `onGround` (no se mueve): `TFMace.standsOnGround` mira también el bloque bajo los pies.
 
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.172: LAS LANZAS LANZADAS, AL TAMAÑO DEL TRIDENTE) — lee esto primero
 
