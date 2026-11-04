@@ -137,7 +137,7 @@ function migrarV4(g) {
 // Lo que guarda la partida además del mundo (la de la 0.6 lo guardaba igual).
 function restaurarJugador(g) {
   Object.assign(J, { sel: g.sel || 0, hito: g.hito || {}, objetivo: g.objetivo || 0, hab: g.hab || {}, buffs: g.buffs || [], jefesMuertos: g.jefesMuertos || {}, estatuas: g.estatuas || {}, cama: g.cama || null, tiempoMundo: g.tiempo || 0, corazonDespierto: !!g.despierto });
-  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto || Object.assign({}, ASPECTO_INICIAL), pasos: g.pasos || {}, bestiario: g.bestiario || {}, encargos: g.encargos || {} });
+  Object.assign(J, { mascotas: g.mascotas || {}, altares: g.altares || {}, murallaAbierta: !!g.muralla, aspecto: g.aspecto && !['piel', 'pelo', 'peinado', 'ropa'].every((k) => g.aspecto[k] === ASPECTO_VIEJO[k]) ? g.aspecto : Object.assign({}, ASPECTO_INICIAL), pasos: g.pasos || {}, bestiario: g.bestiario || {}, encargos: g.encargos || {} });
   J.equipo = Object.assign({ casco: null, peto: null, botas: null, acc1: null, acc2: null, mascota: null, mano2: null }, g.equipo || {});
   J.inv = (g.inv || []).concat(new Array(N_INV).fill(null)).slice(0, N_INV);
   for (const s of J.inv) if (s) asegurarItem(s.id);

@@ -9,12 +9,13 @@
 
 const ASPECTO = {
   piel: ['#f2c2a0', '#e0a882', '#b8805a', '#8a5a3c', '#5e3a28'],
-  pelo: ['#b0582c', '#2a2230', '#e8c060', '#d8402c', '#e4e4ec', '#4a6ad8', '#e870a8', '#3aa070', '#8a5ad0'],
+  pelo: ['#b0582c', '#2a2230', '#e8c060', '#d8402c', '#e4e4ec', '#4a6ad8', '#e870a8', '#3aa070', '#8a5ad0', '#6a4228'],
   peinado: ['melena', 'corto', 'coleta', 'moño', 'erizo'],
   ropa: ['#2c8276', '#b03a3a', '#3a5ab0', '#7a3aa0', '#c09a2a', '#5a6070', '#3a8a3a', '#d0702a'],
 };
 const NOMBRE_PEINADO = { melena: 'Melena', corto: 'Corto', coleta: 'Coleta', moño: 'Moño', erizo: 'Erizo' };
-const ASPECTO_INICIAL = { piel: 0, pelo: 0, peinado: 'melena', ropa: 0 };
+const ASPECTO_INICIAL = { piel: 1, pelo: 9, peinado: 'corto', ropa: 2 }; // 0.10.2: ya no es el pelirrojo de antes
+const ASPECTO_VIEJO = { piel: 0, pelo: 0, peinado: 'melena', ropa: 0 };
 
 const MATS_ARMADURA = (() => {
   const { mat, rampa } = ESCU;

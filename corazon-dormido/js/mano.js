@@ -54,121 +54,123 @@ const MANO = (() => {
 // cuerpo 13–18 y piernas 19–21 (los pies tocan el borde de abajo).
 const PJ_MANO = (() => {
   const W = 15, H = 22;
-  // ---- cabezas (13×11), por dirección y peinado. Lo que no es pelo es igual en todos.
+  // ---- cabezas (13×11), por dirección y peinado, con la construcción de las de Core Keeper (medidas de sus capas,
+  // ESTUDIO-CK.md): cara ancha, ojos grandes de 2×3 (raya oscura arriba, brillo e iris) y colorete; el pelo con volumen
+  // arriba y la raya del flequillo. Lo que no es pelo es igual en todos.
   const CABEZA = {
     ab: {
       melena: `
-....ooo.oo...
-...ohhgohho..
-..ohgGghhhHo.
-.ohgGghhhhHHo
-.ohgghhhHhHHo
-ohhhhhHhHHhHo
-oHhsHhhHssHHo
-oHhsHsssHssHo
-oHseEssseEsHo
-oHswessswesHo
-oHHbsssssbSHo`,
+.....ooooo...
+...oohggGhoo.
+..ohgGGghhhHo
+.ohgGghhhhhHo
+.ohhhhhhHhHHo
+ohHhsHhsshHHo
+oHssssssssSHo
+oHsEEsssEEsHo
+oHswesssweSHo
+oHbeessseebHo
+oHHSsssssSHHo`,
       corto: `
 .....ooooo...
-...oohhgghoo.
-..ohgGGghhHo.
-.ohgGghhhhHHo
-.ohgghhhHhHHo
-.ohhhhhHhHHho
-.oHsHhhHssHo.
-.oHsssHsssHo.
-.oSseEssseEs.
-.oSswessswes.
-..Sbsssssbs..`,
+...oohggGhoo.
+..ohgGGghhhHo
+.ohgGghhhhhHo
+.ohhhhhhHhHHo
+ohHhsHhsshHHo
+oHssssssssSHo
+oHsEEsssEEsSo
+oSswesssweSSo
+oSbeessseebSo
+.oSSsssssSSo.`,
       erizo: `
-.o..o.o..o.o.
-.ho.hohohoho.
-.hgohgGohhHo.
-.ohgGghhhhHHo
-.ohgghhhHhHHo
-.ohhhhhHhHHho
-.oHsHhhHssHo.
-.oHsssHsssHo.
-.oSseEssseEs.
-.oSswessswes.
-..Sbsssssbs..`,
+..o..oo..o...
+.oho.ogo.oho.
+.ohgoGghoohHo
+.ohgGghhhhhHo
+.ohhhhhhHhHHo
+ohHhsHhsshHHo
+oHssssssssSHo
+oHsEEsssEEsSo
+oSswesssweSSo
+oSbeessseebSo
+.oSSsssssSSo.`,
     },
     ar: {
       melena: `
-....ooo.oo...
-...ohhgohho..
-..ohgGghhhHo.
-.ohgGghhhhHHo
-.ohgghhhhhHHo
-ohghhhhhhhHHo
+.....ooooo...
+...oohggGhoo.
+..ohgGGghhhHo
+.ohgGghhhhhHo
+.ohhhhhhHhHHo
 ohhhhhhhhHHHo
-oHhhhhHhhhHHo
-oHhhhHHhhHHHo
-oHHhHHoHHhHHo
-.oHHoHHoHHHo.`,
+ohHhhhhhHhHHo
+oHhhhHhhhHHHo
+oHHhHHhhHHHHo
+oHHHHHHHHHHHo
+oHHhHHoHHhHHo`,
       corto: `
 .....ooooo...
-...oohhgghoo.
-..ohgGGghhHo.
-.ohgGghhhhHHo
-.ohgghhhhhHHo
-.ohhhhhhhHHHo
-.oHhhhHhhhHHo
-.oHhhHHhhHHo.
+...oohggGhoo.
+..ohgGGghhhHo
+.ohgGghhhhhHo
+.ohhhhhhHhHHo
+ohhhhhhhhHHHo
+ohHhhhhhHhHHo
+oHhhhHhhhHHHo
+oHHhHHhhHHHHo
 .oHHHHHHHHHo.
-..SHHHHHHHS..
-..SsssssssS..`,
+..oSsssssSo..`,
       erizo: `
-.o..o.o..o.o.
-.ho.hohohoho.
-.hgohgGohhHo.
-.ohgGghhhhHHo
-.ohgghhhhhHHo
-.ohhhhhhhHHHo
-.oHhhhHhhhHHo
-.oHhhHHhhHHo.
+..o..oo..o...
+.oho.ogo.oho.
+.ohgoGghoohHo
+.ohgGghhhhhHo
+.ohhhhhhHhHHo
+ohhhhhhhhHHHo
+ohHhhhhhHhHHo
+oHhhhHhhhHHHo
+oHHhHHhhHHHHo
 .oHHHHHHHHHo.
-..SHHHHHHHS..
-..SsssssssS..`,
+..oSsssssSo..`,
     },
     de: {
       melena: `
-...ooooo.....
-..ohhgggoo...
-.ohhgGGgghho.
-ohhhgGgghhhho
-ohhhhhhhhhHHo
-oHhhhhhhHhHho
-oHhhHhsHssHh.
-oHhHhssssssH.
-oHHhSsssseEs.
-oHHHSsssswess
-.oHHSssssbsS.`,
+....ooooo....
+..oohggGhoo..
+.ohgGGghhhho.
+ohgGghhhhhhHo
+ohhhhhhhHhHHo
+oHhhhhHhshhs.
+oHhhhhHsssss.
+oHHhhHSssEEs.
+oHHhhSssswes.
+oHHHSSsbsees.
+oHHHHSSsssS..`,
       corto: `
-...ooooo.....
-..ohhgggoo...
-.ohhgGGgghho.
-ohhhgGgghhhho
-ohhhhhhhhhHHo
-.oHhhhhhHhHho
-.oHhHhsHssHh.
-.oHHhssssssH.
-.oHHSsssseEs.
-..oSSsssswess
-...SSssssbsS.`,
+....ooooo....
+..oohggGhoo..
+.ohgGGghhhho.
+ohgGghhhhhhHo
+ohhhhhhhHhHHo
+oHhhhhHhshhs.
+oHhhhhHsssss.
+oHHhhHSssEEs.
+oHHhhSssswes.
+oHHhSSsbsees.
+.oHHoSSsssS..`,
       erizo: `
-..o.o.o.o....
-..hohohoho...
-.ohhgGGgghho.
-ohhhgGgghhhho
-ohhhhhhhhhHHo
-.oHhhhhhHhHho
-.oHhHhsHssHh.
-.oHHhssssssH.
-.oHHSsssseEs.
-..oSSsssswess
-...SSssssbsS.`,
+..o.o..o.....
+.ohohoGoho...
+.ohgGGghhhho.
+ohgGghhhhhhHo
+ohhhhhhhHhHHo
+oHhhhhHhshhs.
+oHhhhhHsssss.
+oHHhhHSssEEs.
+oHHhhSssswes.
+oHHhSSsbsees.
+.oHHoSSsssS..`,
     },
   };
   // la coleta y el moño son el peinado corto con algo encima
@@ -269,10 +271,10 @@ sS`;
     const P = {
       o: pelo[0], H: pelo[1], h: pelo[2], g: pelo[3], G: pelo[4],
       S: piel[1], s: piel[2], b: ESCU.mezclar(piel[2], '#e85a64', 0.38),
-      E: '#1a1830', e: '#3a9a8c', w: '#f4f2ff',
+      E: '#141428', e: '#3a74c8', w: '#f4f2ff',
       O: ropa[0], T: ropa[1], t: ropa[2], u: ropa[3],
-      R: '#6a1422', r: '#cc3440', B: '#3e2416', y: '#f0c040',
-      P: '#221a34', p: '#3e325c', K: '#24140c', k: '#6e4228', M: '#5a3420', m: '#8e5a34',
+      R: '#3e2a1c', r: '#7a5a3a', B: '#3e2416', y: '#f0c040',
+      P: '#2a2a32', p: '#464652', K: '#24140c', k: '#6e4228', M: '#5a3420', m: '#8e5a34',
     };
     // armaduras: el peto pinta la túnica (y la bufanda) con el metal; las botas, las botas y el pantalón
     if (eq && eq.peto) { const r = rampaMetal(eq.peto); Object.assign(P, { O: r[0], T: r[1], t: r[2], u: r[3], R: r[1], r: r[2] }); }

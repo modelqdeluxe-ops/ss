@@ -137,11 +137,11 @@ KKKK`,
     const L = {
       o: pelo[0], H: pelo[1], h: pelo[2], g: pelo[3], G: pelo[4],
       Z: piel[0], S: piel[1], s: piel[2], b: ESCU.mezclar(piel[2], '#e85a64', 0.38),
-      E: '#1a1830', e: '#3a9a8c', w: '#f4f2ff',
+      E: '#141428', e: '#3a74c8', w: '#f4f2ff',
       O: ropa[0], T: ropa[1], t: ropa[2], u: ropa[3],
-      R: '#5a1220', r: '#b8303c', q: '#e2584e',
+      R: '#6a5a48', r: '#c8b89a', q: '#efe4cc', // el cuello claro de la camisa (ya no la bufanda roja)
       B: '#3a2014', y: '#f0c040',
-      Q: '#140e1e', P: '#2a2040', p: '#463a68',
+      Q: '#16161c', P: '#2c2c36', p: '#4a4a58',
       K: '#2a160c', k: '#5e3820', j: '#8a5a32',
       N: '#2e180c', M: '#5a3420', m: '#7e4c2a', n: '#a46a3c',
     };
