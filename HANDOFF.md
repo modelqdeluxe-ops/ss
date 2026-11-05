@@ -285,6 +285,19 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (5 nov 2026, web: FUERA LOS COSMÉTICOS DE PRIMAVERA; alas de Primavera sin rendijas) — lee esto primero
+
+- El dueño, con captura de la pestaña Cosméticos: «quita eso de cosméticos no mames, esas alas son de una crate, quita
+  esos cosméticos ya de la tienda». Las dos piezas de `springcos` (Corona y Alas de Primavera) son las de la crate
+  Primavera: fuera de `config/products.json` y `tools/crates.py` ya no las genera (`NOT_SOLD`). El set sigue en el TF
+  Client (`mod_sets`): quien ya las compró no las pierde. Los de Unicornio son otro paquete (gorro, mochila, varita,
+  globo), no piezas de su crate: siguen.
+- Alas de Primavera «con la textura cortada» (captura del probador, en diagonal): el arreglo de la 1.3.166 echó hacia
+  atrás solo la tira de dentro del ala rosa (son 3 tiras) y de las plumas azules, y entre tiras quedó un escalón de
+  ~0,12 bloques por el que se veía el brazo. Ahora cada grupo de tiras unidas se mueve entero (`tools/espaldas.json`,
+  también `springcos` y la gema de la Dríada, el único otro caso). Medido con `ajustar_espaldas.py --medir` (bien) y
+  mirado en el probador desde 7 ángulos (antes/después). En el juego va en la próxima versión del TF Client.
+
 ### CHECKPOINT (5 nov 2026, PORT A FORGE 1.20.1 DE «OLAF'S RELATIVELY PLACED BLOCKS») — lee esto primero
 
 - El dueño subió `olafsrelativeblocks-2.0.0mc1.20.1.jar` (Fabric, LukeolafP, CC0) y pidió: «Portea este mod a Forge

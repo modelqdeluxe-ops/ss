@@ -306,9 +306,17 @@ def cosmetic_type(set_id, slug):
     return None
 
 
+# (5 nov 2026, el dueño, con captura de la pestaña de cosméticos: «quita eso de cosméticos no mames, esas alas son de una
+# crate, quita esos cosméticos ya de la tienda») Las piezas de Primavera son las de su crate: no se venden sueltas. El set
+# sigue registrado en el TF Client (mod_sets) para que quien ya las compró no las pierda.
+NOT_SOLD = {'springcos'}
+
+
 def cosmetic_products():
     out = []
     for set_id, (collection, (c1, c2), themes) in COSMETICS.items():
+        if set_id in NOT_SOLD:
+            continue
         names = {m['id']: m['name'] for m in listing(set_id)}
         for theme, pieces in themes:
             for piece, kind, price in pieces:
