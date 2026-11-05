@@ -222,8 +222,10 @@ public final class PruebaRelativeBlocks {
          }
          case 256 -> mc.gameMode.startDestroyBlock(A, Direction.UP);
          case 270 -> server.execute(() -> {
-            check("al romper, solo se va el bloque que se mira", count(level, A) == 1, members(level, A));
-            check("el grupo sigue en su sitio", level.getBlockState(A).is(BlockInit.BLOCK_CLUSTER), level.getBlockState(A).toString());
+            // queda uno: en un grupo de una mitad o, como en el original, vuelto a su bloque normal (dos mitades → una)
+            BlockState left = level.getBlockState(A);
+            boolean one = count(level, A) == 1 || left.is(Blocks.POPPY) || left.is(Blocks.DANDELION);
+            check("al romper, solo se va el bloque que se mira (queda el otro)", one, left + " · " + members(level, A));
          });
          case 280 -> server.execute(() -> serverPlayer(server).teleportTo(level, 6.5, -60, 0.5, 0F, 35F));
          case 290 -> {

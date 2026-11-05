@@ -285,6 +285,22 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (5 nov 2026, PORT A FORGE 1.20.1 DE «OLAF'S RELATIVELY PLACED BLOCKS») — lee esto primero
+
+- El dueño subió `olafsrelativeblocks-2.0.0mc1.20.1.jar` (Fabric, LukeolafP, CC0) y pidió: «Portea este mod a Forge
+  1.20.1 por favor, sin errores en Mohist». Es un mod aparte (no va dentro del TF Client): `ports/relativeblocks/`.
+- Todo (qué hace, cómo se pasó de Fabric a Forge pieza a pieza, cómo se prueba y cómo publicar) está en
+  **[`ports/relativeblocks/README.md`](ports/relativeblocks/README.md)**. Compila y publica
+  `.github/workflows/relativeblocks.yml` (Release `relativeblocks-forge-v<versión>` + la fija `relativeblocks` con
+  `relativeblocks.jar`, ninguna «latest»).
+- Probado: en el juego (`[prueba-relativeblocks]`, informe y capturas en la rama `pruebas-relativeblocks`: 11/11 bien)
+  y en un Mohist de verdad con TF Client, EssentialsX y LuckPerms y bots (`ports/relativeblocks/tools/probar_mohist.sh`),
+  incluidas las protecciones del TF Client (alguien de fuera de la zona no añade ni rompe nada de un grupo).
+- `tf-client/tools/mohist/bot.js` ahora sabe `!usar x y z [cara cx cy cz]` (el punto exacto del clic), `!mirar yaw
+  pitch` y `!romper x y z`.
+- Lección: el decompilador (Vineflower) estropea algunos `try/finally`; el CI lo cazó (`Object var17`). Se rehacen
+  mirando el bytecode original con `javap -c` (no a ojo).
+
 ### CHECKPOINT (4 nov 2026, TF Client 1.3.174 + web: MÉTRICAS DE JUGADORES CON NLOGIN EN /metricas) — lee esto primero
 
 - El dueño mandó la carpeta de nLogin («quiero saber por qué mi server no retiene gente… haz una métrica buena o

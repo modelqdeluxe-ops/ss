@@ -2,7 +2,8 @@
 // Forge (FML3: contesta a fml:loginwrapper con la lista de mods y canales del servidor y acusa recibo de lo demás), entra
 // sin cuenta (online-mode=false), escribe en el chat lo que se añada a <carpeta>/<nombre>.cmd (una línea por mensaje o
 // comando; «quit» para salir) y apunta todo lo que le llega del chat (sistema y jugadores) en su salida. Líneas especiales:
-// «!usar x y z» (clic derecho con lo de la mano sobre la cara de arriba de ese bloque), «!hueco n» (hueco de la barra) y
+// «!usar x y z [cara cx cy cz]» (clic derecho con lo de la mano sobre la cara de arriba de ese bloque, o la cara y el
+// punto que se digan), «!mirar yaw pitch», «!romper x y z», «!hueco n» (hueco de la barra) y
 // «!pad app|pestaña|acción|texto» (pulsar en el pad, como el TF Client). Apunta los avisos del pad y cuándo se le abre.
 // Confirma los /tp como el juego.
 //   node bot.js <nombre> [puerto] [carpeta de los .cmd]
@@ -106,10 +107,26 @@ setInterval(() => {
     const line = lines[done];
     if (line === 'quit') { client.end('fin'); return; }
     if (line.startsWith('!usar ')) {
-      // clic derecho con lo que lleva en la mano sobre la cara de arriba del bloque x y z
-      const [x, y, z] = line.slice(6).trim().split(/\s+/).map(Number);
-      log('usa lo de la mano sobre', x, y, z);
-      client.write('block_place', { hand: 0, location: { x, y, z }, direction: 1, cursorX: 0.5, cursorY: 1, cursorZ: 0.5, insideBlock: false, sequence: sequence++ });
+      // clic derecho con lo que lleva en la mano sobre la cara de arriba del bloque x y z; opcional: la cara
+      // (0 abajo, 1 arriba, 2 norte, 3 sur, 4 oeste, 5 este) y el punto de la cara (0..1 en x y z)
+      const [x, y, z, cara = 1, cx = 0.5, cy = 1, cz = 0.5] = line.slice(6).trim().split(/\s+/).map(Number);
+      log('usa lo de la mano sobre', x, y, z, 'cara', cara, 'en', cx, cy, cz);
+      client.write('block_place', { hand: 0, location: { x, y, z }, direction: cara, cursorX: cx, cursorY: cy, cursorZ: cz, insideBlock: false, sequence: sequence++ });
+      continue;
+    }
+    if (line.startsWith('!mirar ')) {
+      // girar la cabeza: «!mirar yaw pitch» (grados, como /tp)
+      const [yaw, pitch] = line.slice(7).trim().split(/\s+/).map(Number);
+      pos.yaw = yaw; pos.pitch = pitch;
+      client.write('look', { yaw, pitch, onGround: true });
+      continue;
+    }
+    if (line.startsWith('!romper ')) {
+      // empezar a romper el bloque x y z (en creativo se rompe ya; en supervivencia, además, «terminar»)
+      const [x, y, z, cara = 1] = line.slice(8).trim().split(/\s+/).map(Number);
+      log('rompe', x, y, z);
+      client.write('block_dig', { status: 0, location: { x, y, z }, face: cara, sequence: sequence++ });
+      client.write('block_dig', { status: 2, location: { x, y, z }, face: cara, sequence: sequence++ });
       continue;
     }
     if (line.startsWith('!pad ')) {

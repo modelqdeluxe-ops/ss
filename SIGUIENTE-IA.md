@@ -1,5 +1,9 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **5 nov 2026 — PORT DE «OLAF'S RELATIVELY PLACED BLOCKS» A FORGE 1.20.1**: un mod aparte (no es el TF Client) en
+> `ports/relativeblocks/` con su workflow (`relativeblocks.yml`), su prueba en el juego (`[prueba-relativeblocks]`) y su
+> prueba en Mohist (`tools/probar_mohist.sh`). Todo en `ports/relativeblocks/README.md` y el CHECKPOINT de `HANDOFF.md`.
+>
 > **4 nov 2026 — 1.3.174 + WEB, MÉTRICAS EN /metricas**: el puente manda a la web los registros de nLogin (desde el 26 de
 > octubre) y `/metricas` (con contraseña de staff) hace las gráficas de jugadores y un Excel. Mod: `server/NLoginLog`,
 > `server/TFNLogin`; web: `src/nlogin.js`, `public/metricas*.js`, `public/xlsx.js`. Todo en «Métricas de jugadores» de
