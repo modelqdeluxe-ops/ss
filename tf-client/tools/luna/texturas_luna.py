@@ -39,55 +39,35 @@ MASKS = [
 
 
 def eye_mask(size, face, eyes):
+    """(1.3.177) Solo los píxeles de los ojos (el dueño: «esos ojos están horribles, parecen lentes»: el halo de alrededor
+    de cada ojo se juntaba en una franja de 3x8 de lado a lado de la cara). El de dentro de cada ojo, un poco más claro."""
     img = np.zeros((size[1], size[0], 4), np.uint8)
-    u0, v0, u1, v1 = face
-    eyeset = set(eyes)
     for (u, v) in eyes:
-        for du in (-1, 0, 1):
-            for dv in (-1, 0, 1):
-                x, y = u + du, v + dv
-                if (x, y) in eyeset or not (u0 <= x < u1 and v0 <= y < v1):
-                    continue
-                if img[y, x, 3] == 0:
-                    k = 1.0 if du == 0 or dv == 0 else 0.55
-                    img[y, x] = (int(GLOW[0] * k), int(GLOW[1] * k), int(GLOW[2] * k), 255)
-    for i, (u, v) in enumerate(eyes):
-        # el píxel de dentro de cada ojo (el que da a la nariz), más caliente
         inner = (u == 10 or u == 13)
         img[v, u] = (*(HOT if inner else CORE), 255)
     return Image.fromarray(img, 'RGBA')
 
 
-def moon(px, seed=1175):
-    """Una luna llena roja, pixel art: degradado de carmesí a naranja, mares oscuros y cráteres con el borde claro."""
-    r = np.random.default_rng(seed)
-    y, x = np.mgrid[0:px, 0:px] + 0.5
-    c = px / 2
-    d = np.hypot(x - c, y - c) / (px * 0.47)
-    inside = d <= 1.0
-    # el degradado: más claro arriba a la izquierda
-    light = 0.55 + 0.45 * np.clip(1 - (((x - px * 0.38) ** 2 + (y - px * 0.36) ** 2) ** 0.5) / (px * 0.75), 0, 1)
-    base = np.stack([200 + 55 * light, 30 + 70 * light ** 2, 18 + 30 * light ** 2], -1)
-    # mares (manchas grandes y suaves)
-    mare = np.zeros((px, px))
-    for _ in range(5):
-        mx, my, mr = r.uniform(0.25, 0.75) * px, r.uniform(0.25, 0.75) * px, r.uniform(0.12, 0.22) * px
-        mare = np.maximum(mare, np.clip(1 - np.hypot(x - mx, y - my) / mr, 0, 1))
-    base *= (1 - 0.35 * np.clip(mare * 1.6, 0, 1))[..., None]
-    # cráteres
-    for _ in range(int(px * 0.55)):
-        cx, cy, cr = r.uniform(0.15, 0.85) * px, r.uniform(0.15, 0.85) * px, r.uniform(0.03, 0.09) * px
-        dd = np.hypot(x - cx, y - cy)
-        floor = dd < cr * 0.8
-        rim = (dd >= cr * 0.8) & (dd < cr * 1.1) & ((x - cx) + (y - cy) < 0)
-        base[floor] *= 0.78
-        base[rim] = np.minimum(255, base[rim] * 1.18)
-    # el borde, más oscuro (es una esfera)
-    base *= (0.75 + 0.25 * np.sqrt(np.clip(1 - d ** 2, 0, 1)))[..., None]
-    # cuantizar a pocos tonos (aspecto pixel art)
-    base = np.round(base / 12) * 12
-    a = np.where(inside, 255, 0)
-    img = np.dstack([np.clip(base, 0, 255), a]).astype(np.uint8)
+def moon_cell():
+    """(1.3.177) La luna llena roja en una celda de 32 como la de Minecraft (su disco ocupa 14 px, de 9 a 22: medido en
+    moon_phases.png): así sale del mismo tamaño que la de siempre (el dueño: «no tan grande»; antes llenaba la celda y
+    salía el doble). Pixel art: degradado de claro (arriba a la izquierda) a oscuro, tres manchas oscuras y el borde."""
+    img = np.zeros((32, 32, 4), np.uint8)
+    light, base, mid, dark = (244, 104, 72), (214, 50, 36), (178, 32, 26), (138, 18, 18)
+    spots = [(13.5, 13.5, 1.6), (18.5, 17.0, 1.9), (13.0, 19.0, 1.0)]
+    for y in range(32):
+        for x in range(32):
+            dx, dy = x + 0.5 - 16, y + 0.5 - 16
+            d = (dx * dx + dy * dy) ** 0.5
+            if d > 7.0:
+                continue
+            k = (dx + dy) / 14.0                   # -1 arriba a la izquierda, +1 abajo a la derecha
+            c = light if k < -0.5 else base if k < 0.25 else mid
+            if any(((x + 0.5 - sx) ** 2 + (y + 0.5 - sy) ** 2) ** 0.5 < r for sx, sy, r in spots):
+                c = mid if c != mid else dark
+            if d > 6.3 and k > -0.2:
+                c = dark
+            img[y, x] = (*c, 255)
     return Image.fromarray(img, 'RGBA')
 
 
@@ -113,6 +93,53 @@ def vignette(px):
     return Image.fromarray(img, 'RGBA')
 
 
+FONT = os.path.join(HERE, 'fuentes', 'Cinzel.ttf')   # Cinzel (SIL Open Font License 1.1, fuentes/OFL.txt)
+
+
+def text_image(text, size, color, bottom=None, weight='Regular', glow=(150, 0, 10), glow_alpha=0.55, outline=2):
+    """Un texto con Cinzel: degradado de color de arriba abajo, contorno oscuro fino y resplandor suave detrás."""
+    from PIL import ImageDraw, ImageFilter, ImageFont
+    font = ImageFont.truetype(FONT, size)
+    try:
+        font.set_variation_by_name(weight)
+    except Exception:
+        pass
+    x0, y0, x1, y1 = font.getbbox(text)
+    pad = size // 2
+    w, h = x1 - x0 + 2 * pad, y1 - y0 + 2 * pad
+    mask = Image.new('L', (w, h), 0)
+    ImageDraw.Draw(mask).text((pad - x0, pad - y0), text, font=font, fill=255)
+    out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    # resplandor
+    g = mask.filter(ImageFilter.GaussianBlur(size * 0.18))
+    out.paste(Image.new('RGBA', (w, h), (*glow, 255)), (0, 0), g.point(lambda v: int(v * glow_alpha)))
+    # contorno
+    if outline:
+        o = mask.filter(ImageFilter.MaxFilter(outline * 2 + 1))
+        out.paste(Image.new('RGBA', (w, h), (18, 0, 2, 255)), (0, 0), o.point(lambda v: int(v * 0.85)))
+    # el texto con su degradado
+    top = np.array(color, float)
+    bot = np.array(bottom or color, float)
+    grad = np.zeros((h, w, 4), np.uint8)
+    for yy in range(h):
+        t = min(1.0, max(0.0, (yy - pad) / max(1, (y1 - y0))))
+        grad[yy, :, :3] = (top * (1 - t) + bot * t).astype(np.uint8)
+    grad[..., 3] = 255
+    out.paste(Image.fromarray(grad, 'RGBA'), (0, 0), mask)
+    return out
+
+
+def titles():
+    save(text_image('La Luna de Sangre', 112, (236, 58, 52), (150, 6, 14), weight='Bold'), 'gui/luna/titulo.png')
+    save(text_image('Esta noche, los monstruos despiertan', 46, (236, 214, 210), (196, 168, 164), glow=(60, 0, 4), glow_alpha=0.5,
+                    outline=2), 'gui/luna/subtitulo.png')
+    lines = ['Los monstruos son más agresivos y peligrosos', 'Los más fuertes atraviesan tu armadura',
+             'Esta noche nadie duerme · Sobrevive hasta el amanecer']
+    for i, t in enumerate(lines):
+        top = (255, 112, 100) if i == 0 else (236, 220, 216)
+        save(text_image(t, 42, top, None, glow=(70, 0, 6), glow_alpha=0.5, outline=2), f'gui/luna/linea{i + 1}.png')
+
+
 def save(img, rel):
     path = os.path.join(TEX, rel)
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -123,12 +150,15 @@ def save(img, rel):
 def main():
     for name, size, face, eyes in MASKS:
         save(eye_mask(size, face, eyes), f'entity/luna_ojos/{name}.png')
-    small = moon(32)
+    cell = moon_cell()
     phases = Image.new('RGBA', (128, 64))
     for i in range(8):
-        phases.paste(small, ((i % 4) * 32, (i // 4) * 32))
+        phases.paste(cell, ((i % 4) * 32, (i // 4) * 32))
     save(phases, 'environment/luna_sangre_fases.png')
-    save(moon(64, seed=1176), 'environment/luna_sangre.png')
+    save(cell, 'environment/luna_sangre.png')
+    # durante la escena, la luna de Minecraft no se ve (va la nuestra, que nace): sus fases, vacías
+    save(Image.new('RGBA', (128, 64), (0, 0, 0, 0)), 'environment/luna_sangre_vacia.png')
+    titles()
     save(halo(128), 'environment/luna_sangre_halo.png')
     save(vignette(256), 'gui/luna_vineta.png')
 

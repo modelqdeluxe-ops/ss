@@ -39,7 +39,7 @@ final class BossTestLuna {
 
     private static ServerPlayer a, b;
     private static final List<Mob> mobs = new ArrayList<>();
-    private static int t0 = -1;
+    private static int t0 = -1, seenActive;
     private static Mob elite, normal;
 
     private static Vec3 base() {
@@ -96,6 +96,9 @@ final class BossTestLuna {
             BossTest.command(server, "time set 6000");
             a = TFBotPlayer.spawnTarget(server, level, "Lunatica", x + 3, y, z + 2);
             b = TFBotPlayer.spawnTarget(server, level, "Sangrienta", x + 3, y, z - 2);
+            // (mientras se graba el vídeo, la luna sigue y sus mobs las mataban: invulnerables hasta la prueba del daño)
+            if (a != null) a.setInvulnerable(true);
+            if (b != null) b.setInvulnerable(true);
             BossTest.command(server, "tf luna noches 1");
             player.teleportTo(level, x, y, z, -90F, 0F);
         }
@@ -105,7 +108,8 @@ final class BossTestLuna {
             BossTest.video = "luna_inicio";
             BossTest.command(server, "time set 13100");
         }
-        if (t0 < 0 && t >= 96 && t < 140 && BloodMoon.active()) {
+        // (el cliente se entera unos ticks después que el servidor: se mira con 6 de margen)
+        if (t0 < 0 && t >= 96 && t < 140 && BloodMoon.active() && ++seenActive >= 6) {
             t0 = t;
             r.event("luna 2 (3 jugadores, " + BloodMoon.online(server) + " conectados): «" + BloodMoon.lastDusk + "», activa " + BloodMoon.active()
                     + ", el cliente: luna " + BloodMoonClient.active() + ", escena abierta " + BloodMoonScene.opened
@@ -159,6 +163,8 @@ final class BossTestLuna {
                 for (Mob m : mobs) m.discard();
                 mobs.clear();
                 if (a != null && b != null) {
+                    a.setInvulnerable(false);
+                    b.setInvulnerable(false);
                     a.teleportTo(level, x + 8, y, z + 8, 0F, 0F);
                     b.teleportTo(level, x + 8, y, z - 8, 0F, 0F);
                     armor(a);
@@ -217,6 +223,7 @@ final class BossTestLuna {
                 if (b != null) TFBotPlayer.removeTarget(b);
                 a = b = null;
                 t0 = -1;
+                seenActive = 0;
                 BossTest.command(server, "time set 6000");
                 BossTest.next(level);
             }
