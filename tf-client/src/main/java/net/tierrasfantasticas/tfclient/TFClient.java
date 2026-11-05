@@ -53,6 +53,7 @@ public final class TFClient {
                     net.tierrasfantasticas.tfclient.server.TFStaffLock.register();
                     net.tierrasfantasticas.tfclient.server.TFBirthday.register();
                     net.tierrasfantasticas.tfclient.revive.ReviveNetwork.register();
+                    net.tierrasfantasticas.tfclient.luna.BloodMoon.register();
                 }));
         if (FMLEnvironment.dist == Dist.CLIENT) {
             try {

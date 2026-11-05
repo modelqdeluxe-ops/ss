@@ -60,7 +60,10 @@
     "ConnectScreenMixin",
     "ItemEntityRendererMixin",
     "PlayerTabOverlayClanMixin",
-    "ChatComponentClanMixin"
+    "ChatComponentClanMixin",
+    "luna.CameraLunaMixin",
+    "luna.ClientLevelLunaMixin",
+    "luna.LevelRendererLunaMixin"
   ],
   "injectors": {
     "defaultRequire": 0

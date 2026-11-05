@@ -112,6 +112,8 @@ public final class TFCommands {
                 .then(TFStaffLock.guard(TFStaffLock.command()))
                 // (1.3.150) /tf cumpleaños felicitar <jugador> | parar: la fiesta en el cielo de todos los Overworld
                 .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.server.TFBirthday.command("cumpleaños")))
+                // (1.3.175) /tf luna estado | empezar [sinescena] | parar | noches <n>: la Luna de Sangre
+                .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.luna.BloodMoon.command("luna")))
                 .then(TFStaffLock.guard(Commands.literal("reload").requires(s -> s.hasPermission(3)).executes(TFCommands::reload)))
                 // /tf boss (staff): la ventana de jefes, dificultades y grietas
                 .then(TFStaffLock.guard(net.tierrasfantasticas.tfclient.bosses.TFBosses.command()))
