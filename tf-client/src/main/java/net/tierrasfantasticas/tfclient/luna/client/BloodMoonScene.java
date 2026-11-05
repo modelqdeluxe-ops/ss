@@ -201,7 +201,8 @@ public final class BloodMoonScene extends Screen {
     static float skyAmount() {
         if (current == null) return 0F;
         float t = current.now(0F);
-        return Mth.clamp((t - 10F) / 110F, 0F, 1F);
+        // (1.3.176) desde el primer fotograma un poco: la luna ya sale roja (en el vídeo se veía blanca medio segundo)
+        return Mth.clamp(0.12F + t / 125F, 0F, 1F);
     }
 
     static float ease(float x) {

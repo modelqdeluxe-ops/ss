@@ -285,6 +285,26 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (5 nov 2026, TF Client 1.3.176: ALAS Y CAPAS CON LUZ PAREJA; VÍDEO DE LA LUNA DE SANGRE) — lee esto primero
+
+- El dueño, con captura del juego (la de la prueba `sets`): «por qué esta mierda está negra, una parte oscura como
+  cobreada… ¿que no ves?». Lo había dado por bueno («es el ala doblada»): **error**. Medido: la tira de dentro del ala
+  rosa de Primavera salía al 66 % del brillo de la de fuera (125-75-85 frente a 188-120-128). Causa: la luz de
+  Minecraft sombrea cada cara según su normal, y las alas están hechas de tiras planas en ángulos distintos (0°, 22,5°,
+  45°); en el probador de la web no pasa (no tiene esa luz). Hay **57** objetos de espalda con tiras así.
+- Arreglo (`items/FlatLightConsumer`, en `TFItemsClient.BackLayer.renderBack`): las **alas y capas** (id con «wing» o
+  «cape») se dibujan con la misma normal, la de «arriba» del cuerpo: todas sus tiras reciben la luz entera (los colores
+  de su textura, como en la web). Las mochilas (cajas) siguen con su sombreado.
+- **Lección**: si una captura del juego muestra tonos distintos en piezas que en la web son iguales, no es «el diseño»:
+  mídelo (PIL) antes de darlo por bueno.
+- Vídeo del inicio de la Luna de Sangre (el dueño: «dame un vídeo del evento para ver cómo inicia»): la prueba `luna`
+  graba `video_luna_inicio` con el reloj de la escena a mano (`BloodMoonScene.fixedTime`, 1/30 s por fotograma) y el
+  workflow le pone la música de la escena y el principio de la de la noche. Lo que pasa después de la escena no vale para
+  enseñar: mientras se graba (lento), el servidor sigue con la luna y los mobs extra rodean al jugador de la prueba (y los
+  creepers abren un cráter); al dueño se le mandó la escena (14,6 s) recortada con fundido. La luna ya sale roja desde el
+  primer fotograma (antes, blanca medio segundo). ffmpeg ahora se instala sin preguntas
+  (`DEBIAN_FRONTEND=noninteractive`), con `-nostdin` y `timeout` (la primera vez el paso se colgó 20 min).
+
 ### CHECKPOINT (5 nov 2026, TF Client 1.3.175: LA LUNA DE SANGRE) — lee esto primero
 
 - El dueño: «la gente me pide más dificultad… lo sienten aburrido» → la noche de sangre con modificadores en los mobs,
