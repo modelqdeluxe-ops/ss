@@ -1,0 +1,12 @@
+bien  · losas verticales registradas (una por losa) (57)
+bien  · existe la losa vertical de roble (relativeblocks:vertical_slab/minecraft/oak_slab)
+bien  · y su objeto
+bien  · A: amapola + diente de león en un grupo (capa 0: 1=poppy 2=dandelion)
+bien  · B: antorcha + antorcha de redstone en un grupo (capa 1: 0=torch 1=redstone_torch)
+bien  · C: losa de roble abajo + losa de piedra arriba (capa 5: 0=oak_slab 1=stone_slab)
+bien  · D: dos losas verticales en un hueco (capa 5: 0=vertical_slab/minecraft/oak_slab 1=vertical_slab/minecraft/stone_slab)
+bien  · el cliente ve los mismos grupos
+bien  · el grupo tiene luz (antorchas) (Block{relativeblocks:block_cluster}[light_level=14])
+        D: Block{relativeblocks:block_cluster}[light_level=0]
+bien  · al romper, solo se va el bloque que se mira (queda el otro) (Block{relativeblocks:block_cluster}[light_level=0] · capa 0: 2=dandelion)
+RELATIVE BLOCKS (FORGE): TODO BIEN
