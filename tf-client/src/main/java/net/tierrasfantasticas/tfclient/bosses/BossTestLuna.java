@@ -39,7 +39,7 @@ final class BossTestLuna {
 
     private static ServerPlayer a, b;
     private static final List<Mob> mobs = new ArrayList<>();
-    private static int t0 = -1;
+    private static int t0 = -1, seenActive;
     private static Mob elite, normal;
 
     private static Vec3 base() {
@@ -108,7 +108,8 @@ final class BossTestLuna {
             BossTest.video = "luna_inicio";
             BossTest.command(server, "time set 13100");
         }
-        if (t0 < 0 && t >= 96 && t < 140 && BloodMoon.active()) {
+        // (el cliente se entera unos ticks después que el servidor: se mira con 6 de margen)
+        if (t0 < 0 && t >= 96 && t < 140 && BloodMoon.active() && ++seenActive >= 6) {
             t0 = t;
             r.event("luna 2 (3 jugadores, " + BloodMoon.online(server) + " conectados): «" + BloodMoon.lastDusk + "», activa " + BloodMoon.active()
                     + ", el cliente: luna " + BloodMoonClient.active() + ", escena abierta " + BloodMoonScene.opened
@@ -222,6 +223,7 @@ final class BossTestLuna {
                 if (b != null) TFBotPlayer.removeTarget(b);
                 a = b = null;
                 t0 = -1;
+                seenActive = 0;
                 BossTest.command(server, "time set 6000");
                 BossTest.next(level);
             }

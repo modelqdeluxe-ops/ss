@@ -285,6 +285,20 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (5 nov 2026, TF Client 1.3.177: LA ESCENA DE LA LUNA DE SANGRE, REHECHA) — lee esto primero
+
+- El dueño, al ver el vídeo: «HONESTAMENTE? ESTA HORRIBLE» y luego «solo quiero una escena del cielo con la luna de
+  sangre, no tan grande, y pues luego la escena de los mobs, y esos ojos están horribles, parecen lentes de textura
+  unida». Lo que estaba mal (medido): el halo de cada ojo se juntaba en una franja de 3x8 píxeles de lado a lado de la
+  cara (gafas); la luna llenaba su celda (30 de 32 px) y la de Minecraft ocupa 14: salía el doble; el título era la
+  letra de Minecraft estirada ×3.
+- Hecho: ojos = solo sus píxeles (el de dentro más claro); luna con disco de 14 px en celda de 32 (igual que la de
+  Minecraft) y resplandor más pequeño; en la escena no se dibuja la de Minecraft (`luna_sangre_vacia.png`: salían dos);
+  la primera parte mira al cielo (pitch −14° a −19°) y la luna sube de −3° a 17°; títulos y explicaciones como imágenes
+  con Cinzel (SIL OFL, `tools/luna/fuentes/`), suavizadas al escalar. Todo en `tools/luna/texturas_luna.py`.
+- **No proponer escenas grandes sin preguntar**: el dueño quería lo simple (cielo + mobs), no «la horda con primeros
+  planos» que se le propuso.
+
 ### CHECKPOINT (5 nov 2026, TF Client 1.3.176: ALAS Y CAPAS CON LUZ PAREJA; VÍDEO DE LA LUNA DE SANGRE) — lee esto primero
 
 - El dueño, con captura del juego (la de la prueba `sets`): «por qué esta mierda está negra, una parte oscura como
