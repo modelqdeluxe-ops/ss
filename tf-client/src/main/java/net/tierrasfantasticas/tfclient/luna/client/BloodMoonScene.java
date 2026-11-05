@@ -75,6 +75,11 @@ public final class BloodMoonScene extends Screen {
     static boolean suppressEyes;
     /** Para la prueba en el juego. */
     public static int opened, finished, castRendered;
+    /**
+     * Para grabar el vídeo de la prueba: el reloj de la escena a mano (en ticks; -1 = el de verdad). Con él, cada
+     * fotograma del vídeo es 1/30 s de escena aunque la máquina de la prueba vaya lenta.
+     */
+    public static float fixedTime = -1F;
 
     private int tick;
     private boolean hidGui;
@@ -104,7 +109,11 @@ public final class BloodMoonScene extends Screen {
     }
 
     public static float time(float partial) {
-        return current == null ? 0F : current.tick + partial;
+        return current == null ? 0F : current.now(partial);
+    }
+
+    private float now(float partial) {
+        return fixedTime >= 0F ? fixedTime : tick + partial;
     }
 
     @Override
@@ -152,23 +161,26 @@ public final class BloodMoonScene extends Screen {
     @Override
     public void tick() {
         tick++;
+        if (now(0F) >= TOTAL) onClose();
+    }
+
+    /** La pose de los actores en el instante t (la cabeza se levanta al encenderse sus ojos). */
+    private void pose(float t) {
         for (Mob m : cast) {
-            m.tickCount++;
-            m.xRotO = m.getXRot();
-            m.yHeadRotO = m.yHeadRot;
+            m.tickCount = (int) t;
             int at = igniteAt.getOrDefault(m, 999);
-            // la cabeza se levanta al encenderse los ojos
-            float want = tick >= at ? -4F : 28F;
-            m.setXRot(m.getXRot() + (want - m.getXRot()) * 0.25F);
+            float pitch = Mth.lerp(ease((t - at) / 6F), 28F, -4F);
+            m.setXRot(pitch);
+            m.xRotO = pitch;
+            m.yHeadRotO = m.yHeadRot;
         }
-        if (tick >= TOTAL) onClose();
     }
 
     @Override
     public void removed() {
         Minecraft mc = Minecraft.getInstance();
         mc.options.hideGui = hidGui;
-        if (sound != null && tick < TOTAL) mc.getSoundManager().stop(sound);
+        if (sound != null && now(0F) < TOTAL) mc.getSoundManager().stop(sound);
         if (current == this) current = null;
         finished++;
     }
@@ -180,7 +192,7 @@ public final class BloodMoonScene extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        return tick > 20;
+        return now(0F) > 20;
     }
 
     // ------------------------------------------------------------------------------------------------- lo que ve el mundo
@@ -188,8 +200,9 @@ public final class BloodMoonScene extends Screen {
     /** Lo rojo del cielo durante la escena. */
     static float skyAmount() {
         if (current == null) return 0F;
-        float t = current.tick;
-        return Mth.clamp((t - 10F) / 110F, 0F, 1F);
+        float t = current.now(0F);
+        // (1.3.176) desde el primer fotograma un poco: la luna ya sale roja (en el vídeo se veía blanca medio segundo)
+        return Mth.clamp(0.12F + t / 125F, 0F, 1F);
     }
 
     static float ease(float x) {
@@ -200,7 +213,7 @@ public final class BloodMoonScene extends Screen {
     /** La luna que nace: de 5° bajo el horizonte a donde está de verdad al acabar la primera parte. */
     static float moonTimeOfDay(float real, float partial) {
         if (current == null) return real;
-        float t = (current.tick + partial) / PHASE_B;
+        float t = current.now(partial) / PHASE_B;
         if (t >= 1F) return real;
         double realEl = Math.asin(-Math.cos(real * Math.PI * 2));
         double el = Mth.lerp(ease(t), Math.toRadians(-5), realEl);
@@ -210,7 +223,7 @@ public final class BloodMoonScene extends Screen {
 
     /** ¿Manda la escena en la cámara? (la primera parte; mixin.luna.CameraLunaMixin) */
     public static boolean cameraActive() {
-        return current != null && current.tick < PHASE_B + 2;
+        return current != null && current.now(0F) < PHASE_B + 2;
     }
 
     public static Vec3 cameraPos(float partial) {
@@ -232,7 +245,7 @@ public final class BloodMoonScene extends Screen {
         if (current == null) return -1F;
         Integer at = current.igniteAt.get(e);
         if (at == null) return -1F;
-        float t = current.tick - at;
+        float t = current.now(0F) - at;
         if (t < 0) return 0F;
         // fogonazo y se queda
         return t < 4 ? t / 4F * 1.6F : Math.max(1F, 1.6F - (t - 4) * 0.08F);
@@ -246,7 +259,7 @@ public final class BloodMoonScene extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
-        float t = tick + partial;
+        float t = now(partial);
         int w = width, h = height;
         if (t >= PHASE_B && t < PHASE_C + 6) {
             drawCastScene(g, t, partial);
@@ -331,6 +344,7 @@ public final class BloodMoonScene extends Screen {
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         RenderSystem.defaultBlendFunc();
         g.flush();
+        pose(t);
         // los mobs, con perspectiva
         float k = (t - PHASE_B) / (PHASE_C - PHASE_B);
         double camZ = Mth.lerp(ease(k), 7.6, 6.2), camY = 1.2;

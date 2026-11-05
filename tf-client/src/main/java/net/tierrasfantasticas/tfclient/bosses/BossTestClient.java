@@ -496,6 +496,10 @@ public final class BossTestClient {
     private static void videoFrames(Minecraft mc) {
         String name = BossTest.video;
         if (name == null || mc.player == null) return;
+        if (name.startsWith("luna")) {
+            lunaVideo(mc, name);
+            return;
+        }
         if (!net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock) {
             net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedTime = 0;
             net.tierrasfantasticas.tfclient.clans.client.ClanEmoteClient.fixedClock = true;
@@ -533,6 +537,51 @@ public final class BossTestClient {
             TFClient.LOGGER.info("Prueba de jefes: vídeo {}: {} fotogramas", name, videoFrame);
             endVideo(mc);
         }
+    }
+
+    private static int lunaAfter;
+
+    /**
+     * (1.3.176, el dueño: «dame un vídeo del evento para ver cómo inicia») El vídeo de la Luna de Sangre: empieza cuando
+     * se abre la escena, con su reloj a mano (BloodMoonScene.fixedTime: 1/30 s por fotograma) y sigue 1,5 s después,
+     * con el mundo. El workflow le pone la música de la escena (va con sus tiempos).
+     */
+    private static void lunaVideo(Minecraft mc, String name) {
+        boolean running = net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.running();
+        if (!running && videoFrame == 0) {
+            if (++videoWait > 1200) {
+                TFClient.LOGGER.warn("Prueba de jefes: el vídeo {} no empezó (no se abrió la escena)", name);
+                endLunaVideo();
+            }
+            return;
+        }
+        if (videoFrame == 0) {
+            net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.fixedTime = 0F;
+            lunaAfter = 0;
+        }
+        BossTest.videoBusy = true;
+        try (NativeImage img = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+            File dir = new File(mc.gameDirectory, "pruebas");
+            dir.mkdirs();
+            img.writeToFile(new File(dir, String.format("video_%s_%04d.png", name, videoFrame)));
+        } catch (Exception ex) {
+            TFClient.LOGGER.warn("Prueba de jefes: no se pudo grabar el fotograma {} del vídeo {}", videoFrame, name, ex);
+        }
+        videoFrame++;
+        if (running) {
+            net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.fixedTime += 20F / 30F;
+        } else if (++lunaAfter > 45) {
+            TFClient.LOGGER.info("Prueba de jefes: vídeo {}: {} fotogramas", name, videoFrame);
+            endLunaVideo();
+        }
+    }
+
+    private static void endLunaVideo() {
+        net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.fixedTime = -1F;
+        BossTest.video = null;
+        BossTest.videoBusy = false;
+        videoFrame = 0;
+        videoWait = 0;
     }
 
     @SubscribeEvent
