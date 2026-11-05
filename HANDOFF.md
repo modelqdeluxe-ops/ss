@@ -285,6 +285,15 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
+### CHECKPOINT (5 nov 2026, TF Client 1.3.178: LA LUNA, LA DE MINECRAFT EN ROJO) — lee esto primero
+
+- El dueño: «NO ME GUSTA LA TEXTURA DE LA LUNA, HAZLA COMO LA VANILLA.. SOLO QUE ROJA». Ya no hay textura de luna propia:
+  esa noche la luna de Minecraft no se dibuja en `renderSky` (textura vacía, `mixin/luna/LevelRendererLunaMixin`) y
+  `BloodMoonClient` dibuja **la llena de `minecraft:textures/environment/moon_phases.png`** (fase 0, las mismas
+  coordenadas que Minecraft), en su sitio, de su tamaño (cuadro de 20) y sumando luz como ella, teñida de rojo
+  (color 255, 56, 41 cuando está entera). No se copia la textura de Mojang al jar: se usa la del juego (o la del
+  paquete de recursos que lleve cada uno).
+
 ### CHECKPOINT (5 nov 2026, TF Client 1.3.177: LA ESCENA DE LA LUNA DE SANGRE, REHECHA) — lee esto primero
 
 - El dueño, al ver el vídeo: «HONESTAMENTE? ESTA HORRIBLE» y luego «solo quiero una escena del cielo con la luna de

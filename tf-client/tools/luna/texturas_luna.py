@@ -9,8 +9,7 @@ Escribe en assets/tfclient/textures/:
                               oscuros o blancos de la cara): zombi, husk, ahogado, esqueleto, stray y esqueleto wither en
                               la fila 12 (u 9-10 y 13-14); creeper, 2x2 en las filas 10-11; aldeano zombi, saqueador,
                               vindicador, invocador y bruja en la fila 14.
-  environment/luna_sangre_fases.png   la luna del cielo de Minecraft (sus 8 fases, todas llenas y rojas) mientras dura
-  environment/luna_sangre.png         la luna grande (64x64, pixel art) que dibuja BloodMoonClient encima
+  environment/luna_sangre_vacia.png   la luna de Minecraft vacía esa noche (la dibuja BloodMoonClient: la llena, roja)
   environment/luna_sangre_halo.png    su resplandor (aditivo)
   gui/luna_vineta.png                 la viñeta roja de la pantalla
 """
@@ -150,12 +149,7 @@ def save(img, rel):
 def main():
     for name, size, face, eyes in MASKS:
         save(eye_mask(size, face, eyes), f'entity/luna_ojos/{name}.png')
-    cell = moon_cell()
-    phases = Image.new('RGBA', (128, 64))
-    for i in range(8):
-        phases.paste(cell, ((i % 4) * 32, (i // 4) * 32))
-    save(phases, 'environment/luna_sangre_fases.png')
-    save(cell, 'environment/luna_sangre.png')
+    # (1.3.178) la luna es la de Minecraft teñida de rojo al dibujarla (BloodMoonClient): ya no hay textura propia
     # durante la escena, la luna de Minecraft no se ve (va la nuestra, que nace): sus fases, vacías
     save(Image.new('RGBA', (128, 64), (0, 0, 0, 0)), 'environment/luna_sangre_vacia.png')
     titles()

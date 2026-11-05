@@ -57,10 +57,10 @@ import org.lwjgl.opengl.GL11;
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = TFClient.MOD_ID, value = Dist.CLIENT)
 public final class BloodMoonClient {
-    static final ResourceLocation MOON = tf("textures/environment/luna_sangre.png");
+    /** (1.3.178) La luna de Minecraft (su textura, la del juego o la del paquete de recursos): se dibuja la llena, roja. */
+    static final ResourceLocation VANILLA_MOON = new ResourceLocation("minecraft", "textures/environment/moon_phases.png");
     static final ResourceLocation HALO = tf("textures/environment/luna_sangre_halo.png");
-    public static final ResourceLocation PHASES = tf("textures/environment/luna_sangre_fases.png");
-    /** Durante la primera parte de la escena: la luna de Minecraft no se ve (va la nuestra, naciendo). */
+    /** Con la Luna de Sangre, la luna de Minecraft no se dibuja ahí (se dibuja aquí, la llena y roja). */
     public static final ResourceLocation NO_MOON = tf("textures/environment/luna_sangre_vacia.png");
     static final ResourceLocation VIGNETTE = tf("textures/gui/luna_vineta.png");
     static final SoundEvent MUSIC = SoundEvent.createVariableRangeEvent(tf("luna_sangre.musica"));
@@ -231,10 +231,9 @@ public final class BloodMoonClient {
             // (1.3.177) el resplandor, pequeño y suave (suma luz)
             RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
             quad(m, HALO, 24F, k * rain * 0.5F * pulse);
-            // la luna, del tamaño de la de Minecraft (el dueño: «no tan grande»): su textura es una celda de 32 con el
-            // disco de 14 px, como la de Minecraft, y el mismo cuadro (20)
-            RenderSystem.defaultBlendFunc();
-            quad(m, MOON, 20F, Math.min(1F, k * 1.4F) * rain);
+            // (1.3.178, el dueño: «no me gusta la textura de la luna, hazla como la vanilla, solo que roja») la luna llena
+            // de Minecraft, en su sitio y de su tamaño (cuadro de 20), sumando luz como ella, teñida de rojo
+            moon(m, 20F, Mth.lerp(k, 1F, 0.22F), Mth.lerp(k, 1F, 0.16F), rain);
         } finally {
             if (late) GL11.glDepthRange(0.0, 1.0);
             RenderSystem.depthMask(true);
@@ -244,6 +243,19 @@ public final class BloodMoonClient {
             RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         }
         return true;
+    }
+
+    /** La luna llena de Minecraft (fase 0 de moon_phases.png, con sus mismas coordenadas), del color que se diga. */
+    private static void moon(Matrix4f m, float s, float green, float blue, float alpha) {
+        RenderSystem.setShaderTexture(0, VANILLA_MOON);
+        int a = Mth.clamp((int) (alpha * 255), 0, 255), g = (int) (green * 255), b = (int) (blue * 255);
+        BufferBuilder bb = Tesselator.getInstance().getBuilder();
+        bb.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bb.vertex(m, -s, -100F, s).uv(0.25F, 0.5F).color(255, g, b, a).endVertex();
+        bb.vertex(m, s, -100F, s).uv(0F, 0.5F).color(255, g, b, a).endVertex();
+        bb.vertex(m, s, -100F, -s).uv(0F, 0F).color(255, g, b, a).endVertex();
+        bb.vertex(m, -s, -100F, -s).uv(0.25F, 0F).color(255, g, b, a).endVertex();
+        BufferUploader.drawWithShader(bb.end());
     }
 
     private static void quad(Matrix4f m, ResourceLocation tex, float s, float alpha) {

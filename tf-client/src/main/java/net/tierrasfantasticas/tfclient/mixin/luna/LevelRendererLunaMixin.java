@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
- * (1.3.175) Con la Luna de Sangre, la luna del cielo de Minecraft es la roja (llena, sus 8 fases iguales;
- * {@code tools/luna/texturas_luna.py}). Los paquetes de shaders que dibujan la luna de Minecraft también la ven roja.
+ * (1.3.175; 1.3.178) Con la Luna de Sangre, la luna de Minecraft no se dibuja aquí (textura vacía): la dibuja
+ * {@code BloodMoonClient}, la llena de la textura de Minecraft teñida de roja, en su sitio y de su tamaño.
  */
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererLunaMixin {
@@ -26,8 +26,9 @@ public abstract class LevelRendererLunaMixin {
     private ResourceLocation tfclient$bloodMoonTexture(ResourceLocation texture) {
         if (BloodMoonClient.sky(0F) > 0.05F && "minecraft".equals(texture.getNamespace())
                 && "textures/environment/moon_phases.png".equals(texture.getPath())) {
-            // (1.3.177) en la primera parte de la escena, solo la nuestra (si no, salían dos lunas)
-            return net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.cameraActive() ? BloodMoonClient.NO_MOON : BloodMoonClient.PHASES;
+            // (1.3.178) la de Minecraft no se dibuja aquí: BloodMoonClient dibuja la llena de Minecraft, roja, donde toca
+            // (y en la escena, la que nace)
+            return BloodMoonClient.NO_MOON;
         }
         return texture;
     }

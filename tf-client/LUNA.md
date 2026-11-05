@@ -41,8 +41,8 @@ El estado (cuántas noches faltan, la última, la noche vista) va en el mundo: `
   agresivos y peligrosos», «Los más fuertes atraviesan tu armadura», «Esta noche nadie duerme · Sobrevive hasta el
   amanecer»). Vuelve el mundo. Mientras dura, el servidor no deja que los mobs hagan daño ni pone mobs extra.
 - **Cielo**: cielo, nubes y niebla rojos (`mixin/luna/ClientLevelLunaMixin` y la niebla en `BloodMoonClient`), la luna
-  de Minecraft cambiada por la roja (`mixin/luna/LevelRendererLunaMixin`) y encima una luna roja grande con su
-  resplandor; con paquete de shaders, después de su pasada final y solo donde se ve el cielo (`vacio/AfterShaders` +
+  de Minecraft se dibuja llena y teñida de roja (su propia textura, 1.3.178; `mixin/luna/LevelRendererLunaMixin` la quita de
+  `renderSky` y `BloodMoonClient` la pone) con un resplandor pequeño; con paquete de shaders, después de su pasada final y solo donde se ve el cielo (`vacio/AfterShaders` +
   `glDepthRange(1,1)`). Viñeta roja que late y ceniza roja (esporas carmesí) alrededor.
 - **Música**: `luna_sangre.musica` en «Discos», al 42 % (la de Minecraft se calla, `MusicManagerMixin`); la escena
   tiene la suya (`luna_sangre.escena`).
