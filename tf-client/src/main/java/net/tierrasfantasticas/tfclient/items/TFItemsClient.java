@@ -204,13 +204,27 @@ public final class TFItemsClient {
             BakedModel model = Minecraft.getInstance().getModelManager().getModel(cosmetic.wornModel());
             pose.pushPose();
             body.translateAndRotate(pose);
+            // (1.3.176) alas y capas: la misma luz en todas sus tiras (FlatLightConsumer); las mochilas, con su sombreado
+            MultiBufferSource source = buffers;
+            if (flatLight(stack)) {
+                org.joml.Vector3f up = pose.last().normal().transform(new org.joml.Vector3f(0F, -1F, 0F)).normalize();
+                source = type -> new FlatLightConsumer(buffers.getBuffer(type), up.x(), up.y(), up.z());
+            }
             // Igual que un objeto puesto en la cabeza (así los colocan los plugins de cosméticos), pero siguiendo el cuerpo.
             pose.translate(0.0F, -0.25F, armored ? 0.0625F : 0.0F);
             pose.mulPose(Axis.YP.rotationDegrees(180.0F));
             pose.scale(0.625F, -0.625F, -0.625F);
-            Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.HEAD, false, pose, buffers, light,
+            Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.HEAD, false, pose, source, light,
                     OverlayTexture.NO_OVERLAY, model);
             pose.popPose();
+        }
+
+        /** Alas y capas (tiras planas): luz pareja. Mochilas y lo demás (cajas): con su sombreado de siempre. */
+        static boolean flatLight(ItemStack stack) {
+            String id = key(stack);
+            int colon = id.indexOf(':');
+            String path = colon >= 0 ? id.substring(colon + 1) : id;
+            return path.contains("wing") || path.contains("cape");
         }
     }
 }

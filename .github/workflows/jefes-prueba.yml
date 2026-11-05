@@ -113,7 +113,16 @@ jobs:
             command -v ffmpeg >/dev/null || sudo apt-get install -y -qq ffmpeg > /dev/null || true
             for f in run/pruebas/video_*_0000.png; do
               p="${f%_0000.png}"; n="$(basename "$p")"
-              ffmpeg -y -loglevel error -framerate 30 -i "${p}_%04d.png" -c:v libx264 -pix_fmt yuv420p -crf 18 "/tmp/out/${n}.mp4" || true
+              if [[ "$n" == video_luna* ]]; then
+                # (1.3.176) la Luna de Sangre con su sonido: la música de la escena (va con sus tiempos) y, al acabar, la
+                # de la noche entrando poco a poco
+                A=src/main/resources/assets/tfclient/sounds/luna_sangre
+                ffmpeg -y -loglevel error -framerate 30 -i "${p}_%04d.png" -i "$A/escena.ogg" -i "$A/musica.ogg" \
+                  -filter_complex "[2:a]atrim=0:10,afade=t=in:d=4,volume=0.42[m];[1:a][m]concat=n=2:v=0:a=1[a]" \
+                  -map 0:v -map "[a]" -c:v libx264 -pix_fmt yuv420p -crf 18 -c:a aac -b:a 160k -shortest "/tmp/out/${n}.mp4" || true
+              else
+                ffmpeg -y -loglevel error -framerate 30 -i "${p}_%04d.png" -c:v libx264 -pix_fmt yuv420p -crf 18 "/tmp/out/${n}.mp4" || true
+              fi
               for k in 0030 0060 0090; do cp "${p}_${k}.png" "run/pruebas/${n}_f${k}.png" 2>/dev/null || true; done
               rm -f "${p}"_[0-9][0-9][0-9][0-9].png
             done

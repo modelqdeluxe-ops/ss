@@ -100,7 +100,11 @@ final class BossTestLuna {
             player.teleportTo(level, x, y, z, -90F, 0F);
         }
         if (t == 70) BossTest.command(server, "time set 12900");
-        if (t == 95) BossTest.command(server, "time set 13100");
+        if (t == 95) {
+            // (1.3.176) el vídeo de cómo empieza (lo graba el cliente en cuanto se abre la escena)
+            BossTest.video = "luna_inicio";
+            BossTest.command(server, "time set 13100");
+        }
         if (t0 < 0 && t >= 96 && t < 140 && BloodMoon.active()) {
             t0 = t;
             r.event("luna 2 (3 jugadores, " + BloodMoon.online(server) + " conectados): «" + BloodMoon.lastDusk + "», activa " + BloodMoon.active()
@@ -113,12 +117,14 @@ final class BossTestLuna {
         }
         if (t0 < 0) return;
         int s = t - t0;
+        // (las capturas de la escena, si no se grabó el vídeo: con él, la escena ya pasó)
+        boolean scene = BloodMoonScene.running();
         switch (s) {
-            case 45 -> BossTest.shot(r, "escena_1_nace_la_luna");
-            case 100 -> BossTest.shot(r, "escena_2_titulo");
-            case 182 -> BossTest.shot(r, "escena_3_primeros_ojos");
-            case 248 -> BossTest.shot(r, "escena_4_ojos_y_texto");
-            case 296 -> BossTest.shot(r, "escena_5_vuelve_el_mundo");
+            case 45 -> { if (scene) BossTest.shot(r, "escena_1_nace_la_luna"); }
+            case 100 -> { if (scene) BossTest.shot(r, "escena_2_titulo"); }
+            case 182 -> { if (scene) BossTest.shot(r, "escena_3_primeros_ojos"); }
+            case 248 -> { if (scene) BossTest.shot(r, "escena_4_ojos_y_texto"); }
+            case 296 -> { if (scene) BossTest.shot(r, "escena_5_vuelve_el_mundo"); }
             case 345 -> {
                 r.event("luna 3 (la escena): abierta " + BloodMoonScene.opened + ", acabada " + BloodMoonScene.finished + ", fotogramas de los mobs "
                         + BloodMoonScene.castRendered + ", sigue " + BloodMoonScene.running()
