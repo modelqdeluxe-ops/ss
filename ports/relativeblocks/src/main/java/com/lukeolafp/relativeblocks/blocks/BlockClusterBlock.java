@@ -309,10 +309,12 @@ public class BlockClusterBlock extends BaseEntityBlock {
          world.setBlock(pos, member, 52);
 
          T result;
+         BlockState after;
          try {
             result = interaction.apply(world.getBlockState(pos));
          } finally {
-            BlockState after = world.getBlockState(pos);
+            // lo que quedó en el hueco tras usar el bloque (p. ej. una palanca encendida); se vuelve a poner el grupo
+            after = world.getBlockState(pos);
             world.setBlock(pos, this.defaultBlockState(), 50);
          }
 
@@ -326,8 +328,7 @@ public class BlockClusterBlock extends BaseEntityBlock {
             restored.setCell(var18, cells[var18]);
          }
 
-         Object var17;
-         restored.setCell(cell, (BlockState)(!var17.isAir() && !var17.is(this) ? var17 : null));
+         restored.setCell(cell, !after.isAir() && !after.is(this) ? after : null);
          if (restored.memberCount() == 0) {
             world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
          } else {

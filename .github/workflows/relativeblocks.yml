@@ -32,7 +32,7 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
       - name: Compilar
-        run: chmod +x gradlew && ./gradlew build --no-daemon --stacktrace
+        run: chmod +x gradlew && ./gradlew build pruebaClasses --no-daemon --stacktrace
       # Un método de un mixin que recibe la propia clase del mixin hace que Forge intente cargarla y el juego crashee
       # al arrancar. Y el refmap tiene que ir en el jar (si no, en Mohist/Forge los mixins no encuentran los métodos).
       - name: Revisar el jar
