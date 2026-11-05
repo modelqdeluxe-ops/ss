@@ -8212,52 +8212,6 @@
     ]
   },
   {
-    "id": "cos-springcos-helmet",
-    "category": "cosmeticos",
-    "name": "Corona de Primavera",
-    "description": "Cosmético animado que se lleva en la cabeza, de la colección Primavera. Solo cambia tu aspecto.",
-    "collection": "Primavera",
-    "theme": "Primavera",
-    "slot": "head",
-    "price": 199,
-    "maxQuantity": 1,
-    "coinPrice": 5000,
-    "coinsOnly": true,
-    "colors": [
-      "#fda4af",
-      "#f43f5e"
-    ],
-    "set": "springcos",
-    "item": "helmet",
-    "image": "img/items/springcos/helmet.webp",
-    "commands": [
-      "tf web sets give {player} springcos helmet"
-    ]
-  },
-  {
-    "id": "cos-springcos-wings",
-    "category": "cosmeticos",
-    "name": "Alas de Primavera",
-    "description": "Cosmético animado que se lleva en la espalda, de la colección Primavera. Solo cambia tu aspecto.",
-    "collection": "Primavera",
-    "theme": "Primavera",
-    "slot": "back",
-    "price": 299,
-    "maxQuantity": 1,
-    "coinPrice": 7500,
-    "coinsOnly": true,
-    "colors": [
-      "#fda4af",
-      "#f43f5e"
-    ],
-    "set": "springcos",
-    "item": "wings",
-    "image": "img/items/springcos/wings.webp",
-    "commands": [
-      "tf web sets give {player} springcos wings"
-    ]
-  },
-  {
     "id": "proteccion-250x250",
     "category": "protecciones",
     "name": "Protección 250×250",
