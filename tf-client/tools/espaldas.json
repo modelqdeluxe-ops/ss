@@ -21,14 +21,14 @@
   }
  },
  "dryadia/wing": {
-  "nota": "El manto y la gema tapaban media cabeza y las hojas la cruzaban (capturas del dueño 27 y 29): 0,26 más abajo, al 90 % y la gema detrás de la cabeza.",
+  "nota": "El manto y la gema tapaban media cabeza y las hojas la cruzaban (capturas del dueño 27 y 29): 0,26 más abajo, al 90 % y la gema detrás de la cabeza. (5 nov 2026) La gema (18) se mueve junto con la pieza unida a ella (16): moviendo solo la gema quedaba una rendija entre las dos.",
   "head": {
    "rotation": [0, 0, 0],
    "translation": [0.0, 0.346, 6.67],
    "scale": [3.5372, 3.5372, 3.5372]
   },
   "mover": [
-   {"elements": [18], "d": [0, 0, 1.2]}
+   {"elements": [18, 16], "d": [0, 0, 1.2]}
   ]
  },
  "leviathan/wings": {
@@ -64,35 +64,35 @@
   }
  },
  "spring/wings": {
-  "nota": "Las plumas azules y el tallo del centro se metían en la cabeza: esas piezas, un poco hacia atrás (la altura, igual).",
+  "nota": "Las plumas azules y el tallo del centro se metían en la cabeza: esas piezas, un poco hacia atrás (la altura, igual). (5 nov 2026) Cada pieza se mueve con las tiras unidas a ella (el ala rosa son 3 tiras; las plumas azules, 3; las ramas, 2): moviendo solo la de dentro quedaba una rendija por la que se veía el brazo.",
   "head": {
    "translation": [0.0, -13.75, 12.663],
    "scale": [1.6, 1.6, 1.6],
    "rotation": [0, 0, 0]
   },
   "mover": [
-   {"elements": [18], "d": [0, 0, 1.99]},
-   {"elements": [37], "d": [0, 0, 1.99]},
-   {"elements": [47], "d": [0, 0, 1.97]},
-   {"elements": [56], "d": [0, 0, 1.97]},
-   {"elements": [61], "d": [0, 0, 2.11]},
-   {"elements": [64], "d": [0, 0, 2.11]}
+   {"elements": [18, 27], "d": [0, 0, 1.99]},
+   {"elements": [37, 28], "d": [0, 0, 1.99]},
+   {"elements": [47, 48, 49], "d": [0, 0, 1.97]},
+   {"elements": [56, 57, 58], "d": [0, 0, 1.97]},
+   {"elements": [61, 59, 60], "d": [0, 0, 2.11]},
+   {"elements": [64, 62, 63], "d": [0, 0, 2.11]}
   ]
  },
  "springcos/wings": {
-  "nota": "Las mismas alas que spring/wings (pestaña de cosméticos): el mismo arreglo.",
+  "nota": "Las mismas alas que spring/wings (pestaña de cosméticos): el mismo arreglo. (5 nov 2026) Cada pieza se mueve con las tiras unidas a ella (el ala rosa son 3 tiras; las plumas azules, 3; las ramas, 2): moviendo solo la de dentro quedaba una rendija por la que se veía el brazo.",
   "head": {
    "translation": [0.0, -13.75, 12.663],
    "scale": [1.6, 1.6, 1.6],
    "rotation": [0, 0, 0]
   },
   "mover": [
-   {"elements": [18], "d": [0, 0, 1.99]},
-   {"elements": [37], "d": [0, 0, 1.99]},
-   {"elements": [47], "d": [0, 0, 1.97]},
-   {"elements": [56], "d": [0, 0, 1.97]},
-   {"elements": [61], "d": [0, 0, 2.11]},
-   {"elements": [64], "d": [0, 0, 2.11]}
+   {"elements": [18, 27], "d": [0, 0, 1.99]},
+   {"elements": [37, 28], "d": [0, 0, 1.99]},
+   {"elements": [47, 48, 49], "d": [0, 0, 1.97]},
+   {"elements": [56, 57, 58], "d": [0, 0, 1.97]},
+   {"elements": [61, 59, 60], "d": [0, 0, 2.11]},
+   {"elements": [64, 62, 63], "d": [0, 0, 2.11]}
   ]
  },
  "violet/backpack": {
