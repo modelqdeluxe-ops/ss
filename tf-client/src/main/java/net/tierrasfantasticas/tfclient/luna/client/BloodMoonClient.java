@@ -60,6 +60,8 @@ public final class BloodMoonClient {
     static final ResourceLocation MOON = tf("textures/environment/luna_sangre.png");
     static final ResourceLocation HALO = tf("textures/environment/luna_sangre_halo.png");
     public static final ResourceLocation PHASES = tf("textures/environment/luna_sangre_fases.png");
+    /** Durante la primera parte de la escena: la luna de Minecraft no se ve (va la nuestra, naciendo). */
+    public static final ResourceLocation NO_MOON = tf("textures/environment/luna_sangre_vacia.png");
     static final ResourceLocation VIGNETTE = tf("textures/gui/luna_vineta.png");
     static final SoundEvent MUSIC = SoundEvent.createVariableRangeEvent(tf("luna_sangre.musica"));
     static final SoundEvent SCENE = SoundEvent.createVariableRangeEvent(tf("luna_sangre.escena"));
@@ -226,12 +228,13 @@ public final class BloodMoonClient {
             RenderSystem.depthMask(false);
             RenderSystem.enableBlend();
             RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-            // el resplandor (suma luz)
+            // (1.3.177) el resplandor, pequeño y suave (suma luz)
             RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
-            quad(m, HALO, 48F, k * rain * 0.85F * pulse);
-            // la luna (tapa lo de detrás)
+            quad(m, HALO, 24F, k * rain * 0.5F * pulse);
+            // la luna, del tamaño de la de Minecraft (el dueño: «no tan grande»): su textura es una celda de 32 con el
+            // disco de 14 px, como la de Minecraft, y el mismo cuadro (20)
             RenderSystem.defaultBlendFunc();
-            quad(m, MOON, 13F, Math.min(1F, k * 1.4F) * rain);
+            quad(m, MOON, 20F, Math.min(1F, k * 1.4F) * rain);
         } finally {
             if (late) GL11.glDepthRange(0.0, 1.0);
             RenderSystem.depthMask(true);

@@ -210,13 +210,12 @@ public final class BloodMoonScene extends Screen {
         return x * x * (3 - 2 * x);
     }
 
-    /** La luna que nace: de 5° bajo el horizonte a donde está de verdad al acabar la primera parte. */
+    /** La luna que nace: de 3° bajo el horizonte a 17° sobre él (luego, la de verdad). */
     static float moonTimeOfDay(float real, float partial) {
         if (current == null) return real;
         float t = current.now(partial) / PHASE_B;
         if (t >= 1F) return real;
-        double realEl = Math.asin(-Math.cos(real * Math.PI * 2));
-        double el = Mth.lerp(ease(t), Math.toRadians(-5), realEl);
+        double el = Mth.lerp(ease(t), Math.toRadians(-3), Math.toRadians(17));
         double theta = Math.acos(-Math.sin(el));
         return (float) (theta / (Math.PI * 2));
     }
@@ -236,8 +235,9 @@ public final class BloodMoonScene extends Screen {
         return -90F + (ease(time(partial) / PHASE_B) - 0.5F) * 6F;
     }
 
+    /** (1.3.177) Mirando al cielo (el dueño: «solo quiero una escena del cielo con la luna de sangre»). */
     public static float cameraPitch(float partial) {
-        return Mth.lerp(ease(time(partial) / PHASE_B), -2F, -9F);
+        return Mth.lerp(ease(time(partial) / PHASE_B), -14F, -19F);
     }
 
     /** La luz de los ojos de un actor de la escena (o -1 si no es de la escena). */
@@ -281,20 +281,47 @@ public final class BloodMoonScene extends Screen {
         texts(g, t, w, h);
     }
 
+    /** (1.3.177) Los textos son imágenes con letra Cinzel (tools/luna/texturas_luna.py), no la de Minecraft estirada. */
+    static final net.minecraft.resources.ResourceLocation TITLE = BloodMoonClient.tf("textures/gui/luna/titulo.png"),
+            SUBTITLE = BloodMoonClient.tf("textures/gui/luna/subtitulo.png");
+    static final net.minecraft.resources.ResourceLocation[] LINES = {BloodMoonClient.tf("textures/gui/luna/linea1.png"),
+            BloodMoonClient.tf("textures/gui/luna/linea2.png"), BloodMoonClient.tf("textures/gui/luna/linea3.png")};
+    /** Tamaño de cada imagen (px): título, subtítulo y las tres líneas. */
+    static final int[][] SIZES = {{1228, 194}, {986, 83}, {1087, 77}, {952, 77}, {1291, 74}};
+
     private void texts(GuiGraphics g, float t, int w, int h) {
-        // el título, a los 3 s, y lo de debajo
-        float a1 = Mth.clamp((t - 60) / 16F, 0F, 1F) * (1F - Mth.clamp((t - (PHASE_B - 14)) / 10F, 0F, 1F));
+        // el título, a los 3 s, arriba (sobre el cielo), y lo de debajo
+        float a1 = Mth.clamp((t - 60) / 18F, 0F, 1F) * (1F - Mth.clamp((t - (PHASE_B - 14)) / 10F, 0F, 1F));
         if (a1 > 0.02F) {
-            big(g, "La Luna de Sangre se alza", w / 2F, h * 0.30F, 3.0F, 0xC8141E, a1);
+            float rise = (1F - ease(Mth.clamp((t - 60) / 30F, 0F, 1F))) * 6F;
+            image(g, TITLE, SIZES[0], w / 2F, h * 0.20F + rise, w * 0.52F, a1);
             float a2 = Mth.clamp((t - 92) / 16F, 0F, 1F) * a1;
-            if (a2 > 0.02F) big(g, "Esta noche, los monstruos despiertan", w / 2F, h * 0.30F + 34, 1.3F, 0xE8C9C9, a2);
+            if (a2 > 0.02F) image(g, SUBTITLE, SIZES[1], w / 2F, h * 0.20F + w * 0.52F * 194F / 1228F * 0.55F + 6, w * 0.34F, a2);
         }
-        String[] lines = {"Los monstruos son más agresivos y peligrosos", "Los más fuertes atraviesan tu armadura", "Esta noche nadie duerme · Sobrevive hasta el amanecer"};
         int[] at = {160, 205, 245};
-        for (int i = 0; i < lines.length; i++) {
+        float lineH = w * 0.36F * 77F / 1087F;
+        for (int i = 0; i < 3; i++) {
             float a = Mth.clamp((t - at[i]) / 12F, 0F, 1F) * (1F - Mth.clamp((t - (PHASE_C - 4)) / 10F, 0F, 1F));
-            if (a > 0.02F) big(g, lines[i], w / 2F, h * 0.78F + i * 14 - 14, 1.15F, i == 0 ? 0xFF5A4F : 0xE8C9C9, a);
+            float width = w * 0.36F * SIZES[2 + i][0] / 1087F;
+            if (a > 0.02F) image(g, LINES[i], SIZES[2 + i], w / 2F, h * 0.80F + (i - 1) * lineH * 0.9F, width, a);
         }
+    }
+
+    /** Una imagen centrada en (cx, cy), de este ancho, con transparencia (suavizada al escalar). */
+    private static void image(GuiGraphics g, net.minecraft.resources.ResourceLocation tex, int[] size, float cx, float cy, float width, float alpha) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.getTextureManager().getTexture(tex).setFilter(true, false);
+        float height = width * size[1] / size[0];
+        PoseStack p = g.pose();
+        p.pushPose();
+        p.translate(cx - width / 2F, cy - height / 2F, 0F);
+        p.scale(width / size[0], height / size[1], 1F);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1F, 1F, 1F, Mth.clamp(alpha, 0F, 1F));
+        g.blit(tex, 0, 0, 0, 0F, 0F, size[0], size[1], size[0], size[1]);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+        p.popPose();
     }
 
     private void big(GuiGraphics g, String text, float cx, float y, float scale, int rgb, float alpha) {

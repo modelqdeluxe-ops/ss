@@ -26,7 +26,8 @@ public abstract class LevelRendererLunaMixin {
     private ResourceLocation tfclient$bloodMoonTexture(ResourceLocation texture) {
         if (BloodMoonClient.sky(0F) > 0.05F && "minecraft".equals(texture.getNamespace())
                 && "textures/environment/moon_phases.png".equals(texture.getPath())) {
-            return BloodMoonClient.PHASES;
+            // (1.3.177) en la primera parte de la escena, solo la nuestra (si no, salían dos lunas)
+            return net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.cameraActive() ? BloodMoonClient.NO_MOON : BloodMoonClient.PHASES;
         }
         return texture;
     }
