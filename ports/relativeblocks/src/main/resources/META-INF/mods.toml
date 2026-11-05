@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="CC0-1.0"
+
+[[mods]]
+modId="relativeblocks"
+version="${mod_version}"
+displayName="Olaf's Relatively Placed Blocks (Forge)"
+description='''Lets small blocks share one block space, pushed aside relative to where you are facing. Which blocks qualify is decided by measuring their shape, so any mod's small decorations work without this mod knowing they exist. Also adds vertical slabs (orthostats) for every slab.
+
+Port to Forge 1.20.1 of the Fabric mod by LukeolafP (CC0-1.0).'''
+authors="LukeolafP (port a Forge: Tierras Fantásticas)"
+credits="Original mod by LukeolafP, released under CC0-1.0."
+# Registra bloques (las losas verticales de cada losa): hace falta en el servidor y en los jugadores.
+displayTest="MATCH_VERSION"
+
+[[dependencies.relativeblocks]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.relativeblocks]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.20.2)"
+    ordering="NONE"
+    side="BOTH"
