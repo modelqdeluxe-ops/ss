@@ -18,6 +18,10 @@ source "$AQUI/comun.sh"
 MUNDO="luna$(date +%s)"
 grep -v '^level-name=' server.properties > server.properties.tmp && mv server.properties.tmp server.properties
 echo "level-name=$MUNDO" >> server.properties
+# los monstruos activados (con spawn-monsters=false, Bukkit borra al momento todo monstruo que se añada: los invocados
+# y los extra de la luna; en el servidor del dueño están activados)
+sed -i 's/^spawn-monsters=.*/spawn-monsters=true/' server.properties
+grep -q '^spawn-monsters=' server.properties || echo "spawn-monsters=true" >> server.properties
 # (sin la marca de la limpieza de la 1.3.120, el TF Client borra datos de jugadores en un mundo nuevo)
 ANTES_DE_ARRANCAR='mkdir -p "$MUNDO/tfclient" && touch "$MUNDO/tfclient/limpieza-1.3.120.hecha"'
 arrancar

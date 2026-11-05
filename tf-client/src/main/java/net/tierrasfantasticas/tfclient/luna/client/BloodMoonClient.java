@@ -258,6 +258,14 @@ public final class BloodMoonClient {
 
     // ------------------------------------------------------------------------------------------------- pantalla
 
+    /** Durante la escena, sin el chat (con F1 Forge lo sigue pintando). */
+    @SubscribeEvent
+    public static void onOverlay(net.minecraftforge.client.event.RenderGuiOverlayEvent.Pre event) {
+        if (BloodMoonScene.running() && event.getOverlay().id().equals(net.minecraftforge.client.gui.overlay.VanillaGuiOverlay.CHAT_PANEL.id())) {
+            event.setCanceled(true);
+        }
+    }
+
     /** La viñeta roja que late (debajo de la interfaz). */
     @SubscribeEvent
     public static void onGui(RenderGuiEvent.Pre event) {

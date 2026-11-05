@@ -64,6 +64,12 @@ final class BossTestLuna {
         p.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
         p.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.DIAMOND_LEGGINGS));
         p.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.DIAMOND_BOOTS));
+        // (las dianas no hacen su tick: la armadura no llega sola a sus atributos; 1.ª prueba: los dos golpes, 3,6)
+        for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            var mods = p.getItemBySlot(slot).getAttributeModifiers(slot);
+            p.getAttributes().removeAttributeModifiers(mods);
+            p.getAttributes().addTransientAttributeModifiers(mods);
+        }
         p.setHealth(p.getMaxHealth());
         p.invulnerableTime = 0;
     }
@@ -130,8 +136,11 @@ final class BossTestLuna {
             case 390 -> BossTest.shot(r, "luna_ojos_rojos");
             case 392 -> r.event("luna 4 (ojos rojos): capas pintadas " + BloodEyesLayer.rendered + ", luz de los ojos " + String.format("%.2f", BloodMoonClient.eyes(0F))
                     + ", luna roja dibujada " + BloodMoonClient.moonFrames + " (después de shaders " + BloodMoonClient.moonLate + "), viñeta " + BloodMoonClient.vignetteFrames
-                    + ", música " + BloodMoonClient.musicPlaying()
-                    + (BloodEyesLayer.rendered > 0 && BloodMoonClient.eyes(0F) > 0.9F && BloodMoonClient.moonFrames > 0 ? " (bien)" : " (MAL)"));
+                    + ", música puesta " + BloodMoonClient.musicActive() + " (sus sonidos: "
+                    + (net.minecraft.client.Minecraft.getInstance().getSoundManager().getSoundEvent(new net.minecraft.resources.ResourceLocation("tfclient", "luna_sangre.musica")) != null ? "sí" : "NO")
+                    + "; la de la escena: "
+                    + (net.minecraft.client.Minecraft.getInstance().getSoundManager().getSoundEvent(new net.minecraft.resources.ResourceLocation("tfclient", "luna_sangre.escena")) != null ? "sí" : "NO") + ")"
+                    + (BloodEyesLayer.rendered > 0 && BloodMoonClient.eyes(0F) > 0.9F && BloodMoonClient.moonFrames > 0 && BloodMoonClient.musicActive() ? " (bien)" : " (MAL)"));
             case 395 -> player.teleportTo(level, x, y, z, -90F, -22F);
             case 420 -> BossTest.shot(r, "luna_cielo_rojo");
             case 425 -> {

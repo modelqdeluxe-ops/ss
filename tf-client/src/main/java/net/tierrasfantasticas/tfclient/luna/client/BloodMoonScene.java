@@ -10,7 +10,12 @@ package net.tierrasfantasticas.tfclient.luna.client;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
@@ -20,6 +25,7 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -61,6 +67,7 @@ import org.lwjgl.opengl.GL11;
 @OnlyIn(Dist.CLIENT)
 public final class BloodMoonScene extends Screen {
     public static final int TOTAL = 320, PHASE_B = 150, PHASE_C = 280;
+    private static final float FOV = 40F;
     static final int[] IGNITE = {172, 192, 212, 232};
 
     private static BloodMoonScene current;
@@ -265,7 +272,7 @@ public final class BloodMoonScene extends Screen {
         // el título, a los 3 s, y lo de debajo
         float a1 = Mth.clamp((t - 60) / 16F, 0F, 1F) * (1F - Mth.clamp((t - (PHASE_B - 14)) / 10F, 0F, 1F));
         if (a1 > 0.02F) {
-            big(g, "☾ La Luna de Sangre se alza ☾", w / 2F, h * 0.30F, 3.0F, 0xC8141E, a1);
+            big(g, "La Luna de Sangre se alza", w / 2F, h * 0.30F, 3.0F, 0xC8141E, a1);
             float a2 = Mth.clamp((t - 92) / 16F, 0F, 1F) * a1;
             if (a2 > 0.02F) big(g, "Esta noche, los monstruos despiertan", w / 2F, h * 0.30F + 34, 1.3F, 0xE8C9C9, a2);
         }
@@ -288,6 +295,27 @@ public final class BloodMoonScene extends Screen {
         p.popPose();
     }
 
+    /** La capa roja oscura de la segunda parte: un cuadro delante de la cámara, sin profundidad. */
+    private static void darken(float aspect) {
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        float z = -0.2F, hh = 0.2F * (float) Math.tan(Math.toRadians(FOV / 2)) * 1.5F, hw = hh * aspect;
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        b.vertex(-hw, -hh, z).color(42, 0, 4, 122).endVertex();
+        b.vertex(hw, -hh, z).color(42, 0, 4, 122).endVertex();
+        b.vertex(hw, hh, z).color(42, 0, 4, 122).endVertex();
+        b.vertex(-hw, hh, z).color(42, 0, 4, 122).endVertex();
+        BufferUploader.drawWithShader(b.end());
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+    }
+
     /** La segunda parte: el fondo oscuro con la luna, los cuatro mobs y sus ojos. */
     private void drawCastScene(GuiGraphics g, float t, float partial) {
         Minecraft mc = Minecraft.getInstance();
@@ -305,9 +333,9 @@ public final class BloodMoonScene extends Screen {
         g.flush();
         // los mobs, con perspectiva
         float k = (t - PHASE_B) / (PHASE_C - PHASE_B);
-        double camZ = Mth.lerp(ease(k), 5.6, 4.3), camY = 1.45;
-        float pitch = 4F;
-        Matrix4f proj = new Matrix4f().setPerspective((float) Math.toRadians(36), (float) mc.getWindow().getWidth() / Math.max(1, mc.getWindow().getHeight()), 0.05F, 60F);
+        double camZ = Mth.lerp(ease(k), 7.6, 6.2), camY = 1.2;
+        float pitch = 2F;
+        Matrix4f proj = new Matrix4f().setPerspective((float) Math.toRadians(FOV), (float) mc.getWindow().getWidth() / Math.max(1, mc.getWindow().getHeight()), 0.05F, 60F);
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(proj, VertexSorting.DISTANCE_TO_ORIGIN);
         PoseStack mv = RenderSystem.getModelViewStack();
@@ -331,19 +359,9 @@ public final class BloodMoonScene extends Screen {
             for (Mob m : cast) d.render(m, m.getX(), m.getY(), m.getZ(), 0F, partial, pose, buffers, body);
             buffers.endBatch();
             suppressEyes = false;
-            // 2) una capa roja oscura encima de todo (con la cámara y la proyección de la interfaz)
-            RenderSystem.disableDepthTest();
-            mv.popPose();
-            RenderSystem.applyModelViewMatrix();
-            RenderSystem.restoreProjectionMatrix();
-            g.fill(0, 0, w, h, 0x7A2A0004);
-            g.flush();
-            RenderSystem.backupProjectionMatrix();
-            RenderSystem.setProjectionMatrix(proj, VertexSorting.DISTANCE_TO_ORIGIN);
-            mv.pushPose();
-            mv.setIdentity();
-            RenderSystem.applyModelViewMatrix();
-            RenderSystem.enableDepthTest();
+            // 2) una capa roja oscura encima de todo, sin escribir profundidad (si la escribiera, taparía los ojos:
+            // 1.ª prueba, los ojos de la escena salían a 71 de rojo y los del mundo a 255)
+            darken((float) mc.getWindow().getWidth() / Math.max(1, mc.getWindow().getHeight()));
             // 3) solo los ojos, encima (invisibles y sin lo que llevan en la mano: solo queda la capa de los ojos)
             for (Mob m : cast) {
                 ItemStack held = m.getMainHandItem();
