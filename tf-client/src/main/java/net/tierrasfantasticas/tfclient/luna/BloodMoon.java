@@ -536,12 +536,42 @@ public final class BloodMoon {
                     ctx.getSource().sendSuccess(() -> Component.literal("Luna de Sangre parada."), true);
                     return 1;
                 }))
+                .then(Commands.literal("invocar")
+                        .then(Commands.literal("normal").executes(ctx -> summon(ctx.getSource(), BloodMobs.Rank.NORMAL)))
+                        .then(Commands.literal("elite").executes(ctx -> summon(ctx.getSource(), BloodMobs.Rank.ELITE)))
+                        .then(Commands.literal("campeon").executes(ctx -> summon(ctx.getSource(), BloodMobs.Rank.CAMPEON))))
                 .then(Commands.literal("noches").then(Commands.argument("n", IntegerArgumentType.integer(1, 1000)).executes(ctx -> {
                     nightsLeft = IntegerArgumentType.getInteger(ctx, "n");
                     saveState();
                     ctx.getSource().sendSuccess(() -> Component.literal("Faltan " + nightsLeft + " noches para la Luna de Sangre."), true);
                     return 1;
                 })));
+    }
+
+    /** /tf luna invocar &lt;rango&gt;: un zombi de la luna (normal, élite o campeón, con modificadores al azar) donde se ejecuta. */
+    private static int summon(CommandSourceStack src, BloodMobs.Rank rank) {
+        if (!active || !here(src.getLevel())) {
+            src.sendFailure(Component.literal("Solo durante la Luna de Sangre (y en un mundo donde se vea)."));
+            return 0;
+        }
+        ServerLevel level = src.getLevel();
+        Mob mob = EntityType.ZOMBIE.create(level);
+        if (mob == null) return 0;
+        var pos = src.getPosition();
+        mob.moveTo(pos.x, pos.y, pos.z, level.getRandom().nextFloat() * 360F, 0F);
+        mob.finalizeSpawn(level, level.getCurrentDifficultyAt(mob.blockPosition()), MobSpawnType.COMMAND, null, null);
+        net.minecraft.nbt.CompoundTag t = new net.minecraft.nbt.CompoundTag();
+        t.putBoolean("extra", true);
+        mob.getPersistentData().put(BloodMobs.TAG, t);
+        level.addFreshEntity(mob);
+        List<BloodMobs.Affix> pool = new ArrayList<>(List.of(BloodMobs.Affix.values()));
+        java.util.Collections.shuffle(pool, new java.util.Random(level.getRandom().nextLong()));
+        int n = rank == BloodMobs.Rank.CAMPEON ? 3 : rank == BloodMobs.Rank.ELITE ? 2 : 0;
+        BloodMobs.force(mob, rank, pool.subList(0, n).toArray(new BloodMobs.Affix[0]));
+        BloodMobs.markExtra(mob);
+        Component name = mob.getCustomName() != null ? mob.getCustomName() : mob.getType().getDescription();
+        src.sendSuccess(() -> Component.literal("Invocado: ").append(name), true);
+        return 1;
     }
 
     private static int manualStart(CommandSourceStack src, boolean scene) {

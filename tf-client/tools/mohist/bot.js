@@ -98,6 +98,13 @@ client.on('custom_payload', (p) => {
   else if (p.data[0] === 7) log('PAD abre:', readStr(p.data, o), readStr(p.data, o));
 });
 client.on('set_title_subtitle', (p) => log('SUBTÍTULO:', plain(p.text)));
+// la barra de encima del inventario (displayClientMessage(…, true)) y la vida (cada cambio)
+client.on('action_bar', (p) => log('BARRA:', plain(p.text)));
+let lastHealth = null;
+client.on('update_health', (p) => {
+  if (lastHealth === null || Math.abs(p.health - lastHealth) > 1e-4) log('VIDA:', p.health.toFixed(2), lastHealth === null ? '' : `(${(p.health - lastHealth).toFixed(2)})`);
+  lastHealth = p.health;
+});
 client.on('playerChat', (m) => log('CHAT jugador:', plain(m.senderName), '→', m.plainMessage ?? plain(m.formattedMessage), m.unsignedContent ? '| ' + plain(m.unsignedContent) : ''));
 
 let done = 0;

@@ -181,11 +181,24 @@ public final class BloodMobs {
 
     /** Para la prueba en el juego: un mob de la luna con el rango y los modificadores que se digan. */
     public static void force(Mob mob, Rank rank, Affix... affixes) {
+        Data before = LIVE.get(mob);
+        strip(mob, before != null && before.affixes.contains(Affix.ARDIENTE));
+        mob.setCustomName(null);
+        mob.setCustomNameVisible(false);
         Data d = new Data();
+        if (before != null) d.extra = before.extra;
         d.rank = rank;
         for (Affix a : affixes) d.affixes.add(a);
         apply(mob, d, BloodMoon.config(), true);
         LIVE.put(mob, d);
+        write(mob, d);
+    }
+
+    /** Lo puso el evento (o un comando): al amanecer se deshace. */
+    static void markExtra(Mob mob) {
+        Data d = LIVE.get(mob);
+        if (d == null) return;
+        d.extra = true;
         write(mob, d);
     }
 
@@ -313,6 +326,17 @@ public final class BloodMobs {
             mob.discard();
             return;
         }
+        strip(mob, t.getString("afijos").contains(Affix.ARDIENTE.name()));
+        if (t.getBoolean("nombre")) {
+            mob.setCustomName(null);
+            mob.setCustomNameVisible(false);
+        }
+        if (mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
+        mob.getPersistentData().remove(TAG);
+    }
+
+    /** Quita todo lo que pone la luna en los atributos (y la resistencia al fuego de «ardiente»). */
+    private static void strip(Mob mob, boolean fire) {
         for (UUID id : new UUID[] {FOLLOW_ID, SPEED_ID, DAMAGE_ID}) {
             remove(mob, Attributes.FOLLOW_RANGE, id);
             remove(mob, Attributes.MOVEMENT_SPEED, id);
@@ -323,13 +347,7 @@ public final class BloodMobs {
         remove(mob, Attributes.ARMOR, CHAMP_ARMOR_ID);
         remove(mob, Attributes.KNOCKBACK_RESISTANCE, KNOCK_ID);
         remove(mob, Attributes.MOVEMENT_SPEED, FAST_ID);
-        if (t.getString("afijos").contains(Affix.ARDIENTE.name())) mob.removeEffect(MobEffects.FIRE_RESISTANCE);
-        if (t.getBoolean("nombre")) {
-            mob.setCustomName(null);
-            mob.setCustomNameVisible(false);
-        }
-        if (mob.getHealth() > mob.getMaxHealth()) mob.setHealth(mob.getMaxHealth());
-        mob.getPersistentData().remove(TAG);
+        if (fire) mob.removeEffect(MobEffects.FIRE_RESISTANCE);
     }
 
     // ----------------------------------------------------------------------------------------------- cada medio segundo
@@ -386,7 +404,8 @@ public final class BloodMobs {
 
     /** Sombra: aparece dos bloques detrás de su objetivo (si hay sitio). */
     private static void shadowStep(Mob mob, ServerLevel level) {
-        if (!(mob.getTarget() instanceof LivingEntity target) || !target.isAlive()) return;
+        LivingEntity target = mob.getTarget();
+        if (target == null || !target.isAlive()) return;
         double dist = mob.distanceTo(target);
         if (dist < 4 || dist > 24) return;
         Vec3 look = target.getLookAngle();
