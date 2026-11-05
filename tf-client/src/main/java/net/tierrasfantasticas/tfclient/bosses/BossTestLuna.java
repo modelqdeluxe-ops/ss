@@ -96,6 +96,9 @@ final class BossTestLuna {
             BossTest.command(server, "time set 6000");
             a = TFBotPlayer.spawnTarget(server, level, "Lunatica", x + 3, y, z + 2);
             b = TFBotPlayer.spawnTarget(server, level, "Sangrienta", x + 3, y, z - 2);
+            // (mientras se graba el vídeo, la luna sigue y sus mobs las mataban: invulnerables hasta la prueba del daño)
+            if (a != null) a.setInvulnerable(true);
+            if (b != null) b.setInvulnerable(true);
             BossTest.command(server, "tf luna noches 1");
             player.teleportTo(level, x, y, z, -90F, 0F);
         }
@@ -159,6 +162,8 @@ final class BossTestLuna {
                 for (Mob m : mobs) m.discard();
                 mobs.clear();
                 if (a != null && b != null) {
+                    a.setInvulnerable(false);
+                    b.setInvulnerable(false);
                     a.teleportTo(level, x + 8, y, z + 8, 0F, 0F);
                     b.teleportTo(level, x + 8, y, z - 8, 0F, 0F);
                     armor(a);

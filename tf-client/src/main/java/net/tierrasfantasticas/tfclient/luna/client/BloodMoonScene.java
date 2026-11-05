@@ -296,14 +296,14 @@ public final class BloodMoonScene extends Screen {
             float rise = (1F - ease(Mth.clamp((t - 60) / 30F, 0F, 1F))) * 6F;
             image(g, TITLE, SIZES[0], w / 2F, h * 0.20F + rise, w * 0.52F, a1);
             float a2 = Mth.clamp((t - 92) / 16F, 0F, 1F) * a1;
-            if (a2 > 0.02F) image(g, SUBTITLE, SIZES[1], w / 2F, h * 0.20F + w * 0.52F * 194F / 1228F * 0.55F + 6, w * 0.34F, a2);
+            if (a2 > 0.02F) image(g, SUBTITLE, SIZES[1], w / 2F, h * 0.20F + w * 0.52F * 194F / 1228F * 0.55F + 10, w * 0.44F, a2);
         }
         int[] at = {160, 205, 245};
-        float lineH = w * 0.36F * 77F / 1087F;
+        float lineH = w * 0.50F * 77F / 1087F;
         for (int i = 0; i < 3; i++) {
             float a = Mth.clamp((t - at[i]) / 12F, 0F, 1F) * (1F - Mth.clamp((t - (PHASE_C - 4)) / 10F, 0F, 1F));
-            float width = w * 0.36F * SIZES[2 + i][0] / 1087F;
-            if (a > 0.02F) image(g, LINES[i], SIZES[2 + i], w / 2F, h * 0.80F + (i - 1) * lineH * 0.9F, width, a);
+            float width = w * 0.50F * SIZES[2 + i][0] / 1087F;
+            if (a > 0.02F) image(g, LINES[i], SIZES[2 + i], w / 2F, h * 0.76F + (i - 1) * lineH * 0.85F, width, a);
         }
     }
 
