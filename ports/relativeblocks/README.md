@@ -65,7 +65,12 @@ ports/relativeblocks/tools/probar_mohist.sh /tmp/rb-mohist relativeblocks-forge-
   Monta Mohist + EssentialsX + LuckPerms + TF Client + el port (`tf-client/tools/mohist/montar.sh`) y comprueba: arranca
   sin errores ni mixins rotos, 57 losas verticales y sus recetas; Ana junta flores, antorchas, losas mezcladas y
   verticales; Carlos (fuera del grupo de la zona protegida de Ana) no puede añadir ni romper nada; Ana rompe uno de un
-  grupo y queda el otro; tras reiniciar todo sigue igual. Termina con `RELATIVE BLOCKS EN MOHIST: TODO BIEN`.
+  grupo y queda el otro; tras reiniciar todo sigue igual. Termina con `RELATIVE BLOCKS EN MOHIST: TODO BIEN`
+  (5 nov 2026, `2.0.0-forge.1` con TF Client 1.3.174: 22 de 22 bien, y en el registro del servidor ningún error ni
+  aviso nuevo). Ojo: EssentialsX tapa `/item` y `/recipe` (en la consola, con `minecraft:` delante), y en un mundo nuevo
+  el TF Client borra `claimblocks_data.json` si falta la marca `tfclient/limpieza-1.3.120.hecha` (la prueba la pone).
+  En supervivencia el servidor termina de picar solo un bloque que se empezó a picar (como en vanilla): por eso la
+  prueba espera unos segundos antes de mirar si algo se rompió.
 
 ## Publicar una versión nueva
 
