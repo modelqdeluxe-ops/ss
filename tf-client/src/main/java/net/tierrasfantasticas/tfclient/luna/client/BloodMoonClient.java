@@ -228,12 +228,11 @@ public final class BloodMoonClient {
             RenderSystem.depthMask(false);
             RenderSystem.enableBlend();
             RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-            // (1.3.177) el resplandor, pequeño y suave (suma luz)
-            RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
-            quad(m, HALO, 24F, k * rain * 0.5F * pulse);
             // (1.3.178, el dueño: «no me gusta la textura de la luna, hazla como la vanilla, solo que roja») la luna llena
-            // de Minecraft, en su sitio y de su tamaño (cuadro de 20), sumando luz como ella, teñida de rojo
-            moon(m, 20F, Mth.lerp(k, 1F, 0.22F), Mth.lerp(k, 1F, 0.16F), rain);
+            // de Minecraft, en su sitio y de su tamaño (cuadro de 20), sumando luz como ella, roja desde el principio y sin
+            // resplandor alrededor (la de Minecraft no lo tiene)
+            RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
+            moon(m, 20F, 0.22F, 0.16F, rain);
         } finally {
             if (late) GL11.glDepthRange(0.0, 1.0);
             RenderSystem.depthMask(true);
