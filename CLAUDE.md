@@ -25,6 +25,8 @@
   TF Client desde la 1.3.157): lee `tf-client/REVIVIR.md` antes de tocarlo.
 - Jefes de incursión (TF Client): lee `tf-client/JEFES.md` antes de tocarlos (motor, cerebro, herramientas y cómo
   comprobarlos sin abrir el juego).
+- Luna de Sangre (el evento de los mobs cada 10 noches, `/tf luna`, `config/tfclient/luna_sangre.json`): lee
+  `tf-client/LUNA.md` antes de tocarla (lo que pidió el dueño literal, las reglas y cómo se prueba).
 - Ports de mods de Fabric a Forge (5 nov: Olaf's Relatively Placed Blocks): `ports/relativeblocks/README.md` (cómo se
   decompila, qué cambia de Fabric a Forge, la prueba en el juego y la de Mohist, y cómo publicar su Release).
 - **El motor de jefes tiene que ser fiel a MythicMobs/ModelEngine para TODOS los packs que metamos** (orden del dueño).

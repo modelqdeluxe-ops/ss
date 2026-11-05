@@ -4165,5 +4165,21 @@
     "pitch": 1.25
    }
   ]
+ },
+ "luna_sangre.musica": {
+  "sounds": [
+   {
+    "name": "tfclient:luna_sangre/musica",
+    "stream": true
+   }
+  ]
+ },
+ "luna_sangre.escena": {
+  "sounds": [
+   {
+    "name": "tfclient:luna_sangre/escena",
+    "stream": true
+   }
+  ]
  }
 }

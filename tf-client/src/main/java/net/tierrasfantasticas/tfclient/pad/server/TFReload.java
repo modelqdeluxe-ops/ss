@@ -56,6 +56,8 @@ public final class TFReload {
             return List.of();
         }, done, problems);
         reload("tienda.json", "tienda", TFShopConfig::load, done, problems);
+        // (1.3.175) la Luna de Sangre
+        reload(net.tierrasfantasticas.tfclient.luna.BloodMoon.FILE, "Luna de Sangre", net.tierrasfantasticas.tfclient.luna.BloodMoon::reload, done, problems);
         reload("oficios.json", "oficios", TFJobsConfig::load, done, problems);
         reload("kits.json", "kits", () -> {
             PadKits.loadConfig();

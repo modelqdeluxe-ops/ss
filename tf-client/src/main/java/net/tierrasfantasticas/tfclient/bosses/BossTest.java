@@ -299,7 +299,7 @@ public final class BossTest {
             // guerra simétrica y escudo de guerra
             // (1.3.171) «v171»: ONDA de la etiqueta, los martillos como la maza, la lanza lanzada, protecciones en un grupo y
             // el reproductor de la música de la zona
-            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir", "clanes2", "clanes3", "emotes", "sets", "v171", "lanzas", "maza"}) {
+            for (String extra : new String[] {"encantar", "protes", "cumple", "arreglos", "clanes", "revivir", "clanes2", "clanes3", "emotes", "sets", "v171", "lanzas", "maza", "luna"}) {
                 if (only != null && List.of(only.split(",")).contains(extra)) ids.add(0, extra);
             }
             if (only != null && !only.isBlank() && !only.equals("1")) ids.retainAll(List.of(only.split(",")));
@@ -321,7 +321,7 @@ public final class BossTest {
         // (1.3.114) también el pad: con shaders, sus capturas salían con el nombre de otra (la del inventario, como «oni_lanzas_mano»)
         boolean waitShot = ("vacio".equals(r.id) || "fauna".equals(r.id) || "corta".equals(r.id) || "pad".equals(r.id) || "padtras".equals(r.id)
                 || "tienda".equals(r.id) || "armario".equals(r.id) || "accesorios".equals(r.id) || "oficios".equals(r.id) || "clave".equals(r.id)
-                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id) || "clanes2".equals(r.id) || "clanes3".equals(r.id) || "emotes".equals(r.id) || "sets".equals(r.id) || "v171".equals(r.id) || "lanzas".equals(r.id) || "maza".equals(r.id))
+                || "encantar".equals(r.id) || "protes".equals(r.id) || "cumple".equals(r.id) || "arreglos".equals(r.id) || "clanes".equals(r.id) || "revivir".equals(r.id) || "clanes2".equals(r.id) || "clanes3".equals(r.id) || "emotes".equals(r.id) || "sets".equals(r.id) || "v171".equals(r.id) || "lanzas".equals(r.id) || "maza".equals(r.id) || "luna".equals(r.id))
                 && !SHOTS_PENDING.isEmpty() && shotWait++ < 200 || videoBusy;
         if (!waitShot) t++;
         player.setHealth(player.getMaxHealth());
@@ -422,6 +422,11 @@ public final class BossTest {
         // (1.3.173) «maza»: los sonidos de la 1.21 (bajados de Mojang) y la explosión de polvo del golpe aplastante
         if ("maza".equals(r.id)) {
             if (!waitShot) BossTestMaza.step(t, server, level, player, r);
+            return;
+        }
+        // (1.3.175) «luna»: la Luna de Sangre (no sale con 1 jugador; con 3 sí: escena, ojos, cielo, daño mágico, amanecer)
+        if ("luna".equals(r.id)) {
+            if (!waitShot) BossTestLuna.step(t, server, level, player, r);
             return;
         }
         // (1.3.162) «sets»: las 5 crates nuevas (objetos, armadura, casco, alas en la espalda y arma; de espaldas y de frente)

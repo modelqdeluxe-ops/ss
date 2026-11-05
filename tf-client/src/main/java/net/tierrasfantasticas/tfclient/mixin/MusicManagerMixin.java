@@ -33,7 +33,9 @@ public abstract class MusicManagerMixin {
      */
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void tfclient$silenceVanillaMusic(CallbackInfo ci) {
-        if (TFMusic.isActive() || TFBossMusic.isActive() || RiftSky.musicActive()) {
+        if (TFMusic.isActive() || TFBossMusic.isActive() || RiftSky.musicActive()
+                || net.tierrasfantasticas.tfclient.luna.client.BloodMoonClient.musicActive()
+                || net.tierrasfantasticas.tfclient.luna.client.BloodMoonScene.running()) {
             if (this.currentMusic != null) this.stopPlaying();
             ci.cancel();
         }

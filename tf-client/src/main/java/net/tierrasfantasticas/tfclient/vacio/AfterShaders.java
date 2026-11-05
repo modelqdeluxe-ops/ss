@@ -115,6 +115,8 @@ public final class AfterShaders {
                 // (1.3.96: el Velo del Alba y el Corazón del Alba, con la profundidad de la escena)
                 SanctuaryFx.renderAfterShaders(VIEW, PROJ);
             }
+            // (1.3.175) la luna roja de la Luna de Sangre, solo donde se ve el cielo
+            net.tierrasfantasticas.tfclient.luna.client.BloodMoonClient.renderAfterShaders(VIEW, partial);
             // (la grieta del cielo de los mundos Overworld, 1.3.93: detrás de todo, solo donde se ve el cielo)
             SkyRiftClient.renderAfterShaders(VIEW, PROJ);
             // (1.3.152) el letrero de la fiesta de cumpleaños, detrás de los bloques

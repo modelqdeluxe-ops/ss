@@ -285,7 +285,24 @@ Lo que hay ahora (solo web: `tools/pages.py` → `public/tienda.html`, `tools/ta
 - Comprobado con `tools/preview.mjs` (con `COOKIE_FILE` para ver a Notch con sesión; tras reiniciarlo, Notch no tiene
   VFX: se pueden reclamar con `POST /api/vfx/claim`) en 1440×900, 1024, 768 y 390 de ancho; `npm test` 53/53.
 
-### CHECKPOINT (5 nov 2026, web: FUERA LOS COSMÉTICOS DE PRIMAVERA; alas de Primavera sin rendijas) — lee esto primero
+### CHECKPOINT (5 nov 2026, TF Client 1.3.175: LA LUNA DE SANGRE) — lee esto primero
+
+- El dueño: «la gente me pide más dificultad… lo sienten aburrido» → la noche de sangre con modificadores en los mobs,
+  cada 10 noches del juego, mínimo 3 jugadores a la vez (si no, se salta y la cuenta vuelve a empezar), ojos rojos
+  brillantes, mobs fuertes con daño mágico que ignora la armadura, música baja y tenebrosa, y una escena para todos con
+  el nacimiento de la luna. Todo (lo literal, las reglas, la config, los comandos, la música y las pruebas) en
+  **[`tf-client/LUNA.md`](tf-client/LUNA.md)**. Código: `luna/` (servidor), `luna/client/` y `mixin/luna/`.
+- Decisiones que no dijo el dueño (dichas en el resumen): los mobs extra no aparecen dentro de las protecciones
+  (`aparecerEnProtecciones`), 2 h reales como mínimo entre lunas, cerca del spawn (150 bloques) sin Élites ni Campeones,
+  la escena se puede saltar con Esc, y la tarde en que toca no se puede dormir (para que nadie se la salte).
+- Probado: en el juego (`[prueba-jefes=luna]`: 8/8, sin shaders y con `[shaders=photon]` —Oculus y Embeddium; Photon no
+  arranca en la máquina de la prueba—; los ojos de la escena a 255 de rojo, medidos) y en un Mohist de verdad con bots
+  (`tools/mohist/probar_luna.sh`: 17/17; zombi normal 0,85 contra diamante, Élite 3,6).
+- Lección de la prueba: un `GuiGraphics.fill` en medio de un dibujo 3D escribe profundidad (RenderType.gui) y tapa lo
+  que va detrás: la capa oscura de la escena tapaba los ojos (salían a 71 de rojo y en el mundo a 255). Para capas
+  encima de 3D, un cuadro sin `depthMask`.
+
+; alas de Primavera sin rendijas) — lee esto primero
 
 - El dueño, con captura de la pestaña Cosméticos: «quita eso de cosméticos no mames, esas alas son de una crate, quita
   esos cosméticos ya de la tienda». Las dos piezas de `springcos` (Corona y Alas de Primavera) son las de la crate

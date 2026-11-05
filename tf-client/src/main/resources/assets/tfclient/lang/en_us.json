@@ -1581,5 +1581,7 @@
  "entity.tfclient.lanza_lanzada": "Lanza",
  "subtitles.tfclient.maza.golpe": "Golpe de la maza",
  "subtitles.tfclient.maza.golpe_aire": "Golpe de la maza en el aire",
- "subtitles.tfclient.maza.rafaga": "Ráfaga de viento"
+ "subtitles.tfclient.maza.rafaga": "Ráfaga de viento",
+ "death.attack.tfclient.luna_sangre": "%1$s fue desgarrado por la magia de sangre",
+ "death.attack.tfclient.luna_sangre.player": "%1$s fue desgarrado por la magia de sangre de %2$s"
 }
