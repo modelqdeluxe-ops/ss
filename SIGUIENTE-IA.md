@@ -1,5 +1,11 @@
 # Para la siguiente IA: qué hacemos y cómo seguir EXACTAMENTE igual
 
+> **5 nov 2026 — SCHEMATIC DE UNA CASA (PentaLodge)**: el dueño mandó un mapa (mundo de la 1.19.2 en un zip de Drive)
+> y pidió «haz schematic esta casa, forge 1.20.1». Hecho con `tf-client/tools/schem/` (README: pasar el mundo a la
+> 1.20.1 con el servidor de Mojang, sacar la casa sola y con terreno a `.schem`, validar y pegarlo en un Mohist de verdad
+> con WorldEdit Forge y Bukkit: 0 bloques distintos). Los mapas y los `.schem` no van al repositorio; al dueño se le
+> mandan los archivos y cómo pegarlos (`//perf neighbors|update|validation off`, `//schem load`, `//paste -e`).
+>
 > **4 nov 2026 — 1.3.174 + WEB, MÉTRICAS EN /metricas**: el puente manda a la web los registros de nLogin (desde el 26 de
 > octubre) y `/metricas` (con contraseña de staff) hace las gráficas de jugadores y un Excel. Mod: `server/NLoginLog`,
 > `server/TFNLogin`; web: `src/nlogin.js`, `public/metricas*.js`, `public/xlsx.js`. Todo en «Métricas de jugadores» de
@@ -220,6 +226,7 @@ tú las reproduces en el juego (en GitHub Actions), las arreglas con la semánti
 | Alas de Caelthar (mide y escribe «reposo») | `python3 -I tools/void/caballero_alas.py [--solo-medir]` |
 | La isla (con el mapa del dueño descifrado fuera del repo) | `python3 -I tools/void/isla.py <EndCarageKitMap.schematic> [--preview carpeta]` |
 | Isla del Void (santuario, plaza) | `python3 -I tools/void/isla.py <EndCarageKitMap.schematic> --preview carpeta` (mapa cifrado en `packs/void.tar.enc`) |
+| Una casa de un mapa → `.schem` (WorldEdit, 1.20.1) | `tf-client/tools/schem/README.md`: `actualizar.sh`, `casa_a_schem.py`, `validar.py`, `vista.py`, `probar_worldedit.sh <mohist> <jar> <carpeta> forge|bukkit` |
 | Ventana /tf boss (tamaños) | `python3 tools/bosses/sim_gui.py` |
 | Cielo de la grieta | `tools/bosses/rift_sky.py --preview carpeta` |
 | Sonidos de grieta, muerte y música | `tools/bosses/sonidos_grieta.py --wav carpeta` |
