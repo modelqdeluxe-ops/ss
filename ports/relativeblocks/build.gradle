@@ -1,0 +1,103 @@
+// Olaf's Relatively Placed Blocks (LukeolafP, CC0) portado de Fabric a Forge 1.20.1. Se compila SOLO en GitHub Actions
+// (.github/workflows/relativeblocks.yml). La prueba en el juego (commit con [prueba-relativeblocks]) añade el source set
+// «prueba» al runClient (-Pprueba): no va en el jar.
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+}
+
+version = "${mod_version}"
+group = 'com.lukeolafp.relativeblocks'
+
+base {
+    archivesName = "relativeblocks-forge-${minecraft_version}"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+sourceSets {
+    prueba {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    copyIdeResources = true
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            args '--width', '1280', '--height', '720'
+            if (project.hasProperty('rbshaders')) {
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            }
+            mods {
+                relativeblocks {
+                    source sourceSets.main
+                    if (project.hasProperty('prueba')) source sourceSets.prueba
+                }
+            }
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, 'relativeblocks.refmap.json'
+    config 'relativeblocks.mixins.json'
+}
+
+repositories {
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
+
+configurations {
+    pruebaImplementation.extendsFrom implementation
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    // La prueba con Embeddium y Oculus (los del dueño): -Prbshaders
+    if (project.hasProperty('rbshaders')) {
+        runtimeOnly fg.deobf('maven.modrinth:embeddium:0.3.31+mc1.20.1')
+        runtimeOnly fg.deobf('maven.modrinth:oculus:1.20.1-1.8.0')
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def props = [mod_version: mod_version]
+    inputs.properties props
+    filesMatching('META-INF/mods.toml') {
+        expand props
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    from('LICENSE') { rename { 'LICENSE_relativeblocks' } }
+    manifest {
+        attributes([
+            'Specification-Title'     : 'relativeblocks',
+            'Specification-Vendor'    : 'LukeolafP',
+            'Specification-Version'   : '1',
+            'Implementation-Title'    : project.name,
+            'Implementation-Version'  : project.jar.archiveVersion,
+            'Implementation-Vendor'   : 'LukeolafP (port a Forge: Tierras Fantásticas)',
+            'License'                 : 'CC0-1.0',
+            'MixinConfigs'            : 'relativeblocks.mixins.json'
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

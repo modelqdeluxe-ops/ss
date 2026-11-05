@@ -1,0 +1,122 @@
+name: Relative Blocks (Forge)
+
+# El port a Forge 1.20.1 de «Olaf's Relatively Placed Blocks» (LukeolafP, CC0): ports/relativeblocks.
+#  - Siempre: compilar, revisar los mixins y subir el jar como artefacto «relativeblocks-jar».
+#  - En main: la Release «relativeblocks-forge-v<mod_version>» (si aún no existe) y la fija «relativeblocks», cuyo
+#    relativeblocks.jar es siempre la última. Ninguna se marca como «latest» (el repo tiene otras Releases).
+#  - Con «[prueba-relativeblocks]» en el commit (rama claude/**): el juego en una pantalla virtual con la prueba
+#    (src/prueba: grupos de bloques, losas mezcladas y verticales, romper uno) y su informe y capturas en la rama
+#    «pruebas-relativeblocks». Con «[shaders]» además, Embeddium + Oculus (los del dueño).
+
+on:
+  push:
+    paths:
+      - 'ports/relativeblocks/**'
+      - '.github/workflows/relativeblocks.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar el port
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ports/relativeblocks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compilar
+        run: chmod +x gradlew && ./gradlew build pruebaClasses --no-daemon --stacktrace
+      # Un método de un mixin que recibe la propia clase del mixin hace que Forge intente cargarla y el juego crashee
+      # al arrancar. Y el refmap tiene que ir en el jar (si no, en Mohist/Forge los mixins no encuentran los métodos).
+      - name: Revisar el jar
+        run: |
+          jar=$(ls build/libs/relativeblocks-forge-*.jar | grep -v sources | head -n1)
+          echo "jar: $jar"
+          rm -rf /tmp/chk && mkdir -p /tmp/chk && cd /tmp/chk
+          unzip -q -o "$GITHUB_WORKSPACE/ports/relativeblocks/$jar"
+          ls -la relativeblocks.refmap.json relativeblocks.mixins.json META-INF/mods.toml LICENSE_relativeblocks
+          bad=$(find com/lukeolafp/relativeblocks/mixin -name '*.class' | while read c; do javap -p "$c" | grep -E "\(.*com\.lukeolafp\.relativeblocks\.mixin\." || true; done)
+          if [ -n "$bad" ]; then echo "::error::Mixin con referencia a su propia clase:"; echo "$bad"; exit 1; fi
+          if find . -path '*prueba*' -name '*.class' | grep -q .; then echo "::error::La prueba no puede ir en el jar"; exit 1; fi
+          python3 -c "import json;print(json.dumps(json.load(open('relativeblocks.refmap.json')),indent=1)[:4000])"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: relativeblocks-jar
+          path: ports/relativeblocks/build/libs/*.jar
+      - name: Publicar la Release
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ver=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          jar=$(ls build/libs/relativeblocks-forge-*-"$ver".jar | head -n1)
+          tag="relativeblocks-forge-v$ver"
+          if gh release view "$tag" >/dev/null 2>&1; then echo "La Release $tag ya existe"; exit 0; fi
+          gh release create "$tag" "$jar" --latest=false --title "Relatively Placed Blocks para Forge 1.20.1 ($ver)" \
+            --notes "Port a Forge 1.20.1 de Olaf's Relatively Placed Blocks 2.0.0 (LukeolafP, CC0-1.0). Va en el cliente y en el servidor (Forge o Mohist). Enlace fijo a la última: https://github.com/${{ github.repository }}/releases/download/relativeblocks/relativeblocks.jar"
+          cp "$jar" /tmp/relativeblocks.jar
+          if ! gh release view relativeblocks >/dev/null 2>&1; then
+            gh release create relativeblocks --latest=false --title "Relatively Placed Blocks (Forge, última versión)" \
+              --notes "Siempre la última versión del port a Forge 1.20.1: descarga relativeblocks.jar."
+          fi
+          gh release upload relativeblocks /tmp/relativeblocks.jar --clobber
+          gh release edit relativeblocks --title "Relatively Placed Blocks (Forge, última: $ver)" --latest=false
+
+  prueba:
+    name: Probar en el juego
+    if: startsWith(github.ref, 'refs/heads/claude/') && contains(github.event.head_commit.message, '[prueba-relativeblocks')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ports/relativeblocks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Pantalla virtual
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils > /dev/null
+      - name: Jugar
+        env:
+          MENSAJE: ${{ github.event.head_commit.message }}
+          RB_PRUEBA: '1'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          MESA_GL_VERSION_OVERRIDE: '4.5'
+          GALLIUM_DRIVER: llvmpipe
+        run: |
+          chmod +x gradlew
+          mkdir -p run
+          printf 'pauseOnLostFocus:false\nonboardAccessibility:false\ntutorialStep:none\nrenderDistance:5\nsoundCategory_master:0.0\n' > run/options.txt
+          EXTRA="-Pprueba"
+          if printf '%s' "$MENSAJE" | grep -q '\[shaders'; then EXTRA="$EXTRA -Prbshaders"; echo "Con Embeddium + Oculus"; fi
+          timeout 45m xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient $EXTRA --no-daemon > run/juego.log 2>&1 || echo "el juego acabó con código $?"
+          tail -n 80 run/juego.log
+          cat run/pruebas/informe.txt || true
+      - name: Subir el informe y las capturas
+        if: always()
+        run: |
+          rm -rf /tmp/out && mkdir -p /tmp/out
+          cp run/pruebas/informe.txt /tmp/out/ 2>/dev/null || echo "sin informe" > /tmp/out/informe.txt
+          cp run/pruebas/*.png /tmp/out/ 2>/dev/null || true
+          grep -E "relativeblocks|Relatively|Exception|ERROR|WARN.*(relativeblocks|mixin|Mixin|model|texture)|Caused by|^\s+at com\.lukeolafp" run/juego.log | tail -n 3000 > /tmp/out/registro.txt || true
+          tail -n 400 run/juego.log > /tmp/out/final_del_registro.txt || true
+          cd /tmp/out
+          git init -q
+          git checkout -q -b pruebas-relativeblocks
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "Prueba de Relative Blocks ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" pruebas-relativeblocks

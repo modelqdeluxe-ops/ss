@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.lukeolafp.relativeblocks.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "relativeblocks.refmap.json",
+  "mixins": [
+    "BarrierNeighbourMixin",
+    "BlockItemAccessor",
+    "GameDataMixin",
+    "RecipeManagerMixin"
+  ],
+  "client": [
+    "client.ClientWorldParticleOffsetMixin",
+    "client.ClusterBreakingMixin",
+    "client.ClusterDamageMixin",
+    "client.ClusterRedrawMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
