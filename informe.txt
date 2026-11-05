@@ -1,0 +1,23 @@
+PRUEBA DE LOS JEFES EN EL JUEGO (TF Client 1.3.178)
+
+== luna
+   t=55 luna 1 (1 jugador, toca la luna): «no sale: 1 de 3 jugadores; la cuenta vuelve a 10», activa false, faltan 10 (bien: no sale y la cuenta vuelve a empezar)
+   t=102 luna 2 (3 jugadores, 3 conectados): «sale con 3 jugadores», activa true, el cliente: luna true, escena abierta 1 (bien)
+   t=447 luna 3 (la escena): abierta 1, acabada 1, fotogramas de los mobs 203, sigue false (bien)
+   t=494 luna 4 (ojos rojos): capas pintadas 3029, luz de los ojos 1.00, luna roja dibujada 1002 (después de shaders 0), viñeta 461, música puesta true (sus sonidos: sí; la de la escena: sí) (bien)
+   t=557 luna 5 (daño mágico, armadura de diamante): el zombi normal quita 0.85, el Élite 3.60 (golpes mágicos 1) (bien: el Élite atraviesa la armadura)
+   t=562 luna 6 (dormir): no le deja (OTHER_PROBLEM) (bien)
+   t=572 luna 7 (mobs extra): el evento puso 46, con la marca de la luna cerca 17 (bien)
+   t=607 luna 8 (amanece): activa false, el cliente false, quedan con la marca 0, el Élite vuelve a ser normal, faltan 10 noches (bien)
+   pelea: 0 ticks; jefes distintos: 0; vida -1 -> -1
+   objetivo = el jugador: 0% del tiempo (cerca: 0%); golpes que me da: 0 (0.0 de daño); los míos: 0 (lo más cerca que llego: 1000000000.0 del borde)
+   mis golpes que le quitan vida: 0; sin efecto (sin estar en sus ticks de invulnerable): 0
+   me mueve el jefe (empujón, arrastre): 0 veces; lo más lejos que me lanza 0.0 bloques, lo más alto 0.0
+   anda: 0 ticks, hacia atrás 0 (con lockmodel del pack 0, empujado por su skill 0), de lado 0 (con lockmodel 0, empujado 0); rápido (>0,8 b/t) 0; teletransportes 0
+   al andar por el suelo: 0.000 bloques/tick de media (0 ticks)
+   en el aire (>3 bloques) 0 ticks, como mucho 0.0; lo más lejos de la grieta 0.0; esbirros a la vez 0
+   quieto y lejos del jugador (más de 2 s seguidos): 0 ticks
+   sin modelo 0 ticks; sin animación 0 ticks
+   animaciones (ticks): {}
+   al morir: anims []; barras que ve el cliente a los 3 s: -1; quitado: false; objetos: -1; experiencia: -1; esbirros vivos: -1
+
